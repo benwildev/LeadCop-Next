@@ -248,7 +248,7 @@ export interface AdminRevenueRecentItem {
   userEmail: string;
   plan: string;
   price: number;
-  createdAt: string;
+  approvedAt: string | null;
 }
 
 export interface AdminRevenueData {

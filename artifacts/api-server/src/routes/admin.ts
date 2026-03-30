@@ -340,7 +340,11 @@ router.patch("/upgrade-requests/:requestId", requireAdmin, async (req, res) => {
 
   await db
     .update(upgradeRequestsTable)
-    .set({ status, note: note || upgradeReq.note })
+    .set({
+      status,
+      note: note || upgradeReq.note,
+      ...(status === "APPROVED" ? { approvedAt: new Date() } : {}),
+    })
     .where(eq(upgradeRequestsTable.id, requestId));
 
   if (status === "APPROVED") {
@@ -745,22 +749,22 @@ router.get("/revenue", requireAdmin, async (req, res) => {
   });
 
   const twelveMonthsAgo = new Date();
-  twelveMonthsAgo.setMonth(twelveMonthsAgo.getMonth() - 11);
   twelveMonthsAgo.setDate(1);
+  twelveMonthsAgo.setMonth(twelveMonthsAgo.getMonth() - 11);
   twelveMonthsAgo.setHours(0, 0, 0, 0);
 
   const monthlyRaw = await db
     .select({
-      month: sql<string>`to_char(${upgradeRequestsTable.createdAt}, 'YYYY-MM')`,
+      month: sql<string>`to_char(${upgradeRequestsTable.approvedAt}, 'YYYY-MM')`,
       count: count(),
     })
     .from(upgradeRequestsTable)
     .where(and(
       eq(upgradeRequestsTable.status, "APPROVED"),
-      gte(upgradeRequestsTable.createdAt, twelveMonthsAgo),
+      gte(upgradeRequestsTable.approvedAt, twelveMonthsAgo),
     ))
-    .groupBy(sql`to_char(${upgradeRequestsTable.createdAt}, 'YYYY-MM')`)
-    .orderBy(sql`to_char(${upgradeRequestsTable.createdAt}, 'YYYY-MM')`);
+    .groupBy(sql`to_char(${upgradeRequestsTable.approvedAt}, 'YYYY-MM')`)
+    .orderBy(sql`to_char(${upgradeRequestsTable.approvedAt}, 'YYYY-MM')`);
 
   const monthlyMap: Record<string, number> = {};
   for (const row of monthlyRaw) {
@@ -768,10 +772,14 @@ router.get("/revenue", requireAdmin, async (req, res) => {
   }
 
   const monthlySubs: { month: string; count: number }[] = [];
+  const now = new Date();
+  const baseYear = now.getFullYear();
+  const baseMonth = now.getMonth();
   for (let i = 11; i >= 0; i--) {
-    const d = new Date();
-    d.setMonth(d.getMonth() - i);
-    const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+    let m = baseMonth - i;
+    let y = baseYear;
+    while (m < 0) { m += 12; y--; }
+    const key = `${y}-${String(m + 1).padStart(2, "0")}`;
     monthlySubs.push({ month: key, count: monthlyMap[key] || 0 });
   }
 
@@ -781,12 +789,12 @@ router.get("/revenue", requireAdmin, async (req, res) => {
       userName: usersTable.name,
       userEmail: usersTable.email,
       plan: upgradeRequestsTable.planRequested,
-      createdAt: upgradeRequestsTable.createdAt,
+      approvedAt: upgradeRequestsTable.approvedAt,
     })
     .from(upgradeRequestsTable)
     .leftJoin(usersTable, eq(upgradeRequestsTable.userId, usersTable.id))
     .where(eq(upgradeRequestsTable.status, "APPROVED"))
-    .orderBy(desc(upgradeRequestsTable.createdAt))
+    .orderBy(desc(upgradeRequestsTable.approvedAt))
     .limit(20);
 
   const recent = recentRaw.map((r) => ({
@@ -795,7 +803,7 @@ router.get("/revenue", requireAdmin, async (req, res) => {
     userEmail: r.userEmail || "Unknown",
     plan: r.plan,
     price: priceMap[r.plan] || 0,
-    createdAt: r.createdAt.toISOString(),
+    approvedAt: r.approvedAt ? r.approvedAt.toISOString() : null,
   }));
 
   const totalPaidUsers = planCounts

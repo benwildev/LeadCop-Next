@@ -15,6 +15,7 @@ export const upgradeRequestsTable = pgTable("upgrade_requests", {
   invoiceKey: text("invoice_key"),
   invoiceFileName: text("invoice_file_name"),
   invoiceUploadedAt: timestamp("invoice_uploaded_at"),
+  approvedAt: timestamp("approved_at"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 

@@ -1790,8 +1790,11 @@ function RevenueSection() {
                 bg: "bg-blue-500/10",
               },
               {
-                label: "Approved Subscriptions",
-                val: data.recent.length > 0 ? data.monthlySubs.reduce((a, b) => a + b.count, 0) : 0,
+                label: "Plan Revenue Breakdown",
+                val: data.revenueByPlan
+                  .filter(r => r.plan !== "FREE" && r.userCount > 0)
+                  .map(r => `${r.plan} $${r.revenue.toFixed(0)}`)
+                  .join(" · ") || "—",
                 icon: TrendingUp,
                 color: "text-primary",
                 bg: "bg-primary/10",
@@ -1908,7 +1911,7 @@ function RevenueSection() {
                 <table className="w-full text-sm text-left">
                   <thead className="border-b border-border">
                     <tr>
-                      {["User", "Plan", "Price / mo", "Date Approved"].map(h => (
+                      {["User", "Plan", "Price / mo", "Approved On"].map(h => (
                         <th key={h} className="px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide">{h}</th>
                       ))}
                     </tr>
@@ -1929,7 +1932,7 @@ function RevenueSection() {
                           ${row.price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                         </td>
                         <td className="px-4 py-3 text-xs text-muted-foreground">
-                          {format(parseISO(row.createdAt), "PP")}
+                          {row.approvedAt ? format(parseISO(row.approvedAt), "PP") : "—"}
                         </td>
                       </tr>
                     ))}
