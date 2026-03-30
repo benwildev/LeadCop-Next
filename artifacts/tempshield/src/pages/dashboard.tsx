@@ -19,9 +19,10 @@ import {
 import {
   Copy, RefreshCw, Activity, ArrowUpRight, CheckCircle2, Key,
   BarChart3, Clock, Globe, FileText, Plus, Trash2, Loader2, X,
-  Webhook, ShieldBan, Eye, EyeOff, Shield, AlertTriangle, ChevronDown,
+  Webhook, ShieldBan, Eye, EyeOff, AlertTriangle, ChevronDown,
   TrendingUp, ListFilter, ChevronLeft, ChevronRight, CreditCard, Download,
 } from "lucide-react";
+import ReputationBadge from "@/components/ReputationBadge";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer,
@@ -334,15 +335,6 @@ function OverviewTab({
   );
 }
 
-function ReputationBadge({ score }: { score: number }) {
-  const color = score >= 80 ? "text-green-500 bg-green-500/10" : score >= 50 ? "text-yellow-400 bg-yellow-400/10" : "text-red-400 bg-red-500/10";
-  return (
-    <span className={`inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-xs font-bold ${color}`}>
-      <Shield className="h-3 w-3" />
-      {score}
-    </span>
-  );
-}
 
 // ─── Analytics Tab ─────────────────────────────────────────────────────────────
 

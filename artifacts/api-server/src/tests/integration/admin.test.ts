@@ -183,7 +183,7 @@ describe("PATCH /api/admin/upgrade-requests/:requestId", () => {
   });
 
   it("approves an upgrade request", async () => {
-    if (!requestId) return;
+    expect(requestId).toBeDefined();
     const cookies = await getAdminCookies();
     const res = await request(app)
       .patch(`/api/admin/upgrade-requests/${requestId}`)
@@ -195,7 +195,7 @@ describe("PATCH /api/admin/upgrade-requests/:requestId", () => {
   });
 
   it("rejects an upgrade request", async () => {
-    if (!requestId) return;
+    expect(requestId).toBeDefined();
     const cookies = await getAdminCookies();
     const res = await request(app)
       .patch(`/api/admin/upgrade-requests/${requestId}`)

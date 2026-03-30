@@ -181,6 +181,31 @@ describe("POST /api/check-emails/bulk", () => {
     expect(res.status).toBe(400);
   });
 
+  it("returns 429 when bulk batch exceeds remaining quota", async () => {
+    await db.update(usersTable).set({ requestCount: 999 }).where(eq(usersTable.email, email));
+
+    const res = await request(app)
+      .post("/api/check-emails/bulk")
+      .set("Authorization", `Bearer ${apiKey}`)
+      .send({ emails: ["a@example.com", "b@example.com", "c@example.com"] });
+
+    expect(res.status).toBe(429);
+    expect(res.body.error).toMatch(/rate limit/i);
+    expect(typeof res.body.requestsRemaining).toBe("number");
+  });
+
+  it("returns 429 when quota is fully exhausted before bulk request", async () => {
+    await db.update(usersTable).set({ requestCount: 1000 }).where(eq(usersTable.email, email));
+
+    const res = await request(app)
+      .post("/api/check-emails/bulk")
+      .set("Authorization", `Bearer ${apiKey}`)
+      .send({ emails: ["test@example.com"] });
+
+    expect(res.status).toBe(429);
+    expect(res.body.error).toMatch(/rate limit/i);
+  });
+
   it("returns 401 with no auth", async () => {
     const res = await request(app)
       .post("/api/check-emails/bulk")

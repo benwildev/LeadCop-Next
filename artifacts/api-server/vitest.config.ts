@@ -13,6 +13,9 @@ export default defineConfig({
         singleFork: true,
       },
     },
+    env: {
+      DATABASE_URL: process.env.TEST_DATABASE_URL || process.env.DATABASE_URL || "",
+    },
   },
   resolve: {
     conditions: ["workspace"],

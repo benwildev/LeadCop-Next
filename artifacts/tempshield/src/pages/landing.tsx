@@ -18,33 +18,7 @@ import {
   Loader2,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-
-const KNOWN_DISPOSABLE = new Set([
-  "mailinator.com",
-  "guerrillamail.com",
-  "tempmail.com",
-  "throwaway.email",
-  "yopmail.com",
-  "10minutemail.com",
-  "trashmail.com",
-  "sharklasers.com",
-  "muncloud.com",
-  "getnada.com",
-  "maildrop.cc",
-  "temp-mail.org",
-  "fakeinbox.com",
-  "mohmal.com",
-  "dispostable.com",
-  "grr.la",
-]);
-
-function isValidEmail(email: string) {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-}
-
-function extractDomain(email: string) {
-  return email.split("@")[1]?.toLowerCase() || "";
-}
+import { isValidEmail, extractDomain, KNOWN_DISPOSABLE_DOMAINS as KNOWN_DISPOSABLE } from "@/utils/email-validation";
 
 const container = {
   hidden: { opacity: 0 },
