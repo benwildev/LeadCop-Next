@@ -11,8 +11,9 @@
     return scripts[scripts.length - 1];
   })();
 
+  var scriptURL = new URL(script.src);
   var API_KEY = script.getAttribute("data-api-key") || "";
-  var API_URL = (script.getAttribute("data-api-url") || window.location.origin) + "/api/check-email";
+  var API_URL = (script.getAttribute("data-api-url") || scriptURL.origin) + "/api/check-email";
   var DEBOUNCE_MS = parseInt(script.getAttribute("data-debounce") || "600", 10);
   var ERROR_MSG = script.getAttribute("data-error-message") || "Temporary email addresses are not allowed.";
   var ERROR_COLOR = script.getAttribute("data-error-color") || "#ef4444";

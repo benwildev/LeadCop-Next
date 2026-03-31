@@ -119,11 +119,11 @@ function OverviewSection() {
   const stats = statsQuery.data;
 
   const planData = stats ? [
-    { label: "Free", count: stats.usersByPlan.FREE, color: "bg-muted-foreground" },
-    { label: "Basic", count: stats.usersByPlan.BASIC, color: "bg-blue-400" },
-    { label: "Pro", count: stats.usersByPlan.PRO, color: "bg-primary" },
+    { label: "Free", count: stats.usersByPlan?.FREE || 0, color: "bg-muted-foreground" },
+    { label: "Basic", count: stats.usersByPlan?.BASIC || 0, color: "bg-blue-400" },
+    { label: "Pro", count: stats.usersByPlan?.PRO || 0, color: "bg-primary" },
   ] : [];
-  const totalForBar = planData.reduce((a, b) => a + b.count, 0) || 1;
+  const totalForBar = planData.reduce((a, b) => a + (b.count || 0), 0) || 1;
 
   return (
     <div>
@@ -927,8 +927,8 @@ function PlanConfigSection() {
                       <span className="text-muted-foreground text-sm">$</span>
                       <input
                         type="number" min={0} step={0.01}
-                        value={getValue(cfg.plan, "price", cfg.price) as number}
-                        onChange={e => setValue(cfg.plan, "price", parseFloat(e.target.value) || 0)}
+                        value={getValue(cfg.plan, "price" as any, (cfg as any).price) as number}
+                        onChange={e => setValue(cfg.plan, "price" as any, parseFloat(e.target.value) || 0)}
                         className="w-full bg-muted/40 border border-border rounded-lg px-3 py-1.5 text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 transition-all"
                       />
                     </div>

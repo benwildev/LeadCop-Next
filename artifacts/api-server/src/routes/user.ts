@@ -214,8 +214,8 @@ router.post("/api-keys", requireAuth, async (req, res) => {
   });
 });
 
-router.delete("/api-keys/:id", requireAuth, async (req, res) => {
-  const id = parseInt(req.params.id || "0");
+router.delete("/api-keys/:id", requireAuth, async (req: any, res: any) => {
+  const id = parseInt(String(req.params.id || "0"));
   if (isNaN(id)) {
     res.status(400).json({ error: "Invalid ID" });
     return;
@@ -319,8 +319,8 @@ const updateWebhookSchema = z.object({
   events: z.array(z.enum(VALID_WEBHOOK_EVENTS)).optional(),
 });
 
-router.patch("/webhooks/:id", requireAuth, async (req, res) => {
-  const id = parseInt(req.params.id || "0");
+router.patch("/webhooks/:id", requireAuth, async (req: any, res: any) => {
+  const id = parseInt(String(req.params.id || "0"));
   if (isNaN(id)) {
     res.status(400).json({ error: "Invalid ID" });
     return;
@@ -365,8 +365,8 @@ router.patch("/webhooks/:id", requireAuth, async (req, res) => {
   });
 });
 
-router.delete("/webhooks/:id", requireAuth, async (req, res) => {
-  const id = parseInt(req.params.id || "0");
+router.delete("/webhooks/:id", requireAuth, async (req: any, res: any) => {
+  const id = parseInt(String(req.params.id || "0"));
   if (isNaN(id)) {
     res.status(400).json({ error: "Invalid ID" });
     return;
@@ -439,8 +439,8 @@ router.post("/blocklist", requireAuth, async (req, res) => {
   });
 });
 
-router.delete("/blocklist/:id", requireAuth, async (req, res) => {
-  const id = parseInt(req.params.id || "0");
+router.delete("/blocklist/:id", requireAuth, async (req: any, res: any) => {
+  const id = parseInt(String(req.params.id || "0"));
   if (isNaN(id)) {
     res.status(400).json({ error: "Invalid ID" });
     return;
@@ -642,7 +642,7 @@ router.post("/upgrade", requireAuth, async (req, res) => {
 
   await db.insert(upgradeRequestsTable).values({
     userId: req.userId!,
-    planRequested: plan,
+    planRequested: plan as any,
     note: note || null,
     status: "PENDING",
   });
@@ -746,8 +746,8 @@ router.post("/websites", requireAuth, async (req, res) => {
   });
 });
 
-router.delete("/websites/:id", requireAuth, async (req, res) => {
-  const id = parseInt(req.params.id || "0");
+router.delete("/websites/:id", requireAuth, async (req: any, res: any) => {
+  const id = parseInt(String(req.params.id || "0"));
   if (isNaN(id)) {
     res.status(400).json({ error: "Invalid ID" });
     return;
@@ -843,8 +843,8 @@ router.post("/pages", requireAuth, async (req, res) => {
   res.json({ page: { ...inserted, createdAt: inserted.createdAt.toISOString() }, message: "Page added" });
 });
 
-router.delete("/pages/:id", requireAuth, async (req, res) => {
-  const id = parseInt(req.params.id || "0");
+router.delete("/pages/:id", requireAuth, async (req: any, res: any) => {
+  const id = parseInt(String(req.params.id || "0"));
   if (isNaN(id)) {
     res.status(400).json({ error: "Invalid ID" });
     return;
@@ -893,8 +893,8 @@ router.get("/billing", requireAuth, async (req, res) => {
   });
 });
 
-router.get("/invoice/:requestId", requireAuth, async (req, res) => {
-  const requestId = parseInt(req.params.requestId || "0");
+router.get("/invoice/:requestId", requireAuth, async (req: any, res: any) => {
+  const requestId = parseInt(String(req.params.requestId || "0"));
   if (isNaN(requestId)) {
     res.status(400).json({ error: "Invalid request ID" });
     return;

@@ -44,8 +44,8 @@ const updatePlanSchema = z.object({
   note: z.string().optional(),
 });
 
-router.patch("/users/:userId/plan", requireAdmin, async (req, res) => {
-  const userId = parseInt(req.params.userId || "0");
+router.patch("/users/:userId/plan", requireAdmin, async (req: any, res: any) => {
+  const userId = parseInt(String(req.params.userId || "0"));
   if (isNaN(userId)) {
     res.status(400).json({ error: "Invalid user ID" });
     return;
@@ -80,8 +80,8 @@ router.patch("/users/:userId/plan", requireAdmin, async (req, res) => {
   res.json({ message: `User plan updated to ${plan}` });
 });
 
-router.delete("/users/:userId", requireAdmin, async (req, res) => {
-  const userId = parseInt(req.params.userId || "0");
+router.delete("/users/:userId", requireAdmin, async (req: any, res: any) => {
+  const userId = parseInt(String(req.params.userId || "0"));
   if (isNaN(userId)) {
     res.status(400).json({ error: "Invalid user ID" });
     return;
@@ -96,8 +96,8 @@ router.delete("/users/:userId", requireAdmin, async (req, res) => {
   res.json({ message: "User deleted" });
 });
 
-router.post("/users/:userId/reset-usage", requireAdmin, async (req, res) => {
-  const userId = parseInt(req.params.userId || "0");
+router.post("/users/:userId/reset-usage", requireAdmin, async (req: any, res: any) => {
+  const userId = parseInt(String(req.params.userId || "0"));
   if (isNaN(userId)) {
     res.status(400).json({ error: "Invalid user ID" });
     return;
@@ -108,8 +108,8 @@ router.post("/users/:userId/reset-usage", requireAdmin, async (req, res) => {
   res.json({ message: "Usage reset to zero" });
 });
 
-router.post("/users/:userId/revoke-key", requireAdmin, async (req, res) => {
-  const userId = parseInt(req.params.userId || "0");
+router.post("/users/:userId/revoke-key", requireAdmin, async (req: any, res: any) => {
+  const userId = parseInt(String(req.params.userId || "0"));
   if (isNaN(userId)) {
     res.status(400).json({ error: "Invalid user ID" });
     return;
@@ -153,8 +153,8 @@ router.get("/upgrade-requests", requireAdmin, async (req, res) => {
   });
 });
 
-router.post("/upgrade-requests/:requestId/invoice/upload-url", requireAdmin, async (req, res) => {
-  const requestId = parseInt(req.params.requestId || "0");
+router.post("/upgrade-requests/:requestId/invoice/upload-url", requireAdmin, async (req: any, res: any) => {
+  const requestId = parseInt(String(req.params.requestId || "0"));
   if (isNaN(requestId) || requestId <= 0) {
     res.status(400).json({ error: "Invalid request ID" });
     return;
@@ -186,8 +186,8 @@ const invoiceSchema = z.object({
   fileName: z.string().min(1).max(255),
 });
 
-router.post("/upgrade-requests/:requestId/invoice", requireAdmin, async (req, res) => {
-  const requestId = parseInt(req.params.requestId || "0");
+router.post("/upgrade-requests/:requestId/invoice", requireAdmin, async (req: any, res: any) => {
+  const requestId = parseInt(String(req.params.requestId || "0"));
   if (isNaN(requestId)) {
     res.status(400).json({ error: "Invalid request ID" });
     return;
@@ -259,8 +259,8 @@ router.post("/upgrade-requests/:requestId/invoice", requireAdmin, async (req, re
   res.json({ message: "Invoice attached successfully" });
 });
 
-router.get("/upgrade-requests/:requestId/invoice", requireAdmin, async (req, res) => {
-  const requestId = parseInt(req.params.requestId || "0");
+router.get("/upgrade-requests/:requestId/invoice", requireAdmin, async (req: any, res: any) => {
+  const requestId = parseInt(String(req.params.requestId || "0"));
   if (isNaN(requestId)) {
     res.status(400).json({ error: "Invalid request ID" });
     return;
@@ -312,8 +312,8 @@ const updateUpgradeSchema = z.object({
   note: z.string().optional(),
 });
 
-router.patch("/upgrade-requests/:requestId", requireAdmin, async (req, res) => {
-  const requestId = parseInt(req.params.requestId || "0");
+router.patch("/upgrade-requests/:requestId", requireAdmin, async (req: any, res: any) => {
+  const requestId = parseInt(String(req.params.requestId || "0"));
   if (isNaN(requestId)) {
     res.status(400).json({ error: "Invalid request ID" });
     return;
@@ -463,8 +463,8 @@ const updatePlanConfigSchema = z.object({
   price: z.number().min(0).optional(),
 });
 
-router.patch("/plan-config/:plan", requireAdmin, async (req, res) => {
-  const planName = req.params.plan?.toUpperCase();
+router.patch("/plan-config/:plan", requireAdmin, async (req: any, res: any) => {
+  const planName = String(req.params.plan || "").toUpperCase();
 
   const [existing] = await db
     .select({ plan: planConfigsTable.plan })
@@ -504,8 +504,8 @@ router.patch("/plan-config/:plan", requireAdmin, async (req, res) => {
 
 const PROTECTED_PLANS = ["FREE", "BASIC", "PRO"];
 
-router.delete("/plan-config/:plan", requireAdmin, async (req, res) => {
-  const planName = req.params.plan?.toUpperCase();
+router.delete("/plan-config/:plan", requireAdmin, async (req: any, res: any) => {
+  const planName = String(req.params.plan || "").toUpperCase();
 
   if (PROTECTED_PLANS.includes(planName)) {
     res.status(403).json({ error: `Built-in plan "${planName}" cannot be deleted` });

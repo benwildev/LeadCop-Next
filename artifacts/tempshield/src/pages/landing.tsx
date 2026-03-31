@@ -46,12 +46,12 @@ function extractDomain(email: string) {
   return email.split("@")[1]?.toLowerCase() || "";
 }
 
-const container = {
+const container: any = {
   hidden: { opacity: 0 },
   show: { opacity: 1, transition: { staggerChildren: 0.06, delayChildren: 0 } },
 };
 
-const item = {
+const item: any = {
   hidden: { opacity: 0, y: 16 },
   show: {
     opacity: 1,
@@ -102,8 +102,8 @@ const SCRIPT_URL =
 
 const API_URL =
   typeof window !== "undefined"
-    ? `${window.location.origin}/api/check-email`
-    : "https://yourdomain.com/api/check-email";
+    ? `${window.location.origin}/api/check-email/demo`
+    : "https://yourdomain.com/api/check-email/demo";
 
 const CODE_TABS = [
   {

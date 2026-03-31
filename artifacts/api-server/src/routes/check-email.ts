@@ -14,8 +14,9 @@ import { sql } from "drizzle-orm";
 import { z } from "zod";
 import { isDisposableDomain } from "../lib/domain-cache.js";
 import { getPlanConfig } from "../lib/auth.js";
-import { computeReputationScore } from "../lib/reputation.js";
+import { computeReputationScore, isRoleAccount, isFreeEmail } from "../lib/reputation.js";
 import { fireWebhook } from "../lib/webhooks.js";
+import { verifySmtp } from "../lib/smtp-verifier.js";
 import dns from "dns";
 
 const dnsPromises = dns.promises;
@@ -197,6 +198,9 @@ async function performChecks(
   planConfig: Awaited<ReturnType<typeof getPlanConfig>>
 ) {
   const domain = email.split("@")[1]?.toLowerCase() ?? "";
+  const isValidSyntax = z.string().email().safeParse(email).success;
+  const isAdmin = isRoleAccount(email);
+  const isFree = isFreeEmail(domain);
 
   // Custom blocklist (domain is already lowercased)
   const [blocked] = await db
@@ -210,47 +214,51 @@ async function performChecks(
 
   let mxValidResult: boolean | undefined;
   let inboxSupportResult: boolean | undefined;
+  let smtpDetails: Awaited<ReturnType<typeof verifySmtp>> | undefined;
 
+  // Basic MX check for FREE/BASIC
   if (planConfig.mxDetectionEnabled) {
-    const mxDetectLimit = planConfig.mxDetectLimit;
-    if (mxDetectLimit === 0) {
+    const mxUsed = await countUsageByEndpoint(userId, "/check-email/mx");
+    if (planConfig.mxDetectLimit === 0 || mxUsed < planConfig.mxDetectLimit) {
       mxValidResult = await checkMx(domain);
       await db.insert(apiUsageTable).values({ userId, endpoint: "/check-email/mx" });
-    } else {
-      const mxUsed = await countUsageByEndpoint(userId, "/check-email/mx");
-      if (mxUsed < mxDetectLimit) {
-        mxValidResult = await checkMx(domain);
-        await db.insert(apiUsageTable).values({ userId, endpoint: "/check-email/mx" });
-      } else {
-        mxValidResult = false;
-      }
     }
   }
 
+  // Advanced SMTP check for PRO
   if (planConfig.inboxCheckEnabled) {
-    const inboxCheckLimit = planConfig.inboxCheckLimit;
-    if (inboxCheckLimit === 0) {
-      inboxSupportResult = await checkInboxSupport(domain);
+    const inboxUsed = await countUsageByEndpoint(userId, "/check-email/inbox");
+    if (planConfig.inboxCheckLimit === 0 || inboxUsed < planConfig.inboxCheckLimit) {
+      smtpDetails = await verifySmtp(email);
+      inboxSupportResult = smtpDetails.isDeliverable;
       await db.insert(apiUsageTable).values({ userId, endpoint: "/check-email/inbox" });
-    } else {
-      const inboxUsed = await countUsageByEndpoint(userId, "/check-email/inbox");
-      if (inboxUsed < inboxCheckLimit) {
-        inboxSupportResult = await checkInboxSupport(domain);
-        await db.insert(apiUsageTable).values({ userId, endpoint: "/check-email/inbox" });
-      } else {
-        inboxSupportResult = false;
-      }
     }
   }
 
   const reputationScore = computeReputationScore({
     isDisposable: disposable,
-    hasMx: mxValidResult,
+    hasMx: mxValidResult ?? (smtpDetails ? smtpDetails.mxRecords.length > 0 : undefined),
     hasInbox: inboxSupportResult,
+    isAdmin,
+    isFree,
+    isDeliverable: smtpDetails?.isDeliverable,
+    isCatchAll: smtpDetails?.isCatchAll,
+    canConnect: smtpDetails?.canConnect,
     domain,
   });
 
-  return { domain, disposable, mxValidResult, inboxSupportResult, reputationScore, isCustomBlocked };
+  return {
+    domain,
+    disposable,
+    reputationScore,
+    isCustomBlocked,
+    isValidSyntax,
+    isRoleAccount: isAdmin,
+    isFreeEmail: isFree,
+    smtpDetails,
+    mxValidResult: mxValidResult ?? (smtpDetails ? smtpDetails.mxRecords.length > 0 : undefined),
+    inboxSupportResult,
+  };
 }
 
 /**
@@ -304,6 +312,27 @@ async function dispatchWebhooks(
   // Fire in parallel, non-blocking
   Promise.allSettled(subscribed.map((wh) => fireWebhook(wh.url, wh.secret, payload)));
 }
+
+// ─── POST /api/check-email/demo ────────────────────────────────────────────────
+router.post("/check-email/demo", async (req, res) => {
+  const result = checkEmailSchema.safeParse(req.body);
+  if (!result.success) {
+    res.status(400).json({ error: "Invalid email address" });
+    return;
+  }
+  const domain = result.data.email.split("@")[1]?.toLowerCase();
+  if (!domain) {
+    res.status(400).json({ error: "Invalid email address" });
+    return;
+  }
+  const isDisposable = isDisposableDomain(domain);
+  res.json({
+    isDisposable,
+    domain,
+    reputationScore: isDisposable ? 0 : 100,
+    requestsRemaining: 999,
+  });
+});
 
 // ─── POST /api/check-email ─────────────────────────────────────────────────────
 
@@ -371,8 +400,18 @@ router.post("/check-email", async (req, res) => {
     domain: checks.domain,
     reputationScore: checks.reputationScore,
     requestsRemaining,
-    ...(planConfig.mxDetectionEnabled ? { mxValid: checks.mxValidResult ?? false } : {}),
-    ...(planConfig.inboxCheckEnabled ? { inboxSupport: checks.inboxSupportResult ?? false } : {}),
+    isValidSyntax: checks.isValidSyntax,
+    isRoleAccount: checks.isRoleAccount,
+    isFreeEmail: checks.isFreeEmail,
+    mxValid: checks.mxValidResult ?? false,
+    inboxSupport: checks.inboxSupportResult ?? false,
+    canConnectSmtp: checks.smtpDetails?.canConnect ?? null,
+    mxAcceptsMail: checks.smtpDetails?.mxAcceptsMail ?? null,
+    mxRecords: checks.smtpDetails?.mxRecords ?? [],
+    isDeliverable: checks.smtpDetails?.isDeliverable ?? null,
+    isCatchAll: checks.smtpDetails?.isCatchAll ?? null,
+    isDisabled: checks.smtpDetails?.isDisabled ?? null,
+    hasInboxFull: checks.smtpDetails?.hasInboxFull ?? null,
   });
 });
 

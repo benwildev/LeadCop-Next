@@ -25,7 +25,7 @@ const stats = [
   { value: "100K+", label: "Domains" },
 ];
 
-const fadeUp = {
+const fadeUp: any = {
   hidden: { opacity: 0, y: 14 },
   show: (i: number) => ({
     opacity: 1,

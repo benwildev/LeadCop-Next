@@ -20,7 +20,7 @@ import {
   Copy, RefreshCw, Activity, ArrowUpRight, CheckCircle2, Key,
   BarChart3, Clock, Globe, FileText, Plus, Trash2, Loader2, X,
   Webhook, ShieldBan, Eye, EyeOff, Shield, AlertTriangle, ChevronDown,
-  TrendingUp, ListFilter, ChevronLeft, ChevronRight, CreditCard, Download,
+  TrendingUp, ListFilter, ChevronLeft, ChevronRight, CreditCard, Download, Zap,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -30,6 +30,7 @@ import {
 import { format, parseISO } from "date-fns";
 import { useQueryClient } from "@tanstack/react-query";
 import { Link } from "wouter";
+import VerificationModal from "@/components/VerificationModal";
 
 type Tab = "overview" | "analytics" | "keys" | "webhooks" | "blocklist" | "settings" | "audit" | "billing";
 
@@ -175,8 +176,38 @@ function OverviewTab({
   onRegenerate: () => void;
   regenPending: boolean;
 }) {
+  const [verifyEmail, setVerifyEmail] = useState("");
+  const [isVerifying, setIsVerifying] = useState(false);
+  const [verifyResult, setVerifyResult] = useState<any | null>(null);
+  const [showModal, setShowModal] = useState(false);
+
+  const handleVerify = async () => {
+    if (!verifyEmail.trim()) return;
+    setIsVerifying(true);
+    try {
+      const res = await fetch("/api/check-email", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: verifyEmail.trim() }),
+      });
+      const data = await res.json();
+      setVerifyResult(data);
+      setShowModal(true);
+    } catch (err) {
+      alert("Verification failed: " + (err instanceof Error ? err.message : "Network error"));
+    } finally {
+      setIsVerifying(false);
+    }
+  };
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <VerificationModal
+        isOpen={showModal}
+        onClose={() => setShowModal(false)}
+        result={verifyResult}
+        email={verifyEmail}
+      />
       {/* API Key Card */}
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="glass-card rounded-2xl p-6 lg:col-span-2">
         <div className="flex items-center gap-2 mb-4">
@@ -202,6 +233,34 @@ function OverviewTab({
           Include as{" "}
           <code className="rounded bg-muted px-1.5 py-0.5 text-primary text-xs">Authorization: Bearer &lt;key&gt;</code>
           {" "}in your requests.
+        </p>
+      </motion.div>
+
+      {/* Quick Verify Tool */}
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }} className="glass-card rounded-2xl p-6">
+        <div className="flex items-center gap-2 mb-4">
+          <Zap className="h-4 w-4 text-primary" />
+          <h2 className="font-heading text-base font-semibold text-foreground">Quick Verify</h2>
+        </div>
+        <div className="flex gap-2">
+          <input
+            type="email"
+            value={verifyEmail}
+            onChange={(e) => setVerifyEmail(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && handleVerify()}
+            placeholder="test@example.com"
+            className="flex-1 bg-muted/40 border border-border rounded-xl px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 transition-all"
+          />
+          <button
+            onClick={handleVerify}
+            disabled={isVerifying || !verifyEmail.trim()}
+            className="px-4 py-2 bg-primary text-primary-foreground rounded-xl transition-all hover:bg-primary/90 flex items-center gap-2 text-sm font-semibold disabled:opacity-50"
+          >
+            {isVerifying ? <Loader2 className="h-4 w-4 animate-spin" /> : "Verify"}
+          </button>
+        </div>
+        <p className="text-[10px] text-muted-foreground mt-3">
+          Perform a real-time MX and SMTP check for any email address.
         </p>
       </motion.div>
 
@@ -348,7 +407,7 @@ function ReputationBadge({ score }: { score: number }) {
 
 function AnalyticsTab({ data, usagePct }: { data: DashboardDataWithPlanConfig; usagePct: number }) {
   const plan = data.user.plan;
-  const { data: analytics, isLoading } = useGetUserAnalytics({ query: { enabled: plan !== "FREE" } });
+  const { data: analytics, isLoading } = useGetUserAnalytics({ query: { enabled: plan !== "FREE" } as any });
 
   const requestsRemaining = data.user.requestLimit - data.user.requestCount;
 

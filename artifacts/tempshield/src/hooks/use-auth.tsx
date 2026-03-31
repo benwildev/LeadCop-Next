@@ -17,7 +17,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const { data: user, isLoading, refetch } = useGetMe({
     query: {
       retry: false,
-    }
+    } as any
   });
 
   const loginMutation = useLogin();
@@ -37,9 +37,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const logout = async () => {
-    await logoutMutation.mutateAsync();
-    await refetch();
-    setLocation("/");
+    try {
+      await logoutMutation.mutateAsync();
+    } catch (err) {
+      console.error("Logout API call failed:", err);
+    }
+    
+    // Always clear local state and redirect
+    try {
+      await refetch();
+    } catch (err) {
+      // Expected after logout
+    }
+    
+    // Use window.location for a full refresh to clear all cache/state
+    window.location.href = "/";
   };
 
   return (

@@ -90,7 +90,19 @@ function usePlanData() {
 export default function PricingPage() {
   const planData = usePlanData();
 
-  const plans = ["FREE", "BASIC", "PRO"]
+  interface ResolvedPlan {
+    key: string;
+    name: string;
+    price: string;
+    period: string;
+    desc: string;
+    features: string[];
+    cta: string;
+    href: string;
+    highlighted: boolean;
+  }
+
+  const plans = (["FREE", "BASIC", "PRO"] as const)
     .map(key => {
       const meta = PLAN_META[key];
       if (!meta) return null;
@@ -114,9 +126,9 @@ export default function PricingPage() {
         cta: meta.cta,
         href: meta.href,
         highlighted: meta.highlighted,
-      };
+      } as ResolvedPlan;
     })
-    .filter(Boolean) as NonNullable<ReturnType<typeof plans[0]>>[];
+    .filter(Boolean) as ResolvedPlan[];
 
   return (
     <>

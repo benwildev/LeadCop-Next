@@ -39,9 +39,10 @@ app.use(
  *   ✅ Reflect the actual request origin so session cookies work
  *   ✅ credentials: true allows cookies for session-based auth
  */
-const corsMiddleware = cors((req, callback) => {
+const corsMiddleware = cors((req: any, callback: (err: Error | null, options?: CorsOptions) => void) => {
   const isPublicEndpoint =
     req.path === "/api/check-email" || req.url === "/api/check-email" ||
+    req.path === "/api/check-email/demo" || req.url === "/api/check-email/demo" ||
     req.path === "/api/check-emails/bulk" || (req.url ?? "").startsWith("/api/check-emails");
 
   if (isPublicEndpoint) {
@@ -114,6 +115,14 @@ app.use(cookieParser());
 app.use(sessionMiddleware);
 
 app.use("/api", router);
+
+import path from "path";
+const frontendPath = path.resolve(import.meta.dirname, "../../tempshield/dist/public");
+app.use(express.static(frontendPath));
+app.use((req, res, next) => {
+  if (req.originalUrl.startsWith("/api")) return next();
+  res.sendFile(path.join(frontendPath, "index.html"));
+});
 
 loadDomainCache().catch((err) => {
   logger.error({ err }, "Failed to load domain cache on startup");
