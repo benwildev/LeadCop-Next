@@ -10,3 +10,4 @@ export * from "./webhooks";
 export * from "./custom-blocklist";
 export * from "./payment-settings";
 export * from "./email-settings";
+export * from "./site-settings";

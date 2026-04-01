@@ -52,6 +52,8 @@ The product is also branded as **LeadCop** for the production deployment at lead
 - **custom_blocklist** — id, userId, domain, createdAt (unique: userId+domain)
 - **payment_settings** — id, gateway (MANUAL/STRIPE/PAYPAL), stripePublishableKey, stripeSecretKey, paypalClientId, paypalClientSecret, updatedAt
 - **email_settings** — id, provider, apiKey, fromEmail, fromName, updatedAt
+- **site_settings** — id (singleton row 1), siteTitle, tagline, logoUrl, faviconUrl, globalMetaTitle, globalMetaDescription, footerText, updatedAt
+- **page_seo** — id, slug (unique, e.g. "/", "/pricing"), metaTitle, metaDescription, keywords, ogTitle, ogDescription, ogImage, updatedAt
 
 ## Rate Limits & Plans
 
@@ -132,6 +134,15 @@ The `isFreeEmail(domain)` function in `artifacts/api-server/src/lib/reputation.t
 - `GET /api/admin/revenue` — revenue stats
 - `GET /api/admin/payment-settings` — payment gateway config
 - `PUT /api/admin/payment-settings` — update payment gateway config
+- `GET /api/admin/email-settings` — email/SMTP config
+- `PUT /api/admin/email-settings` — update email settings
+- `POST /api/admin/email-settings/test` — send test email
+
+**Site Settings & SEO:**
+- `GET /api/site-settings` — public endpoint: siteTitle, tagline, logoUrl, faviconUrl, globalMetaTitle, globalMetaDescription, footerText
+- `PUT /api/admin/site-settings` — update branding & global meta defaults (admin only)
+- `GET /api/admin/site-settings/page?slug=<path>` — get per-page SEO (admin only)
+- `PUT /api/admin/site-settings/page?slug=<path>` — update per-page SEO (admin only)
 
 ## Security Features
 

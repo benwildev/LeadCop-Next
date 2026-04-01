@@ -8,6 +8,7 @@ import settingsRouter from "./settings.js";
 import checkoutRouter from "./checkout.js";
 import emailSettingsRouter from "./email-settings.js";
 import storageRouter from "./storage.js";
+import siteSettingsRouter from "./site-settings.js";
 
 const router: IRouter = Router();
 
@@ -20,5 +21,6 @@ router.use("/settings", settingsRouter);
 router.use("/user/checkout", checkoutRouter);
 router.use("/admin/email-settings", emailSettingsRouter);
 router.use(storageRouter);
+router.use(siteSettingsRouter);
 
 export default router;

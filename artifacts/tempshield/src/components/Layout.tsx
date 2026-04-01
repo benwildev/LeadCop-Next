@@ -1,6 +1,7 @@
 import React, { type ReactNode } from "react";
 import { Link, useLocation } from "wouter";
 import { useAuth } from "@/hooks/use-auth";
+import { useSiteSettings } from "@/hooks/use-site-settings";
 import {
   Shield,
   Menu,
@@ -40,6 +41,7 @@ export function Navbar() {
   const [location, navigate] = useLocation();
   const [mobileOpen, setMobileOpen] = React.useState(false);
   const { isDark, toggle } = useTheme();
+  const siteSettings = useSiteSettings();
 
   const scrollTo = (id: string) => {
     if (location === "/") {
@@ -62,9 +64,13 @@ export function Navbar() {
           href="/"
           className="flex items-center gap-2 transition-opacity hover:opacity-80"
         >
-          <Shield className="h-6 w-6 text-primary" />
+          {siteSettings.logoUrl ? (
+            <img src={siteSettings.logoUrl} alt={siteSettings.siteTitle} className="h-6 w-auto" />
+          ) : (
+            <Shield className="h-6 w-6 text-primary" />
+          )}
           <span className="font-heading text-lg font-bold text-foreground">
-            TempShield
+            {siteSettings.siteTitle}
           </span>
         </Link>
 
@@ -247,14 +253,19 @@ export function Navbar() {
 }
 
 export function Footer() {
+  const siteSettings = useSiteSettings();
   return (
     <footer className="border-t border-border/50 py-12 px-6">
       <div className="mx-auto max-w-6xl">
         <div className="flex flex-col items-center gap-6 sm:flex-row sm:justify-between">
           <div className="flex items-center gap-2">
-            <Shield className="h-5 w-5 text-primary" />
+            {siteSettings.logoUrl ? (
+              <img src={siteSettings.logoUrl} alt={siteSettings.siteTitle} className="h-5 w-auto" />
+            ) : (
+              <Shield className="h-5 w-5 text-primary" />
+            )}
             <span className="font-heading text-sm font-bold text-foreground">
-              TempShield
+              {siteSettings.siteTitle}
             </span>
           </div>
           <div className="flex flex-wrap items-center justify-center gap-6 text-sm text-muted-foreground">
@@ -282,8 +293,9 @@ export function Footer() {
         </div>
         <Separator className="my-6" />
         <p className="text-center text-xs text-muted-foreground">
-          Built for developers, by developers. &copy; {new Date().getFullYear()}{" "}
-          TempShield.
+          {siteSettings.footerText
+            ? siteSettings.footerText
+            : <>Built for developers, by developers. &copy; {new Date().getFullYear()}{" "}{siteSettings.siteTitle}.</>}
         </p>
       </div>
     </footer>
