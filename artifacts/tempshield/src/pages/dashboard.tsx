@@ -1166,6 +1166,13 @@ function BlocklistTab() {
 
 // ─── Settings Tab ─────────────────────────────────────────────────────────────
 
+const FREE_EMAIL_DOMAINS = [
+  "gmail.com", "yahoo.com", "hotmail.com", "outlook.com", "live.com",
+  "icloud.com", "aol.com", "protonmail.com", "proton.me", "zoho.com",
+  "yandex.com", "mail.com", "gmx.com", "fastmail.com", "tutanota.com",
+  "hey.com", "msn.com", "me.com", "mac.com", "pm.me",
+];
+
 function SettingsTab({ planConfig, plan }: { planConfig?: DashboardPlanConfig; plan: string }) {
   return (
     <div className="grid gap-6 lg:grid-cols-2">
@@ -1217,29 +1224,47 @@ function FreeEmailCheckPanel() {
       {settingsQuery.isLoading ? (
         <div className="flex justify-center py-4"><Loader2 className="h-5 w-5 animate-spin text-primary" /></div>
       ) : (
-        <div className="flex items-center justify-between px-4 py-3 rounded-xl bg-muted/30 border border-border/50">
-          <div>
-            <p className="text-sm font-medium text-foreground">Block free email providers</p>
-            <p className="text-xs text-muted-foreground mt-0.5">
-              {enabled ? "Gmail, Yahoo, Outlook etc. are blocked" : "Only disposable addresses are blocked"}
-            </p>
-          </div>
-          <button
-            onClick={() => updateMutation.mutate(!enabled)}
-            disabled={updateMutation.isPending}
-            className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:ring-offset-2 focus:ring-offset-background disabled:opacity-50 ${
-              enabled ? "bg-primary" : "bg-muted"
-            }`}
-            role="switch"
-            aria-checked={enabled}
-          >
-            <span
-              className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
-                enabled ? "translate-x-5" : "translate-x-0"
+        <>
+          <div className="flex items-center justify-between px-4 py-3 rounded-xl bg-muted/30 border border-border/50">
+            <div>
+              <p className="text-sm font-medium text-foreground">Block free email providers</p>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                {enabled ? "Free email providers are blocked" : "Only disposable addresses are blocked"}
+              </p>
+            </div>
+            <button
+              onClick={() => updateMutation.mutate(!enabled)}
+              disabled={updateMutation.isPending}
+              className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:ring-offset-2 focus:ring-offset-background disabled:opacity-50 ${
+                enabled ? "bg-primary" : "bg-muted"
               }`}
-            />
-          </button>
-        </div>
+              role="switch"
+              aria-checked={enabled}
+            >
+              <span
+                className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+                  enabled ? "translate-x-5" : "translate-x-0"
+                }`}
+              />
+            </button>
+          </div>
+
+          {enabled && (
+            <div className="mt-4">
+              <p className="text-xs font-medium text-muted-foreground mb-2">Blocked providers ({FREE_EMAIL_DOMAINS.length})</p>
+              <div className="flex flex-wrap gap-1.5">
+                {FREE_EMAIL_DOMAINS.map((domain) => (
+                  <span
+                    key={domain}
+                    className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-mono bg-red-500/10 text-red-400 border border-red-500/20"
+                  >
+                    {domain}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+        </>
       )}
 
       {updateMutation.isError && (
