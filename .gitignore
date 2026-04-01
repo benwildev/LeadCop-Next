@@ -55,5 +55,11 @@ Thumbs.db
 *.sqlite
 *.log
 
+# Runtime data directories
+data/
+
+# Replit environment files
+.replit.nix
+
 # Chat-attached development assets (not part of source)
 attached_assets/
