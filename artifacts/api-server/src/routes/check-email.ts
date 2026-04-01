@@ -5,6 +5,7 @@ import {
   usersTable,
   apiUsageTable,
   userWebsitesTable,
+  userPagesTable,
   userApiKeysTable,
   webhooksTable,
   customBlocklistTable,
@@ -202,6 +203,45 @@ async function checkOriginAllowed(req: Request, userId: number): Promise<{ allow
 
   if (!isAllowed) {
     return { allowed: false, reason: "Origin not in allowed websites list. Add your domain in dashboard settings." };
+  }
+
+  return { allowed: true };
+}
+
+function extractRefererPath(req: Request): string | null {
+  const referer = req.headers["referer"];
+  const source = Array.isArray(referer) ? referer[0] : referer;
+  if (!source) return null;
+  try {
+    return new URL(source).pathname.toLowerCase() || "/";
+  } catch {
+    return null;
+  }
+}
+
+async function checkPageAllowed(req: Request, userId: number): Promise<{ allowed: boolean; reason?: string }> {
+  const allowedPages = await db
+    .select({ path: userPagesTable.path })
+    .from(userPagesTable)
+    .where(eq(userPagesTable.userId, userId));
+
+  // No page restrictions configured — allow all pages.
+  if (allowedPages.length === 0) return { allowed: true };
+
+  // Pages are configured but no Referer header present (e.g. server-to-server) — allow.
+  const requestPath = extractRefererPath(req);
+  if (!requestPath) return { allowed: true };
+
+  // Check if the request path starts with any of the configured allowed paths.
+  const isAllowed = allowedPages.some(
+    (p) => requestPath === p.path.toLowerCase() || requestPath.startsWith(p.path.toLowerCase() + "/")
+  );
+
+  if (!isAllowed) {
+    return {
+      allowed: false,
+      reason: `Page '${requestPath}' is not in your allowed pages list. Add it in the dashboard under Settings → Protected Pages.`,
+    };
   }
 
   return { allowed: true };
@@ -422,6 +462,12 @@ router.post("/check-email", async (req, res) => {
       res.status(403).json({ error: origin.reason });
       return;
     }
+
+    const page = await checkPageAllowed(req, userId);
+    if (!page.allowed) {
+      res.status(403).json({ error: page.reason });
+      return;
+    }
   }
 
   const result = checkEmailSchema.safeParse(req.body);
@@ -528,6 +574,12 @@ router.post("/check-emails/bulk", async (req, res) => {
     const origin = await checkOriginAllowed(req, userId);
     if (!origin.allowed) {
       res.status(403).json({ error: origin.reason });
+      return;
+    }
+
+    const page = await checkPageAllowed(req, userId);
+    if (!page.allowed) {
+      res.status(403).json({ error: page.reason });
       return;
     }
   }
