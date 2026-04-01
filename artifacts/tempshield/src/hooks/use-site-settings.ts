@@ -64,22 +64,28 @@ export function useApplyHeadMeta() {
   useEffect(() => {
     const title = pageSeo?.metaTitle || settings.globalMetaTitle;
     const description = pageSeo?.metaDescription || settings.globalMetaDescription;
-    const keywords = pageSeo?.keywords || null;
+    const keywords = pageSeo?.keywords ?? null;
     const ogTitle = pageSeo?.ogTitle || title;
     const ogDescription = pageSeo?.ogDescription || description;
-    const ogImage = pageSeo?.ogImage || null;
+    const ogImage = pageSeo?.ogImage ?? null;
 
     document.title = title;
 
     setMeta("name", "description", description);
+
     if (keywords) {
       setMeta("name", "keywords", keywords);
+    } else {
+      removeMeta("name", "keywords");
     }
 
     setMeta("property", "og:title", ogTitle);
     setMeta("property", "og:description", ogDescription);
+
     if (ogImage) {
       setMeta("property", "og:image", ogImage);
+    } else {
+      removeMeta("property", "og:image");
     }
 
     if (settings.faviconUrl) {
@@ -96,6 +102,11 @@ function setMeta(attr: "name" | "property", value: string, content: string) {
     document.head.appendChild(el);
   }
   el.setAttribute("content", content);
+}
+
+function removeMeta(attr: "name" | "property", value: string) {
+  const el = document.querySelector<HTMLMetaElement>(`meta[${attr}="${value}"]`);
+  if (el) el.remove();
 }
 
 function setFavicon(href: string) {
