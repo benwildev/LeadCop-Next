@@ -29,7 +29,7 @@ import {
   BarChart, Bar, Cell,
 } from "recharts";
 import { format, parseISO } from "date-fns";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQueryClient, useQuery, useMutation } from "@tanstack/react-query";
 import { Link } from "wouter";
 import VerificationModal from "@/components/VerificationModal";
 
@@ -1171,7 +1171,81 @@ function SettingsTab({ planConfig, plan }: { planConfig?: DashboardPlanConfig; p
     <div className="grid gap-6 lg:grid-cols-2">
       <WebsitesPanel planConfig={planConfig} plan={plan} />
       <PagesPanel planConfig={planConfig} plan={plan} />
+      <FreeEmailCheckPanel />
     </div>
+  );
+}
+
+function FreeEmailCheckPanel() {
+  const qc = useQueryClient();
+
+  const settingsQuery = useQuery({
+    queryKey: ["/api/user/settings"],
+    queryFn: async () => {
+      const res = await fetch("/api/user/settings", { credentials: "include" });
+      if (!res.ok) throw new Error("Failed to load settings");
+      return res.json() as Promise<{ blockFreeEmails: boolean }>;
+    },
+  });
+
+  const updateMutation = useMutation({
+    mutationFn: async (blockFreeEmails: boolean) => {
+      const res = await fetch("/api/user/settings", {
+        method: "PATCH",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ blockFreeEmails }),
+      });
+      if (!res.ok) throw new Error("Failed to update settings");
+      return res.json() as Promise<{ blockFreeEmails: boolean }>;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["/api/user/settings"] }),
+  });
+
+  const enabled = settingsQuery.data?.blockFreeEmails ?? false;
+
+  return (
+    <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }} className="glass-card rounded-2xl p-6">
+      <div className="flex items-center gap-2 mb-1">
+        <Shield className="h-4 w-4 text-primary" />
+        <h2 className="font-heading text-base font-semibold text-foreground">Free Email Check</h2>
+      </div>
+      <p className="text-xs text-muted-foreground mb-5">
+        When enabled, free email providers like Gmail, Yahoo, and Outlook are also flagged as not allowed — not just disposable addresses.
+      </p>
+
+      {settingsQuery.isLoading ? (
+        <div className="flex justify-center py-4"><Loader2 className="h-5 w-5 animate-spin text-primary" /></div>
+      ) : (
+        <div className="flex items-center justify-between px-4 py-3 rounded-xl bg-muted/30 border border-border/50">
+          <div>
+            <p className="text-sm font-medium text-foreground">Block free email providers</p>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              {enabled ? "Gmail, Yahoo, Outlook etc. are blocked" : "Only disposable addresses are blocked"}
+            </p>
+          </div>
+          <button
+            onClick={() => updateMutation.mutate(!enabled)}
+            disabled={updateMutation.isPending}
+            className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:ring-offset-2 focus:ring-offset-background disabled:opacity-50 ${
+              enabled ? "bg-primary" : "bg-muted"
+            }`}
+            role="switch"
+            aria-checked={enabled}
+          >
+            <span
+              className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+                enabled ? "translate-x-5" : "translate-x-0"
+              }`}
+            />
+          </button>
+        </div>
+      )}
+
+      {updateMutation.isError && (
+        <p className="text-xs text-red-400 mt-3">Failed to save. Please try again.</p>
+      )}
+    </motion.div>
   );
 }
 

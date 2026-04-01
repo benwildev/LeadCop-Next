@@ -960,4 +960,40 @@ router.get("/invoice/:requestId", requireAuth, async (req: any, res: any) => {
   }
 });
 
+// ─── User Settings ────────────────────────────────────────────────────────────
+
+router.get("/settings", requireAuth, async (req, res) => {
+  const [user] = await db
+    .select({ blockFreeEmails: usersTable.blockFreeEmails })
+    .from(usersTable)
+    .where(eq(usersTable.id, req.userId!))
+    .limit(1);
+
+  if (!user) {
+    res.status(404).json({ error: "User not found" });
+    return;
+  }
+
+  res.json({ blockFreeEmails: user.blockFreeEmails });
+});
+
+const updateSettingsSchema = z.object({
+  blockFreeEmails: z.boolean(),
+});
+
+router.patch("/settings", requireAuth, async (req, res) => {
+  const result = updateSettingsSchema.safeParse(req.body);
+  if (!result.success) {
+    res.status(400).json({ error: "Invalid settings" });
+    return;
+  }
+
+  await db
+    .update(usersTable)
+    .set({ blockFreeEmails: result.data.blockFreeEmails })
+    .where(eq(usersTable.id, req.userId!));
+
+  res.json({ blockFreeEmails: result.data.blockFreeEmails });
+});
+
 export default router;

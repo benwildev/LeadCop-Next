@@ -94,6 +94,7 @@ interface AuthResult {
   userPlan: string;
   requestCount: number;
   isApiKeyAuth: boolean;
+  blockFreeEmails: boolean;
 }
 
 async function maybeResetMonthlyUsage(
@@ -125,14 +126,14 @@ async function resolveAuth(req: Request): Promise<AuthResult | null> {
     const apiKey = authHeader.slice(7);
 
     const [user] = await db
-      .select({ id: usersTable.id, requestCount: usersTable.requestCount, plan: usersTable.plan, usagePeriodStart: usersTable.usagePeriodStart })
+      .select({ id: usersTable.id, requestCount: usersTable.requestCount, plan: usersTable.plan, usagePeriodStart: usersTable.usagePeriodStart, blockFreeEmails: usersTable.blockFreeEmails })
       .from(usersTable)
       .where(eq(usersTable.apiKey, apiKey))
       .limit(1);
 
     if (user) {
       const requestCount = await maybeResetMonthlyUsage(user.id, user.usagePeriodStart, user.requestCount);
-      return { userId: user.id, userPlan: user.plan, requestCount, isApiKeyAuth: true };
+      return { userId: user.id, userPlan: user.plan, requestCount, isApiKeyAuth: true, blockFreeEmails: user.blockFreeEmails };
     }
 
     const [namedKey] = await db
@@ -143,13 +144,13 @@ async function resolveAuth(req: Request): Promise<AuthResult | null> {
 
     if (namedKey) {
       const [keyUser] = await db
-        .select({ id: usersTable.id, requestCount: usersTable.requestCount, plan: usersTable.plan, usagePeriodStart: usersTable.usagePeriodStart })
+        .select({ id: usersTable.id, requestCount: usersTable.requestCount, plan: usersTable.plan, usagePeriodStart: usersTable.usagePeriodStart, blockFreeEmails: usersTable.blockFreeEmails })
         .from(usersTable)
         .where(eq(usersTable.id, namedKey.userId))
         .limit(1);
       if (keyUser) {
         const requestCount = await maybeResetMonthlyUsage(keyUser.id, keyUser.usagePeriodStart, keyUser.requestCount);
-        return { userId: keyUser.id, userPlan: keyUser.plan, requestCount, isApiKeyAuth: true };
+        return { userId: keyUser.id, userPlan: keyUser.plan, requestCount, isApiKeyAuth: true, blockFreeEmails: keyUser.blockFreeEmails };
       }
     }
 
@@ -158,7 +159,7 @@ async function resolveAuth(req: Request): Promise<AuthResult | null> {
 
   if (sessionUserId) {
     const [user] = await db
-      .select({ requestCount: usersTable.requestCount, plan: usersTable.plan, usagePeriodStart: usersTable.usagePeriodStart })
+      .select({ requestCount: usersTable.requestCount, plan: usersTable.plan, usagePeriodStart: usersTable.usagePeriodStart, blockFreeEmails: usersTable.blockFreeEmails })
       .from(usersTable)
       .where(eq(usersTable.id, sessionUserId))
       .limit(1);
@@ -166,7 +167,7 @@ async function resolveAuth(req: Request): Promise<AuthResult | null> {
     if (!user) return null;
 
     const requestCount = await maybeResetMonthlyUsage(sessionUserId, user.usagePeriodStart, user.requestCount);
-    return { userId: sessionUserId, userPlan: user.plan, requestCount, isApiKeyAuth: false };
+    return { userId: sessionUserId, userPlan: user.plan, requestCount, isApiKeyAuth: false, blockFreeEmails: user.blockFreeEmails };
   }
 
   return null;
@@ -448,7 +449,7 @@ router.post("/check-email", async (req, res) => {
     return;
   }
 
-  const { userId, userPlan, requestCount, isApiKeyAuth } = auth;
+  const { userId, userPlan, requestCount, isApiKeyAuth, blockFreeEmails } = auth;
   const planConfig = await getPlanConfig(userPlan);
 
   if (requestCount >= planConfig.requestLimit) {
@@ -487,6 +488,7 @@ router.post("/check-email", async (req, res) => {
   await db.update(usersTable).set({ requestCount: requestCount + 1 }).where(eq(usersTable.id, userId));
 
   const checks = await performChecks(email, userId, planConfig);
+  const isDisposable = checks.disposable || (blockFreeEmails && checks.isFreeEmail);
   const requestsRemaining = Math.max(0, planConfig.requestLimit - (requestCount + 1));
 
   await db.insert(apiUsageTable).values({
@@ -494,14 +496,14 @@ router.post("/check-email", async (req, res) => {
     endpoint: "/check-email",
     email,
     domain: checks.domain,
-    isDisposable: checks.disposable,
+    isDisposable,
     reputationScore: checks.reputationScore,
   });
 
-  void dispatchWebhooks(userId, email, checks.domain, checks.disposable, checks.reputationScore, isApiKeyAuth).catch(() => {});
+  void dispatchWebhooks(userId, email, checks.domain, isDisposable, checks.reputationScore, isApiKeyAuth).catch(() => {});
 
   res.json({
-    isDisposable: checks.disposable,
+    isDisposable,
     domain: checks.domain,
     reputationScore: checks.reputationScore,
     riskLevel: checks.riskLevel,
@@ -538,7 +540,7 @@ router.post("/check-emails/bulk", async (req, res) => {
     return;
   }
 
-  const { userId, userPlan, requestCount, isApiKeyAuth } = auth;
+  const { userId, userPlan, requestCount, isApiKeyAuth, blockFreeEmails } = auth;
 
   if (userPlan === "FREE") {
     res.status(403).json({
@@ -598,15 +600,16 @@ router.post("/check-emails/bulk", async (req, res) => {
           endpoint: "/check-emails/bulk",
           email,
           domain: checks.domain,
-          isDisposable: checks.disposable,
+          isDisposable: checks.disposable || (blockFreeEmails && checks.isFreeEmail),
           reputationScore: checks.reputationScore,
         });
 
-        void dispatchWebhooks(userId, email, checks.domain, checks.disposable, checks.reputationScore, isApiKeyAuth).catch(() => {});
+        const isDisposable = checks.disposable || (blockFreeEmails && checks.isFreeEmail);
+        void dispatchWebhooks(userId, email, checks.domain, isDisposable, checks.reputationScore, isApiKeyAuth).catch(() => {});
 
         return {
           email,
-          isDisposable: checks.disposable,
+          isDisposable,
           domain: checks.domain,
           reputationScore: checks.reputationScore,
           riskLevel: checks.riskLevel,

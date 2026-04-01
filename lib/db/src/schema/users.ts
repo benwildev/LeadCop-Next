@@ -1,4 +1,4 @@
-import { pgTable, serial, text, integer, timestamp, pgEnum } from "drizzle-orm/pg-core";
+import { pgTable, serial, text, integer, timestamp, pgEnum, boolean } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod/v4";
 
@@ -16,6 +16,7 @@ export const usersTable = pgTable("users", {
   requestLimit: integer("request_limit").notNull().default(10),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   usagePeriodStart: timestamp("usage_period_start").notNull().defaultNow(),
+  blockFreeEmails: boolean("block_free_emails").notNull().default(false),
 });
 
 export const insertUserSchema = createInsertSchema(usersTable).omit({ id: true, createdAt: true });
