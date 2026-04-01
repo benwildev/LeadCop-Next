@@ -707,6 +707,7 @@ const DEFAULT_NEW_PLAN = {
   inboxCheckLimit: 0,
   websiteLimit: 0,
   pageLimit: 0,
+  maxBulkEmails: 0,
   mxDetectionEnabled: false,
   inboxCheckEnabled: false,
   price: 0,
@@ -798,6 +799,7 @@ function PlanConfigSection() {
     { key: "inboxCheckLimit" as const, label: "Inbox Check Limit" },
     { key: "websiteLimit" as const, label: "Website Limit" },
     { key: "pageLimit" as const, label: "Page Limit" },
+    { key: "maxBulkEmails" as const, label: "Max Bulk Emails" },
   ];
 
   const boolFields = [

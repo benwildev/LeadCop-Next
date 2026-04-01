@@ -38,6 +38,7 @@ export async function getPlanConfig(plan: string) {
       inboxCheckLimit: 0,
       websiteLimit: 0,
       pageLimit: 0,
+      maxBulkEmails: 0,
       mxDetectionEnabled: false,
       inboxCheckEnabled: false,
     };

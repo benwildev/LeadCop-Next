@@ -151,7 +151,7 @@ export default function DashboardPage() {
                 />
               )}
               {activeTab === "webhooks" && <WebhooksTab plan={data.user.plan} />}
-              {activeTab === "blocklist" && <BlocklistTab />}
+              {activeTab === "blocklist" && <BlocklistTab plan={data.user.plan} />}
               {activeTab === "audit" && <AuditLogTab />}
               {activeTab === "billing" && <BillingTab />}
               {activeTab === "settings" && (
@@ -181,6 +181,7 @@ function OverviewTab({
   const [isVerifying, setIsVerifying] = useState(false);
   const [verifyResult, setVerifyResult] = useState<any | null>(null);
   const [showModal, setShowModal] = useState(false);
+  const [showEmbedScript, setShowEmbedScript] = useState(false);
 
   const handleVerify = async () => {
     if (!verifyEmail.trim()) return;
@@ -332,6 +333,42 @@ function OverviewTab({
             </AreaChart>
           </ResponsiveContainer>
         </div>
+      </motion.div>
+
+      {/* Embed Script Card */}
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }} className="glass-card rounded-2xl p-6 lg:col-span-3">
+        <button
+          onClick={() => setShowEmbedScript(v => !v)}
+          className="w-full flex items-center justify-between gap-2 text-left"
+        >
+          <div className="flex items-center gap-2">
+            <Code className="h-4 w-4 text-primary" />
+            <h2 className="font-heading text-base font-semibold text-foreground">Embed Script</h2>
+          </div>
+          <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform duration-200 ${showEmbedScript ? "rotate-180" : ""}`} />
+        </button>
+        {showEmbedScript && (
+          <div className="mt-4 space-y-3">
+            <p className="text-xs text-muted-foreground">
+              Drop this snippet into your HTML to enable client-side disposable email detection on your forms. Replace <code className="rounded bg-muted px-1 py-0.5 text-primary text-xs">YOUR_API_KEY</code> with your key below.
+            </p>
+            <div className="flex gap-2 items-start">
+              <pre className="flex-1 rounded-xl bg-muted/50 border border-border px-4 py-3 font-mono text-xs text-foreground/80 overflow-x-auto whitespace-pre-wrap break-all">
+                {`<script src="${typeof window !== "undefined" ? window.location.origin : ""}/temp-email-validator.js" data-api-key="${data.user.apiKey}"></script>`}
+              </pre>
+              <button
+                onClick={() => onCopy(`<script src="${typeof window !== "undefined" ? window.location.origin : ""}/temp-email-validator.js" data-api-key="${data.user.apiKey}"></script>`)}
+                className="flex-shrink-0 p-3 rounded-xl border border-border bg-muted/30 text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+                title="Copy snippet"
+              >
+                {copied ? <CheckCircle2 className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}
+              </button>
+            </div>
+            <p className="text-[10px] text-muted-foreground">
+              The script auto-validates email inputs marked with <code className="rounded bg-muted px-1 py-0.5 text-[10px] text-primary">data-tempshield</code> and shows inline warnings for disposable addresses.
+            </p>
+          </div>
+        )}
       </motion.div>
 
       {/* Audit Log preview */}
@@ -1082,13 +1119,32 @@ X-TempShield-Signature: sha256=<hmac-hex>
 
 // ─── Blocklist Tab ────────────────────────────────────────────────────────────
 
-function BlocklistTab() {
+function BlocklistTab({ plan }: { plan: string }) {
   const qc = useQueryClient();
   const listQuery = useGetBlocklist();
   const addMutation = useAddBlocklistEntry();
   const deleteMutation = useDeleteBlocklistEntry();
   const [input, setInput] = useState("");
   const [error, setError] = useState("");
+
+  if (plan === "FREE") {
+    return (
+      <div className="space-y-6 max-w-3xl">
+        <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} className="glass-card rounded-2xl p-10 flex flex-col items-center gap-4 text-center">
+          <div className="h-12 w-12 rounded-2xl bg-primary/10 flex items-center justify-center">
+            <ShieldBan className="h-6 w-6 text-primary" />
+          </div>
+          <h3 className="font-heading text-lg font-semibold text-foreground">Custom Blocklist</h3>
+          <p className="text-sm text-muted-foreground max-w-sm">
+            Block specific domains from passing verification by maintaining your own custom blocklist. Available on BASIC and PRO plans.
+          </p>
+          <Link href="/upgrade" className="inline-flex items-center gap-2 rounded-xl bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground hover:bg-primary/90 transition-colors">
+            Upgrade to BASIC <ArrowUpRight className="h-4 w-4" />
+          </Link>
+        </motion.div>
+      </div>
+    );
+  }
 
   const entries = listQuery.data?.entries ?? [];
 

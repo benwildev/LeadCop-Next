@@ -39,7 +39,7 @@ const checkEmailSchema = z.object({
 });
 
 const bulkCheckSchema = z.object({
-  emails: z.array(z.string().email()).min(1).max(100),
+  emails: z.array(z.string().email()).min(1).max(1000),
 });
 
 async function checkMx(domain: string): Promise<boolean> {
@@ -541,22 +541,35 @@ router.post("/check-emails/bulk", async (req, res) => {
   }
 
   const { userId, userPlan, requestCount, isApiKeyAuth, blockFreeEmails } = auth;
+  const planConfig = await getPlanConfig(userPlan);
 
-  if (userPlan === "FREE") {
+  const maxBulkEmails = planConfig.maxBulkEmails ?? 0;
+
+  if (maxBulkEmails === 0) {
     res.status(403).json({
-      error: "Bulk verification is not available on the FREE plan. Please upgrade to BASIC or PRO.",
+      error: userPlan === "FREE"
+        ? "Bulk verification is not available on the FREE plan. Please upgrade to BASIC or PRO."
+        : "Bulk verification is not enabled for your plan. Contact support or upgrade.",
+      planRequired: "BASIC",
     });
     return;
   }
 
   const result = bulkCheckSchema.safeParse(req.body);
   if (!result.success) {
-    res.status(400).json({ error: "Invalid request. Provide an 'emails' array with 1-100 valid email addresses." });
+    res.status(400).json({ error: `Invalid request. Provide an 'emails' array with 1-${maxBulkEmails} valid email addresses.` });
     return;
   }
 
   const { emails } = result.data;
-  const planConfig = await getPlanConfig(userPlan);
+
+  if (emails.length > maxBulkEmails) {
+    res.status(400).json({
+      error: `Your plan allows up to ${maxBulkEmails} emails per bulk request. Submitted ${emails.length}. Reduce batch size or upgrade your plan.`,
+      maxBulkEmails,
+    });
+    return;
+  }
 
   const remaining = planConfig.requestLimit - requestCount;
   if (remaining <= 0) {

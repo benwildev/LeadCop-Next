@@ -407,6 +407,15 @@ const addBlocklistSchema = z.object({
 });
 
 router.post("/blocklist", requireAuth, async (req, res) => {
+  const plan = req.userPlan ?? "FREE";
+  if (plan === "FREE") {
+    res.status(403).json({
+      error: "Custom blocklists are not available on the FREE plan. Upgrade to BASIC or PRO to manage your blocklist.",
+      planRequired: "BASIC",
+    });
+    return;
+  }
+
   const result = addBlocklistSchema.safeParse(req.body);
   if (!result.success) {
     res.status(400).json({ error: "Invalid domain format" });

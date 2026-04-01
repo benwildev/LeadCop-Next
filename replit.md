@@ -44,7 +44,7 @@ The product is also branded as **LeadCop** for the production deployment at lead
 - **api_usage** — id, userId, endpoint, email (nullable), domain (nullable), isDisposable (nullable), reputationScore (nullable), timestamp
 - **domains** — id, domain, source, createdAt (disposable email domains from GitHub)
 - **upgrade_requests** — id, userId, planRequested, status (PENDING/APPROVED/REJECTED), note, invoiceKey, createdAt
-- **plan_configs** — id, plan (text), requestLimit, mxDetectLimit, inboxCheckLimit, websiteLimit, pageLimit, namedKeyLimit, mxDetectionEnabled, inboxCheckEnabled, dnsblEnabled, smtpCheckEnabled, inboxSupportEnabled
+- **plan_configs** — id, plan (text), requestLimit, mxDetectLimit, inboxCheckLimit, websiteLimit, pageLimit, maxBulkEmails, mxDetectionEnabled, inboxCheckEnabled, price
 - **user_websites** — id, userId, domain, createdAt (unique: userId+domain)
 - **user_pages** — id, userId, path, createdAt (unique: userId+path)
 - **user_api_keys** — id, userId, name, key (unique), createdAt (named secondary API keys)
