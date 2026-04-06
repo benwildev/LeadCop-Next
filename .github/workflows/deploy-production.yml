@@ -48,8 +48,11 @@ jobs:
             echo "=== Building project ==="
             /root/.local/share/pnpm/pnpm run build
 
-            echo "=== Restarting PM2 process ==="
-            /usr/bin/pm2 restart leadcop-live --update-env
+            echo "=== Restarting PM2 process (fresh start to clear port cache) ==="
+            /usr/bin/pm2 delete leadcop-live || true
+            /usr/bin/pm2 start ecosystem.config.cjs
+            sleep 3
 
             echo "✅ Production deployment complete!"
             /usr/bin/pm2 status leadcop-live
+            /usr/bin/pm2 save
