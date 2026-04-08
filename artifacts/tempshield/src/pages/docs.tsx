@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Navbar, Footer, PageTransition } from "@/components/Layout";
 import { Copy, Check, Terminal, Download } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -351,7 +351,23 @@ curl -X POST https://yourdomain.com/api/check-email \\
 ];
 
 export default function DocsPage() {
-  const [activeTab, setActiveTab] = useState("html");
+  const validIds = INTEGRATIONS.map(i => i.id);
+  const hashId = typeof window !== "undefined"
+    ? window.location.hash.replace(/^#/, "")
+    : "";
+  const [activeTab, setActiveTab] = useState(
+    validIds.includes(hashId) ? hashId : "html"
+  );
+
+  useEffect(() => {
+    const handler = () => {
+      const id = window.location.hash.replace(/^#/, "");
+      if (validIds.includes(id)) setActiveTab(id);
+    };
+    window.addEventListener("hashchange", handler);
+    return () => window.removeEventListener("hashchange", handler);
+  }, []);
+
   const current = INTEGRATIONS.find(i => i.id === activeTab)!;
 
   return (
@@ -427,7 +443,7 @@ export default function DocsPage() {
                 {INTEGRATIONS.map(item => (
                   <button
                     key={item.id}
-                    onClick={() => setActiveTab(item.id)}
+                    onClick={() => { setActiveTab(item.id); window.location.hash = item.id; }}
                     className={`flex items-center gap-2 px-5 py-3 text-sm font-medium whitespace-nowrap transition-colors ${
                       activeTab === item.id
                         ? "text-foreground border-b-2 border-primary bg-primary/5"
