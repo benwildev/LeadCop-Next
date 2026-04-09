@@ -64,7 +64,7 @@ async function processJob(jobId: number): Promise<void> {
               tags: r.tags,
               isValidSyntax: r.isValidSyntax,
               isFreeEmail: r.isFreeEmail,
-              isRoleAccount: r.roleAccount,
+              isRoleAccount: r.roleAccount ?? false,
               mxValid: r.mxValidResult ?? null,
               inboxSupport: r.inboxSupportResult ?? null,
             } satisfies BulkJobResultItem;
