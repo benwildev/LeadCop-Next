@@ -97,7 +97,7 @@ export default function SupportTicketPage() {
     return (
       <div className="min-h-screen bg-background">
         <Navbar />
-        <div className="flex justify-center py-24"><Loader2 className="w-6 h-6 animate-spin text-primary" /></div>
+        <div className="flex justify-center pt-28 pb-10"><Loader2 className="w-6 h-6 animate-spin text-primary" /></div>
       </div>
     );
   }
@@ -106,7 +106,7 @@ export default function SupportTicketPage() {
     return (
       <div className="min-h-screen bg-background">
         <Navbar />
-        <div className="max-w-2xl mx-auto px-4 py-16 text-center">
+        <div className="max-w-2xl mx-auto px-4 pt-28 pb-16 text-center">
           <AlertCircle className="w-10 h-10 text-red-400 mx-auto mb-3" />
           <p className="text-foreground font-medium">Ticket not found</p>
           <Link href="/support"><button className="mt-4 text-sm text-primary hover:underline">Back to support</button></Link>
@@ -121,7 +121,7 @@ export default function SupportTicketPage() {
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
-      <div className="max-w-3xl mx-auto px-4 py-8">
+      <div className="max-w-3xl mx-auto px-4 pt-28 pb-8">
         <Link href="/support">
           <button className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors mb-6">
             <ArrowLeft className="w-4 h-4" />

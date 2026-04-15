@@ -51,7 +51,7 @@ export default function SupportNewPage() {
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
-      <div className="max-w-2xl mx-auto px-4 py-10">
+      <div className="max-w-2xl mx-auto px-4 pt-28 pb-10">
         <Link href="/support">
           <button className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors mb-6">
             <ArrowLeft className="w-4 h-4" />
