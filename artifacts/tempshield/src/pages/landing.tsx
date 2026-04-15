@@ -6,7 +6,6 @@ import {
   Zap,
   Lock,
   Code2,
-  Globe,
   BarChart3,
   ArrowRight,
   CheckCircle2,
@@ -19,9 +18,14 @@ import {
   Activity,
   Bell,
   Database,
+  Users,
+  UserX,
+  DollarSign,
+  Inbox,
+  TrendingUp,
+  Star,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { isValidEmail } from "@/utils/email-validation";
 import EmailCheckForm from "@/components/EmailCheckForm";
 
 const container: any = {
@@ -39,37 +43,76 @@ const item: any = {
 };
 
 const STATS = [
-  { value: "100K+", label: "Domains" },
-  { value: "99.9%", label: "Accuracy" },
-  { value: "<50ms", label: "Response" },
-  { value: "10K+", label: "Developers" },
+  { value: "100K+", label: "Fake Emails Blocked" },
+  { value: "99.9%", label: "Detection Accuracy" },
+  { value: "500+", label: "Businesses Protected" },
+  { value: "<50ms", label: "Response Time" },
+];
+
+const PAIN_POINTS = [
+  {
+    icon: UserX,
+    title: "Fake Signups Inflating Your List",
+    desc: "Burner emails sign up for trials and free plans, skewing your metrics and draining your usage budget with zero real engagement.",
+  },
+  {
+    icon: DollarSign,
+    title: "Ad Spend Wasted on Bots",
+    desc: "You're paying to retarget people who never intended to buy. Disposable addresses mean zero conversions from your campaigns.",
+  },
+  {
+    icon: Inbox,
+    title: "Junk Leads Burning Sales Time",
+    desc: "Your team follows up on contacts that don't exist. Every fake lead is time your reps could spend closing real buyers.",
+  },
 ];
 
 const FEATURES = [
   {
     icon: Shield,
-    title: "Real-time Detection",
-    desc: "Instant verification against 5,000+ disposable domains with sub-millisecond lookups.",
+    title: "Block Every Fake Signup",
+    desc: "Instantly identify and reject disposable email addresses before they ever reach your list, CRM, or database.",
   },
   {
     icon: Zap,
-    title: "Lightning Fast",
-    desc: "In-memory cache delivers response times under 5ms. No DNS lookups, no external calls.",
+    title: "Zero Friction for Real Customers",
+    desc: "Validation happens in real time as users type. Legitimate signups sail through; only fake ones are stopped.",
   },
   {
-    icon: Code2,
-    title: "Developer First",
-    desc: "RESTful API with examples for cURL, JavaScript, Python, Laravel, and more.",
+    icon: TrendingUp,
+    title: "Cleaner Lists, Better ROI",
+    desc: "Higher deliverability, lower bounce rates, and more revenue from every campaign — because every address is real.",
   },
   {
     icon: Lock,
-    title: "Enterprise Security",
-    desc: "Encrypted in transit. API key authentication with rate limiting per plan.",
+    title: "Set It and Forget It",
+    desc: "One script tag or WordPress plugin install protects every form on your site automatically. No ongoing maintenance.",
   },
   {
     icon: BarChart3,
-    title: "Usage Analytics",
-    desc: "Real-time dashboard with detailed request logs and monthly usage breakdowns.",
+    title: "See What's Being Blocked",
+    desc: "A real-time dashboard shows every blocked attempt, which form triggered it, and how many fake signups you've stopped.",
+  },
+];
+
+const HOW_IT_WORKS = [
+  {
+    step: "01",
+    icon: Star,
+    title: "Create Your Free Account",
+    desc: "Sign up in seconds — no credit card required. Your API key is ready immediately.",
+  },
+  {
+    step: "02",
+    icon: Code2,
+    title: "Add to Your Forms",
+    desc: "Drop one script tag onto any website, or install the WordPress plugin. Protection is active in under two minutes.",
+  },
+  {
+    step: "03",
+    icon: Shield,
+    title: "Fake Emails Blocked — Automatically",
+    desc: "LeadCop silently detects and rejects disposable addresses on every submission. Your list stays clean while real customers get through.",
   },
 ];
 
@@ -183,34 +226,34 @@ const PLAN_STATIC: Record<
   FREE: {
     name: "Free",
     period: "forever",
-    desc: "Perfect for testing and small projects",
+    desc: "Start protecting your forms today, no card needed",
     staticFeatures: [
-      "Basic email detection",
+      "Disposable email detection",
       "Standard response time",
       "Community support",
     ],
-    cta: "Get Started Free",
+    cta: "Start for Free",
     href: "/signup",
     highlighted: false,
   },
   BASIC: {
     name: "Basic",
     period: "/month",
-    desc: "For growing applications and startups",
+    desc: "Stop fake signups as your business grows",
     staticFeatures: [
       "Priority response time",
       "Usage analytics dashboard",
       "Email support",
       "Monthly reset",
     ],
-    cta: "Upgrade to Basic",
+    cta: "Get Started",
     href: "/upgrade",
     highlighted: false,
   },
   PRO: {
     name: "Pro",
     period: "/month",
-    desc: "For production workloads at scale",
+    desc: "Enterprise-grade protection for high-volume forms",
     staticFeatures: [
       "Fastest response time",
       "Advanced analytics",
@@ -218,7 +261,7 @@ const PLAN_STATIC: Record<
       "Monthly reset",
       "Custom integrations",
     ],
-    cta: "Upgrade to Pro",
+    cta: "Get Started",
     href: "/upgrade",
     highlighted: true,
   },
@@ -242,8 +285,8 @@ function buildLandingFeatures(
   if (data.requestLimit > 0) {
     features.push(
       isFree
-        ? `${data.requestLimit.toLocaleString()} requests total`
-        : `${data.requestLimit.toLocaleString()} requests/month`,
+        ? `${data.requestLimit.toLocaleString()} checks included`
+        : `${data.requestLimit.toLocaleString()} checks/month`,
     );
   }
   if (!isFree && data.websiteLimit > 0) {
@@ -358,7 +401,6 @@ function AdminPanelMockup() {
   const [toggleStates, setToggleStates] = useState<boolean[]>(MOCK_TOGGLES.map((t) => t.on));
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  // Auto-cycle tabs
   useEffect(() => {
     const order = ["integrations", "log", "general"];
     let i = 0;
@@ -369,7 +411,6 @@ function AdminPanelMockup() {
     return () => { if (timerRef.current) clearInterval(timerRef.current); };
   }, []);
 
-  // Animate log entries in when log tab is active
   useEffect(() => {
     if (activeTab !== "log") { setVisibleLog(0); return; }
     setVisibleLog(0);
@@ -386,7 +427,6 @@ function AdminPanelMockup() {
 
   return (
     <div className="relative rounded-2xl overflow-hidden border border-border/60 bg-card shadow-2xl shadow-black/20">
-      {/* Browser chrome */}
       <div className="flex items-center gap-2 px-4 py-3 border-b border-border/40 bg-muted/50">
         <div className="flex gap-1.5">
           <div className="w-2.5 h-2.5 rounded-full bg-red-400/80" />
@@ -398,7 +438,6 @@ function AdminPanelMockup() {
         </div>
       </div>
 
-      {/* Plugin header bar */}
       <div className="flex items-center gap-2.5 px-4 py-3 border-b border-border/40 bg-muted/20">
         <div className="flex h-7 w-7 items-center justify-center rounded-md bg-primary/10">
           <Shield className="h-4 w-4 text-primary" />
@@ -409,7 +448,6 @@ function AdminPanelMockup() {
         </span>
       </div>
 
-      {/* Tab navigation */}
       <div className="flex border-b border-border/40 bg-muted/10 px-1">
         {tabs.map((tab) => (
           <button
@@ -429,7 +467,6 @@ function AdminPanelMockup() {
         ))}
       </div>
 
-      {/* Tab content */}
       <div className="min-h-[240px] p-4">
         <AnimatePresence mode="wait">
           {activeTab === "integrations" && (
@@ -655,7 +692,6 @@ export default function LandingPage() {
         const map: Record<string, number> = {};
         for (const { plan, price } of data.plans) map[plan] = price;
         setPlanPrices(map);
-        // store full plan data for feature generation
         const full: Record<string, LandingPlanData> = {};
         for (const p of data.plans) full[p.plan] = p;
         setFullPlanData(full);
@@ -682,9 +718,9 @@ export default function LandingPage() {
             variants={item}
             className="mb-6 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-4 py-1.5"
           >
-            <Terminal className="h-3.5 w-3.5 text-primary" />
+            <Users className="h-3.5 w-3.5 text-primary" />
             <span className="text-xs font-medium text-primary">
-              Now with v2 API — 3x faster
+              Trusted by 500+ businesses to keep their lists clean
             </span>
           </motion.div>
 
@@ -693,8 +729,8 @@ export default function LandingPage() {
             variants={item}
             className="font-heading text-4xl font-bold leading-tight tracking-tight text-foreground md:text-6xl"
           >
-            Block Fake Emails.{" "}
-            <span className="text-primary">Protect Your Platform.</span>
+            Stop Fake Signups.{" "}
+            <span className="text-primary">Protect Your Revenue.</span>
           </motion.h1>
 
           {/* Subheadline */}
@@ -702,8 +738,9 @@ export default function LandingPage() {
             variants={item}
             className="mx-auto mt-6 max-w-2xl text-lg text-muted-foreground"
           >
-            Industry-leading disposable email detection API. Real-time
-            verification with 99.9% accuracy powered by 5,000+ domain database.
+            Disposable and burner emails are costing you money — inflating your
+            list, wasting ad spend, and filling your CRM with junk. LeadCop
+            stops them before they ever get in.
           </motion.p>
 
           {/* CTAs */}
@@ -715,16 +752,24 @@ export default function LandingPage() {
               href="/signup"
               className="inline-flex items-center gap-2 rounded-lg bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground transition-all hover:bg-primary/90 hover:-translate-y-0.5 shadow-lg shadow-primary/20"
             >
-              Get Free API Key
+              Start for Free
               <ArrowRight className="h-4 w-4" />
             </Link>
-            <Link
-              href="/docs"
+            <a
+              href="#demo"
               className="inline-flex items-center gap-2 rounded-lg border border-border px-6 py-3 text-sm font-semibold text-foreground transition-all hover:bg-muted"
             >
-              View Documentation
-            </Link>
+              See It Work
+            </a>
           </motion.div>
+
+          {/* Trust bar */}
+          <motion.p
+            variants={item}
+            className="mt-5 text-xs text-muted-foreground"
+          >
+            No credit card required &nbsp;·&nbsp; Cancel anytime &nbsp;·&nbsp; 2-minute setup
+          </motion.p>
 
           {/* Stats row */}
           <motion.div
@@ -748,6 +793,52 @@ export default function LandingPage() {
         </motion.div>
       </section>
 
+      {/* ── PAIN POINTS ──────────────────────────────────── */}
+      <section className="relative py-20 px-6">
+        <div className="mx-auto max-w-5xl">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="mb-12 text-center"
+          >
+            <p className="text-xs font-semibold uppercase tracking-widest text-primary mb-3">
+              Sound familiar?
+            </p>
+            <h2 className="font-heading text-3xl font-bold text-foreground md:text-4xl">
+              Fake emails are a hidden tax on your business
+            </h2>
+            <p className="mx-auto mt-4 max-w-xl text-muted-foreground">
+              Every day you don't block them, they compound — in inflated costs,
+              wasted effort, and missed revenue.
+            </p>
+          </motion.div>
+
+          <div className="grid gap-6 md:grid-cols-3">
+            {PAIN_POINTS.map((p, i) => (
+              <motion.div
+                key={p.title}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.1, duration: 0.5 }}
+                className="glass-card rounded-xl p-6 border-l-4 border-l-destructive/60"
+              >
+                <div className="mb-4 inline-flex rounded-lg bg-destructive/10 p-2.5">
+                  <p.icon className="h-5 w-5 text-destructive" />
+                </div>
+                <h3 className="font-heading text-base font-semibold text-foreground mb-2">
+                  {p.title}
+                </h3>
+                <p className="text-sm leading-relaxed text-muted-foreground">
+                  {p.desc}
+                </p>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* ── FEATURES ─────────────────────────────────────── */}
       <section id="features" className="relative py-24 px-6">
         <div className="mx-auto max-w-6xl">
@@ -757,12 +848,15 @@ export default function LandingPage() {
             viewport={{ once: true }}
             className="mb-16 text-center"
           >
+            <p className="text-xs font-semibold uppercase tracking-widest text-primary mb-3">
+              What you get
+            </p>
             <h2 className="font-heading text-3xl font-bold text-foreground md:text-4xl">
-              Everything You Need
+              Everything you need to keep your list clean
             </h2>
             <p className="mx-auto mt-4 max-w-xl text-muted-foreground">
-              A complete toolkit to protect your platform from disposable email
-              abuse.
+              LeadCop works silently in the background so you never have to
+              think about fake emails again.
             </p>
           </motion.div>
 
@@ -791,7 +885,140 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ── CODE PREVIEW ─────────────────────────────────── */}
+      {/* ── HOW IT WORKS ─────────────────────────────────── */}
+      <section className="relative py-24 px-6 overflow-hidden">
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-transparent via-primary/[0.03] to-transparent" />
+        <div className="relative mx-auto max-w-5xl">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="mb-16 text-center"
+          >
+            <p className="text-xs font-semibold uppercase tracking-widest text-primary mb-3">
+              Simple setup
+            </p>
+            <h2 className="font-heading text-3xl font-bold text-foreground md:text-4xl">
+              Up and running in under 2 minutes
+            </h2>
+            <p className="mx-auto mt-4 max-w-xl text-muted-foreground">
+              No developers needed. No complex configuration. Just paste and protect.
+            </p>
+          </motion.div>
+
+          <div className="grid gap-6 md:grid-cols-3">
+            {HOW_IT_WORKS.map((step, i) => (
+              <motion.div
+                key={step.step}
+                initial={{ opacity: 0, y: 24 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.12, duration: 0.45 }}
+                className="glass-card group relative rounded-2xl p-6 text-center transition-all duration-300 hover:scale-[1.02] hover:shadow-lg"
+              >
+                {i < 2 && (
+                  <div className="pointer-events-none absolute -right-3 top-1/2 hidden -translate-y-1/2 md:block">
+                    <ArrowRight className="h-5 w-5 text-border" />
+                  </div>
+                )}
+                <div className="mb-4 font-heading text-4xl font-bold text-primary/15 leading-none">
+                  {step.step}
+                </div>
+                <div className="mb-4 mx-auto inline-flex rounded-xl bg-primary/10 p-3">
+                  <step.icon className="h-6 w-6 text-primary" />
+                </div>
+                <h3 className="font-heading text-base font-semibold text-foreground mb-2">
+                  {step.title}
+                </h3>
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  {step.desc}
+                </p>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── LIVE DEMO ─────────────────────────────────────── */}
+      <section id="demo" className="relative py-24 px-6">
+        <div className="mx-auto max-w-5xl">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="mb-12"
+          >
+            <p className="text-xs font-semibold uppercase tracking-widest text-primary mb-3">
+              Live Demo
+            </p>
+            <h2 className="font-heading text-3xl font-bold text-foreground md:text-4xl">
+              See exactly what your users will see
+            </h2>
+            <p className="mt-4 text-muted-foreground max-w-2xl">
+              Try entering a disposable email like{" "}
+              <button
+                onClick={() => setDemoEmail("test@mailinator.com")}
+                className="inline-flex rounded-md border border-border bg-muted/80 px-2 py-0.5 font-mono text-xs text-foreground transition-colors hover:bg-muted cursor-pointer"
+              >
+                test@mailinator.com
+              </button>{" "}
+              or{" "}
+              <button
+                onClick={() => setDemoEmail("user@10minutemail.com")}
+                className="inline-flex rounded-md border border-border bg-muted/80 px-2 py-0.5 font-mono text-xs text-foreground transition-colors hover:bg-muted cursor-pointer"
+              >
+                user@10minutemail.com
+              </button>
+            </p>
+          </motion.div>
+
+          <div className="grid gap-12 md:grid-cols-2 items-start">
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              className="flex justify-center md:justify-start"
+            >
+              <LiveDemo email={demoEmail} onEmailChange={setDemoEmail} />
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, x: 20 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              className="flex flex-col justify-center"
+            >
+              <h3 className="font-heading text-xl font-semibold text-foreground mb-4">
+                Blocked in real time — before they even submit
+              </h3>
+              <p className="text-muted-foreground text-sm leading-relaxed mb-6">
+                LeadCop flags disposable addresses as the user types, giving
+                them a chance to correct it before the form is submitted. Real
+                customers are never affected.
+              </p>
+              <ul className="space-y-3">
+                {[
+                  "Checks against 100K+ known disposable domains",
+                  "Stops fake submissions at the point of entry",
+                  "Works on any form — contact, checkout, registration",
+                  "Zero configuration on WordPress and major CMS platforms",
+                  "Your real customers never see a false positive",
+                ].map((t, i) => (
+                  <li
+                    key={i}
+                    className="flex items-start gap-2.5 text-sm text-muted-foreground"
+                  >
+                    <CheckCircle2 className="h-4 w-4 text-primary mt-0.5 shrink-0" />
+                    {t}
+                  </li>
+                ))}
+              </ul>
+            </motion.div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── EASY INTEGRATION ─────────────────────────────── */}
       <section className="relative py-24 px-6">
         <div className="mx-auto max-w-4xl">
           <motion.div
@@ -800,12 +1027,14 @@ export default function LandingPage() {
             viewport={{ once: true }}
             className="mb-12 text-center"
           >
+            <p className="text-xs font-semibold uppercase tracking-widest text-primary mb-3">
+              Easy Integration
+            </p>
             <h2 className="font-heading text-3xl font-bold text-foreground md:text-4xl">
-              One Line of Code. Every Form Protected.
+              Works with your existing setup
             </h2>
             <p className="mx-auto mt-4 max-w-xl text-muted-foreground">
-              Drop the script into any website — WordPress, Elementor, Webflow,
-              or any custom HTML. Or call the REST API directly.
+              No SDK. No framework lock-in. Drop it into any website or call the API directly — it just works.
             </p>
           </motion.div>
 
@@ -849,7 +1078,7 @@ export default function LandingPage() {
                 />
                 <div className="mt-4 flex items-center justify-between">
                   <p className="text-xs text-muted-foreground">
-                    No SDK needed. Works everywhere.
+                    Works with any website, CMS, or framework.
                   </p>
                   <Link
                     href="/signup"
@@ -864,87 +1093,6 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ── LIVE DEMO ─────────────────────────────────────── */}
-      <section className="relative py-24 px-6">
-        <div className="mx-auto max-w-5xl">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="mb-12"
-          >
-            <p className="text-xs font-semibold uppercase tracking-widest text-primary mb-3">
-              Live Demo
-            </p>
-            <h2 className="font-heading text-3xl font-bold text-foreground md:text-4xl">
-              See it in action
-            </h2>
-            <p className="mt-4 text-muted-foreground max-w-2xl">
-              Try entering a disposable email like{" "}
-              <button
-                onClick={() => setDemoEmail("test@mailinator.com")}
-                className="inline-flex rounded-md border border-border bg-muted/80 px-2 py-0.5 font-mono text-xs text-foreground transition-colors hover:bg-muted cursor-pointer"
-              >
-                test@mailinator.com
-              </button>{" "}
-              or{" "}
-              <button
-                onClick={() => setDemoEmail("user@10minutemail.com")}
-                className="inline-flex rounded-md border border-border bg-muted/80 px-2 py-0.5 font-mono text-xs text-foreground transition-colors hover:bg-muted cursor-pointer"
-              >
-                user@10minutemail.com
-              </button>
-            </p>
-          </motion.div>
-
-          <div className="grid gap-12 md:grid-cols-2 items-start">
-            {/* Form */}
-            <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              className="flex justify-center md:justify-start"
-            >
-              <LiveDemo email={demoEmail} onEmailChange={setDemoEmail} />
-            </motion.div>
-
-            {/* Explanation */}
-            <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              className="flex flex-col justify-center"
-            >
-              <h3 className="font-heading text-xl font-semibold text-foreground mb-4">
-                Real-time validation — right in the field
-              </h3>
-              <p className="text-muted-foreground text-sm leading-relaxed mb-6">
-                LeadCop flags disposable addresses instantly, before the user
-                even submits the form. No page reload. No server round-trip for
-                the user.
-              </p>
-              <ul className="space-y-3">
-                {[
-                  "Validates against 5,000+ known providers",
-                  "Prevents form submission with disposable emails",
-                  "Works client-side and server-side",
-                  "Zero configuration on WordPress and major CMS platforms",
-                  "Open CORS — works from any third-party domain",
-                ].map((t, i) => (
-                  <li
-                    key={i}
-                    className="flex items-start gap-2.5 text-sm text-muted-foreground"
-                  >
-                    <CheckCircle2 className="h-4 w-4 text-primary mt-0.5 shrink-0" />
-                    {t}
-                  </li>
-                ))}
-              </ul>
-            </motion.div>
-          </div>
-        </div>
-      </section>
-
       {/* ── PRICING ──────────────────────────────────────── */}
       <section id="pricing" className="relative py-24 px-6">
         <div className="mx-auto max-w-5xl">
@@ -954,11 +1102,14 @@ export default function LandingPage() {
             viewport={{ once: true }}
             className="mb-16 text-center"
           >
+            <p className="text-xs font-semibold uppercase tracking-widest text-primary mb-3">
+              Pricing
+            </p>
             <h2 className="font-heading text-3xl font-bold text-foreground md:text-4xl">
-              Simple, Transparent Pricing
+              Simple, transparent pricing
             </h2>
             <p className="mx-auto mt-4 max-w-lg text-muted-foreground">
-              Start free. Scale as you grow. No hidden fees.
+              Stop paying for fake leads. Start free and scale as your business grows.
             </p>
           </motion.div>
 
@@ -1042,7 +1193,6 @@ export default function LandingPage() {
 
       {/* ── WORDPRESS PLUGIN ─────────────────────────────── */}
       <section className="relative py-28 px-6 overflow-hidden">
-        {/* Layered background */}
         <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-transparent via-primary/[0.04] to-transparent" />
         <div className="pointer-events-none absolute inset-0">
           <div className="absolute left-1/2 top-1/2 h-[600px] w-[600px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#2271b1]/5 blur-[120px]" />
@@ -1050,7 +1200,6 @@ export default function LandingPage() {
 
         <div className="relative mx-auto max-w-6xl">
 
-          {/* ── Section header ── */}
           <motion.div
             initial={{ opacity: 0, y: 24 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -1063,21 +1212,19 @@ export default function LandingPage() {
               <span className="text-xs font-semibold text-[#2271b1]">WordPress Plugin</span>
             </div>
             <h2 className="font-heading text-3xl font-bold text-foreground md:text-5xl">
-              First-Class{" "}
+              No-code protection for{" "}
               <span className="bg-gradient-to-r from-[#2271b1] to-primary bg-clip-text text-transparent">
                 WordPress
               </span>{" "}
-              Integration
+              sites
             </h2>
             <p className="mx-auto mt-5 max-w-xl text-muted-foreground">
               Install the plugin once. Every form on your site is protected automatically — no code, no configuration, no maintenance.
             </p>
           </motion.div>
 
-          {/* ── Two-column: features + mockup ── */}
           <div className="grid gap-16 lg:grid-cols-2 items-center mb-24">
 
-            {/* Left: feature list */}
             <motion.div
               initial={{ opacity: 0, x: -24 }}
               whileInView={{ opacity: 1, x: 0 }}
@@ -1105,7 +1252,6 @@ export default function LandingPage() {
                 ))}
               </ul>
 
-              {/* CTAs */}
               <motion.div
                 initial={{ opacity: 0, y: 12 }}
                 whileInView={{ opacity: 1, y: 0 }}
@@ -1131,7 +1277,6 @@ export default function LandingPage() {
               </motion.div>
             </motion.div>
 
-            {/* Right: admin panel mockup */}
             <motion.div
               initial={{ opacity: 0, x: 24, rotateY: 6 }}
               whileInView={{ opacity: 1, x: 0, rotateY: 0 }}
@@ -1143,7 +1288,6 @@ export default function LandingPage() {
             </motion.div>
           </div>
 
-          {/* ── Integration logos ── */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -1180,7 +1324,6 @@ export default function LandingPage() {
             </div>
           </motion.div>
 
-          {/* ── 3-step install guide ── */}
           <div className="grid gap-6 md:grid-cols-3">
             {WP_STEPS.map((step, i) => (
               <motion.div
@@ -1191,7 +1334,6 @@ export default function LandingPage() {
                 transition={{ delay: i * 0.1, duration: 0.45 }}
                 className="glass-card group relative rounded-2xl p-6 transition-all duration-300 hover:scale-[1.02] hover:shadow-lg"
               >
-                {/* Step connector line (between cards) */}
                 {i < 2 && (
                   <div className="pointer-events-none absolute -right-3 top-1/2 hidden -translate-y-1/2 md:block">
                     <ArrowRight className="h-5 w-5 text-border" />
@@ -1211,6 +1353,53 @@ export default function LandingPage() {
           </div>
 
         </div>
+      </section>
+
+      {/* ── CLOSING CTA ──────────────────────────────────── */}
+      <section className="relative py-24 px-6 overflow-hidden">
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-primary/10 via-primary/5 to-transparent" />
+        <div className="pointer-events-none absolute inset-0">
+          <div className="absolute left-1/2 top-1/2 h-[500px] w-[500px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary/10 blur-[100px]" />
+        </div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.55 }}
+          className="relative mx-auto max-w-3xl text-center"
+        >
+          <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-4 py-1.5">
+            <Shield className="h-3.5 w-3.5 text-primary" />
+            <span className="text-xs font-medium text-primary">Start protecting your forms today</span>
+          </div>
+          <h2 className="font-heading text-4xl font-bold text-foreground md:text-5xl leading-tight">
+            Your next signup could be fake.{" "}
+            <span className="text-primary">Stop it now.</span>
+          </h2>
+          <p className="mx-auto mt-6 max-w-xl text-lg text-muted-foreground">
+            Join hundreds of businesses that trust LeadCop to keep their lists
+            clean, their campaigns effective, and their revenue protected.
+          </p>
+          <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
+            <Link
+              href="/signup"
+              className="inline-flex items-center gap-2 rounded-lg bg-primary px-8 py-3.5 text-sm font-semibold text-primary-foreground transition-all hover:bg-primary/90 hover:-translate-y-0.5 shadow-lg shadow-primary/25"
+            >
+              Start for Free
+              <ArrowRight className="h-4 w-4" />
+            </Link>
+            <Link
+              href="/upgrade"
+              className="inline-flex items-center gap-2 rounded-lg border border-border px-8 py-3.5 text-sm font-semibold text-foreground transition-all hover:bg-muted"
+            >
+              View Pricing
+            </Link>
+          </div>
+          <p className="mt-5 text-xs text-muted-foreground">
+            No credit card required &nbsp;·&nbsp; Free plan available &nbsp;·&nbsp; Cancel anytime
+          </p>
+        </motion.div>
       </section>
 
       {/* ── FOOTER ─────────────────────────────────────────── */}
