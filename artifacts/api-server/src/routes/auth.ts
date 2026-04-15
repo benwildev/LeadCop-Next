@@ -6,6 +6,7 @@ import crypto from "crypto";
 import { hashPassword, verifyPassword, generateApiKey, getPlanConfig } from "../lib/auth.js";
 import { createSession, destroySession, requireAuth, SESSION_COOKIE } from "../middlewares/session.js";
 import { sendPasswordResetEmail } from "../lib/email.js";
+import { isDisposableDomain } from "../lib/domain-cache.js";
 
 const router = Router();
 
@@ -28,6 +29,12 @@ router.post("/register", async (req, res) => {
   }
 
   const { name, email, password } = result.data;
+
+  const domain = email.split("@")[1]?.toLowerCase() ?? "";
+  if (isDisposableDomain(domain)) {
+    res.status(400).json({ error: "Disposable email addresses are not allowed. Please use a permanent email address." });
+    return;
+  }
 
   const [existing] = await db
     .select({ id: usersTable.id })
