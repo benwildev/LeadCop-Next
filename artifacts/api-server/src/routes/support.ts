@@ -1,4 +1,4 @@
-import { Router } from "express";
+import { Router, Request, Response } from "express";
 import { db, supportTicketsTable, supportMessagesTable, usersTable } from "@workspace/db";
 import { eq, and, desc } from "drizzle-orm";
 import { z } from "zod";
@@ -20,7 +20,7 @@ const updateStatusSchema = z.object({
   status: z.enum(["open", "in_progress", "resolved", "closed"]),
 });
 
-router.get("/tickets", requireAuth, async (req: any, res: any) => {
+router.get("/tickets", requireAuth, async (req: Request, res: Response) => {
   const tickets = await db
     .select({
       id: supportTicketsTable.id,
@@ -34,10 +34,16 @@ router.get("/tickets", requireAuth, async (req: any, res: any) => {
     .where(eq(supportTicketsTable.userId, req.userId!))
     .orderBy(desc(supportTicketsTable.updatedAt));
 
-  res.json({ tickets: tickets.map(t => ({ ...t, createdAt: t.createdAt.toISOString(), updatedAt: t.updatedAt.toISOString() })) });
+  res.json({
+    tickets: tickets.map(t => ({
+      ...t,
+      createdAt: t.createdAt.toISOString(),
+      updatedAt: t.updatedAt.toISOString(),
+    })),
+  });
 });
 
-router.post("/tickets", requireAuth, async (req: any, res: any) => {
+router.post("/tickets", requireAuth, async (req: Request, res: Response) => {
   const result = createTicketSchema.safeParse(req.body);
   if (!result.success) {
     res.status(400).json({ error: "Invalid input" });
@@ -57,12 +63,21 @@ router.post("/tickets", requireAuth, async (req: any, res: any) => {
     message,
   });
 
-  res.status(201).json({ ticket: { ...ticket, createdAt: ticket.createdAt.toISOString(), updatedAt: ticket.updatedAt.toISOString() } });
+  res.status(201).json({
+    ticket: {
+      ...ticket,
+      createdAt: ticket.createdAt.toISOString(),
+      updatedAt: ticket.updatedAt.toISOString(),
+    },
+  });
 });
 
-router.get("/tickets/:id", requireAuth, async (req: any, res: any) => {
+router.get("/tickets/:id", requireAuth, async (req: Request, res: Response) => {
   const id = parseInt(req.params.id);
-  if (isNaN(id)) { res.status(400).json({ error: "Invalid ID" }); return; }
+  if (isNaN(id)) {
+    res.status(400).json({ error: "Invalid ID" });
+    return;
+  }
 
   const [ticket] = await db
     .select()
@@ -70,7 +85,10 @@ router.get("/tickets/:id", requireAuth, async (req: any, res: any) => {
     .where(and(eq(supportTicketsTable.id, id), eq(supportTicketsTable.userId, req.userId!)))
     .limit(1);
 
-  if (!ticket) { res.status(404).json({ error: "Ticket not found" }); return; }
+  if (!ticket) {
+    res.status(404).json({ error: "Ticket not found" });
+    return;
+  }
 
   const messages = await db
     .select()
@@ -79,17 +97,27 @@ router.get("/tickets/:id", requireAuth, async (req: any, res: any) => {
     .orderBy(supportMessagesTable.createdAt);
 
   res.json({
-    ticket: { ...ticket, createdAt: ticket.createdAt.toISOString(), updatedAt: ticket.updatedAt.toISOString() },
+    ticket: {
+      ...ticket,
+      createdAt: ticket.createdAt.toISOString(),
+      updatedAt: ticket.updatedAt.toISOString(),
+    },
     messages: messages.map(m => ({ ...m, createdAt: m.createdAt.toISOString() })),
   });
 });
 
-router.post("/tickets/:id/messages", requireAuth, async (req: any, res: any) => {
+router.post("/tickets/:id/messages", requireAuth, async (req: Request, res: Response) => {
   const id = parseInt(req.params.id);
-  if (isNaN(id)) { res.status(400).json({ error: "Invalid ID" }); return; }
+  if (isNaN(id)) {
+    res.status(400).json({ error: "Invalid ID" });
+    return;
+  }
 
   const result = replySchema.safeParse(req.body);
-  if (!result.success) { res.status(400).json({ error: "Invalid input" }); return; }
+  if (!result.success) {
+    res.status(400).json({ error: "Invalid input" });
+    return;
+  }
 
   const [ticket] = await db
     .select({ id: supportTicketsTable.id })
@@ -97,7 +125,10 @@ router.post("/tickets/:id/messages", requireAuth, async (req: any, res: any) => 
     .where(and(eq(supportTicketsTable.id, id), eq(supportTicketsTable.userId, req.userId!)))
     .limit(1);
 
-  if (!ticket) { res.status(404).json({ error: "Ticket not found" }); return; }
+  if (!ticket) {
+    res.status(404).json({ error: "Ticket not found" });
+    return;
+  }
 
   const [msg] = await db.insert(supportMessagesTable).values({
     ticketId: id,
@@ -112,7 +143,7 @@ router.post("/tickets/:id/messages", requireAuth, async (req: any, res: any) => 
   res.status(201).json({ message: { ...msg, createdAt: msg.createdAt.toISOString() } });
 });
 
-router.get("/admin/tickets", requireAdmin, async (_req: any, res: any) => {
+router.get("/admin/tickets", requireAdmin, async (_req: Request, res: Response) => {
   const tickets = await db
     .select({
       id: supportTicketsTable.id,
@@ -138,9 +169,12 @@ router.get("/admin/tickets", requireAdmin, async (_req: any, res: any) => {
   });
 });
 
-router.get("/admin/tickets/:id", requireAdmin, async (req: any, res: any) => {
+router.get("/admin/tickets/:id", requireAdmin, async (req: Request, res: Response) => {
   const id = parseInt(req.params.id);
-  if (isNaN(id)) { res.status(400).json({ error: "Invalid ID" }); return; }
+  if (isNaN(id)) {
+    res.status(400).json({ error: "Invalid ID" });
+    return;
+  }
 
   const [ticket] = await db
     .select({
@@ -159,7 +193,10 @@ router.get("/admin/tickets/:id", requireAdmin, async (req: any, res: any) => {
     .where(eq(supportTicketsTable.id, id))
     .limit(1);
 
-  if (!ticket) { res.status(404).json({ error: "Ticket not found" }); return; }
+  if (!ticket) {
+    res.status(404).json({ error: "Ticket not found" });
+    return;
+  }
 
   const messages = await db
     .select()
@@ -168,17 +205,27 @@ router.get("/admin/tickets/:id", requireAdmin, async (req: any, res: any) => {
     .orderBy(supportMessagesTable.createdAt);
 
   res.json({
-    ticket: { ...ticket, createdAt: ticket.createdAt.toISOString(), updatedAt: ticket.updatedAt.toISOString() },
+    ticket: {
+      ...ticket,
+      createdAt: ticket.createdAt.toISOString(),
+      updatedAt: ticket.updatedAt.toISOString(),
+    },
     messages: messages.map(m => ({ ...m, createdAt: m.createdAt.toISOString() })),
   });
 });
 
-router.put("/admin/tickets/:id/status", requireAdmin, async (req: any, res: any) => {
+router.put("/admin/tickets/:id/status", requireAdmin, async (req: Request, res: Response) => {
   const id = parseInt(req.params.id);
-  if (isNaN(id)) { res.status(400).json({ error: "Invalid ID" }); return; }
+  if (isNaN(id)) {
+    res.status(400).json({ error: "Invalid ID" });
+    return;
+  }
 
   const result = updateStatusSchema.safeParse(req.body);
-  if (!result.success) { res.status(400).json({ error: "Invalid status" }); return; }
+  if (!result.success) {
+    res.status(400).json({ error: "Invalid status" });
+    return;
+  }
 
   const [existing] = await db
     .select({ id: supportTicketsTable.id })
@@ -186,7 +233,10 @@ router.put("/admin/tickets/:id/status", requireAdmin, async (req: any, res: any)
     .where(eq(supportTicketsTable.id, id))
     .limit(1);
 
-  if (!existing) { res.status(404).json({ error: "Ticket not found" }); return; }
+  if (!existing) {
+    res.status(404).json({ error: "Ticket not found" });
+    return;
+  }
 
   await db.update(supportTicketsTable)
     .set({ status: result.data.status, updatedAt: new Date() })
@@ -195,12 +245,18 @@ router.put("/admin/tickets/:id/status", requireAdmin, async (req: any, res: any)
   res.json({ ok: true });
 });
 
-router.post("/admin/tickets/:id/reply", requireAdmin, async (req: any, res: any) => {
+router.post("/admin/tickets/:id/reply", requireAdmin, async (req: Request, res: Response) => {
   const id = parseInt(req.params.id);
-  if (isNaN(id)) { res.status(400).json({ error: "Invalid ID" }); return; }
+  if (isNaN(id)) {
+    res.status(400).json({ error: "Invalid ID" });
+    return;
+  }
 
   const result = replySchema.safeParse(req.body);
-  if (!result.success) { res.status(400).json({ error: "Invalid input" }); return; }
+  if (!result.success) {
+    res.status(400).json({ error: "Invalid input" });
+    return;
+  }
 
   const [ticket] = await db
     .select({ id: supportTicketsTable.id })
@@ -208,7 +264,10 @@ router.post("/admin/tickets/:id/reply", requireAdmin, async (req: any, res: any)
     .where(eq(supportTicketsTable.id, id))
     .limit(1);
 
-  if (!ticket) { res.status(404).json({ error: "Ticket not found" }); return; }
+  if (!ticket) {
+    res.status(404).json({ error: "Ticket not found" });
+    return;
+  }
 
   const [msg] = await db.insert(supportMessagesTable).values({
     ticketId: id,
