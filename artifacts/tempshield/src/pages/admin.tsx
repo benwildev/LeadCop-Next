@@ -2486,6 +2486,11 @@ function isAttachImage(url: string) {
   return /\.(jpg|jpeg|png|gif|webp)(\?|$)/i.test(url);
 }
 
+function makeCloudinaryDownloadUrl(url: string, filename: string): string {
+  const safe = encodeURIComponent(filename.replace(/[^a-zA-Z0-9._-]/g, "_"));
+  return url.replace(/\/upload\//, `/upload/fl_attachment:${safe}/`);
+}
+
 function AdminAttachmentPreview({ url, name }: { url: string; name?: string | null }) {
   if (isAttachImage(url)) {
     return (
@@ -2494,8 +2499,9 @@ function AdminAttachmentPreview({ url, name }: { url: string; name?: string | nu
       </a>
     );
   }
+  const downloadUrl = name ? makeCloudinaryDownloadUrl(url, name) : url;
   return (
-    <a href={url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 mt-2 px-3 py-1.5 rounded-xl bg-muted/60 border border-border text-xs text-foreground hover:bg-muted transition-colors">
+    <a href={downloadUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 mt-2 px-3 py-1.5 rounded-xl bg-muted/60 border border-border text-xs text-foreground hover:bg-muted transition-colors">
       <FileText className="w-3.5 h-3.5 text-primary flex-shrink-0" />
       <span className="truncate max-w-[140px]">{name ?? "attachment"}</span>
       <ExternalLink className="w-3 h-3 text-muted-foreground flex-shrink-0" />

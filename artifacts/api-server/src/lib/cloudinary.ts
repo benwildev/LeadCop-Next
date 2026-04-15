@@ -18,6 +18,8 @@ export async function uploadBuffer(
       {
         folder: options.folder ?? "support-attachments",
         resource_type: options.resource_type ?? "auto",
+        use_filename: true,
+        unique_filename: true,
       },
       (error, result) => {
         if (error || !result) return reject(error ?? new Error("Upload failed"));

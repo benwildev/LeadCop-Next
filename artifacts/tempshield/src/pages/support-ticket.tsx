@@ -49,6 +49,12 @@ function isImageUrl(url: string) {
   return /\.(jpg|jpeg|png|gif|webp)(\?|$)/i.test(url);
 }
 
+/** Inject fl_attachment:<filename> into a Cloudinary URL so it downloads with the original name */
+function makeCloudinaryDownloadUrl(url: string, filename: string): string {
+  const safe = encodeURIComponent(filename.replace(/[^a-zA-Z0-9._-]/g, "_"));
+  return url.replace(/\/upload\//, `/upload/fl_attachment:${safe}/`);
+}
+
 function AttachmentPreview({ url, name }: { url: string; name?: string | null }) {
   if (isImageUrl(url)) {
     return (
@@ -57,9 +63,10 @@ function AttachmentPreview({ url, name }: { url: string; name?: string | null })
       </a>
     );
   }
+  const downloadUrl = name ? makeCloudinaryDownloadUrl(url, name) : url;
   return (
     <a
-      href={url}
+      href={downloadUrl}
       target="_blank"
       rel="noopener noreferrer"
       className="inline-flex items-center gap-2 mt-2 px-3 py-2 rounded-xl bg-muted/60 border border-border text-xs text-foreground hover:bg-muted transition-colors"
