@@ -178,7 +178,7 @@ async function runSmtpProbe(
 
         if (step === 0 && code === 220) {
           step = 1;
-          sendLine(`EHLO tempshield-probe.local`);
+          sendLine(`EHLO leadcop-probe.local`);
         } else if (step === 1 && (code === 250 || code === 221)) {
           step = 2;
           sendLine(`MAIL FROM:<${fromEmail}>`);
@@ -214,7 +214,7 @@ export async function smtpProbe(
     const mxHost = records.sort((a, b) => a.priority - b.priority)[0].exchange;
     const { result } = await runSmtpProbe(
       mxHost,
-      "probe@tempshield-verify.io",
+      "probe@leadcop-verify.io",
       rcptEmail,
       timeoutMs
     );

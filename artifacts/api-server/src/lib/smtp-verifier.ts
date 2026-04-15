@@ -82,10 +82,10 @@ async function performHandshake(
       }
 
       if (stage === 0 && code === 220) {
-        socket.write(`HELO tempshield.io\r\n`);
+        socket.write(`HELO leadcop.io\r\n`);
         stage = 1;
       } else if (stage === 1 && code === 250) {
-        socket.write(`MAIL FROM:<verify@tempshield.io>\r\n`);
+        socket.write(`MAIL FROM:<verify@leadcop.io>\r\n`);
         stage = 2;
       } else if (stage === 2 && code === 250) {
         result.mxAcceptsMail = true;
