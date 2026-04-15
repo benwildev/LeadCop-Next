@@ -7,6 +7,7 @@ import {
   Lock,
   Code2,
   BarChart3,
+  Globe,
   ArrowRight,
   CheckCircle2,
   Terminal,
@@ -92,6 +93,11 @@ const FEATURES = [
     icon: BarChart3,
     title: "See What's Being Blocked",
     desc: "A real-time dashboard shows every blocked attempt, which form triggered it, and how many fake signups you've stopped.",
+  },
+  {
+    icon: Globe,
+    title: "Works on Any Website or Platform",
+    desc: "WordPress, Webflow, Shopify, custom HTML — one API key protects every form across all your properties.",
   },
 ];
 
