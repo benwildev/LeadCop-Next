@@ -177,7 +177,7 @@ async function attemptHandshake(
 
   return new Promise((resolve) => {
     const socket = net.createConnection(25, host);
-    socket.setTimeout(8000);
+    socket.setTimeout(5000);
 
     let buffer = "";
     let stage = 0;

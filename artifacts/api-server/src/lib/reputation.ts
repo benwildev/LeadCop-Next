@@ -205,7 +205,7 @@ async function runSmtpProbe(
 export async function smtpProbe(
   domain: string,
   rcptEmail: string,
-  timeoutMs = 8000
+  timeoutMs = 5000
 ): Promise<boolean | null> {
   try {
     const records = await dnsPromises.resolveMx(domain);

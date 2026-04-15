@@ -103,6 +103,36 @@ const freeVerifySchema = z.object({
   email: z.string().email(),
 });
 
+// ── Domain-level SMTP result cache (5 min TTL) ────────────────────────────────
+interface CachedSmtp {
+  result: Awaited<ReturnType<typeof verifySmtp>>;
+  mxValid: boolean;
+  expiresAt: number;
+}
+const smtpCache = new Map<string, CachedSmtp>();
+const SMTP_CACHE_TTL_MS = 5 * 60 * 1000;
+
+function pruneSmtpCache() {
+  const now = Date.now();
+  for (const [k, v] of smtpCache) {
+    if (v.expiresAt < now) smtpCache.delete(k);
+  }
+}
+
+async function cachedSmtpCheck(domain: string, email: string): Promise<{ smtpResult: Awaited<ReturnType<typeof verifySmtp>>; mxValid: boolean }> {
+  pruneSmtpCache();
+  const hit = smtpCache.get(domain);
+  if (hit && hit.expiresAt > Date.now()) {
+    return { smtpResult: hit.result, mxValid: hit.mxValid };
+  }
+  const [mxValid, smtpResult] = await Promise.all([
+    checkMx(domain),
+    verifySmtp(email),
+  ]);
+  smtpCache.set(domain, { result: smtpResult, mxValid, expiresAt: Date.now() + SMTP_CACHE_TTL_MS });
+  return { smtpResult, mxValid };
+}
+
 // GET /api/verify/free/status — returns remaining checks for current session
 router.get("/verify/free/status", async (req, res) => {
   const cookieId = req.cookies?.[FREE_VERIFY_COOKIE];
@@ -180,11 +210,22 @@ router.post("/verify/free", async (req, res) => {
   const roleAccount = isRoleAccount(localPart ?? "");
   const isFree = isFreeEmail(domain);
 
-  // Run MX check
-  const mxUsed = await checkMx(domain);
+  // Early-exit: skip SMTP entirely for known disposable domains
+  let mxUsed: boolean;
+  let smtpResult: Awaited<ReturnType<typeof verifySmtp>>;
 
-  // Run full SMTP verification
-  const smtpResult = await verifySmtp(email);
+  if (disposable) {
+    mxUsed = false;
+    smtpResult = {
+      canConnect: false, mxAcceptsMail: false, isDeliverable: false,
+      isCatchAll: false, hasInboxFull: false, isDisabled: false, mxRecords: [],
+    };
+  } else {
+    // MX + SMTP run in parallel; result cached per domain for 5 min
+    const checked = await cachedSmtpCheck(domain, email);
+    mxUsed = checked.mxValid;
+    smtpResult = checked.smtpResult;
+  }
 
   const reputationScore = computeReputationScore({
     isDisposable: disposable,
