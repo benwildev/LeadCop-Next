@@ -94,39 +94,41 @@ export default function DashboardPage() {
       <Navbar />
       <PageTransition>
         <div className="max-w-6xl mx-auto px-6 w-full">
-          <div className="flex justify-between items-end mb-6 mt-4">
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 mb-6 mt-4">
             <div>
-              <h1 className="font-heading text-3xl font-bold text-foreground">Dashboard</h1>
-              <p className="text-muted-foreground mt-1 text-sm">Welcome back, {user.name}</p>
+              <h1 className="font-heading text-2xl sm:text-3xl font-bold text-foreground">Dashboard</h1>
+              <p className="text-muted-foreground mt-0.5 text-sm">Welcome back, {user.name}</p>
             </div>
             <Link
               href="/upgrade"
-              className="inline-flex items-center gap-2 rounded-lg border border-border px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-muted"
+              className="inline-flex items-center gap-2 rounded-lg border border-border px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-muted self-start sm:self-auto"
             >
               Upgrade Plan <ArrowUpRight className="h-4 w-4" />
             </Link>
           </div>
 
-          {/* Tabs */}
-          <div className="flex gap-1 mb-6 bg-muted/30 rounded-xl p-1 flex-wrap">
-            {TABS.map(({ id, label, icon: Icon }) => (
-              <button
-                key={id}
-                onClick={() => setActiveTab(id)}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                  activeTab === id
-                    ? "bg-background text-foreground shadow-sm"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                <Icon className="h-4 w-4" />
-                {label}
-              </button>
-            ))}
-            <Link href="/support" className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all text-muted-foreground hover:text-foreground">
-              <MessageSquare className="h-4 w-4" />
-              Support
-            </Link>
+          {/* Tabs — horizontally scrollable on mobile */}
+          <div className="mb-6 overflow-x-auto no-scrollbar">
+            <div className="flex gap-1 bg-muted/30 rounded-xl p-1 min-w-max">
+              {TABS.map(({ id, label, icon: Icon }) => (
+                <button
+                  key={id}
+                  onClick={() => setActiveTab(id)}
+                  className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-all whitespace-nowrap ${
+                    activeTab === id
+                      ? "bg-background text-foreground shadow-sm"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  <Icon className="h-3.5 w-3.5 flex-shrink-0" />
+                  <span>{label}</span>
+                </button>
+              ))}
+              <Link href="/support" className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-all whitespace-nowrap text-muted-foreground hover:text-foreground">
+                <MessageSquare className="h-3.5 w-3.5 flex-shrink-0" />
+                <span>Support</span>
+              </Link>
+            </div>
           </div>
 
           {isLoading ? (

@@ -15,7 +15,7 @@ import type { PlanConfig, AdminUserFull } from "@workspace/api-client-react";
 import {
   LayoutDashboard, Users, CreditCard, Settings, Key, Database,
   Shield, RefreshCw, Check, X, Loader2, Trash2, RotateCcw,
-  Search, ChevronLeft, ChevronRight, LogOut, ArrowLeft,
+  Search, ChevronLeft, ChevronRight, LogOut, ArrowLeft, Menu,
   PieChart, BarChart3, Globe, FileText, Zap, Lock, Plus, Mail, Send,
   Upload, Download, Paperclip, TrendingUp, DollarSign, Image, Tag,
   MessageSquare, AlertCircle, Clock, CheckCircle, XCircle,
@@ -29,19 +29,39 @@ import { format, parseISO } from "date-fns";
 
 type Section = "overview" | "users" | "subscriptions" | "plan-config" | "api-keys" | "domains" | "payment" | "email" | "revenue" | "branding" | "seo" | "support";
 
-const NAV_ITEMS: { id: Section; label: string; icon: React.ElementType }[] = [
-  { id: "overview", label: "Overview", icon: LayoutDashboard },
-  { id: "users", label: "Users", icon: Users },
-  { id: "subscriptions", label: "Subscriptions", icon: CreditCard },
-  { id: "revenue", label: "Revenue", icon: TrendingUp },
-  { id: "plan-config", label: "Plan Config", icon: Settings },
-  { id: "api-keys", label: "API Keys", icon: Key },
-  { id: "domains", label: "Domain DB", icon: Database },
-  { id: "payment", label: "Payment", icon: Globe },
-  { id: "email", label: "Email", icon: Mail },
-  { id: "branding", label: "Branding", icon: Image },
-  { id: "seo", label: "SEO", icon: Tag },
-  { id: "support", label: "Support", icon: MessageSquare },
+const NAV_GROUPS: { label: string; items: { id: Section; label: string; icon: React.ElementType }[] }[] = [
+  {
+    label: "Analytics",
+    items: [
+      { id: "overview", label: "Overview", icon: LayoutDashboard },
+      { id: "revenue", label: "Revenue", icon: TrendingUp },
+    ],
+  },
+  {
+    label: "Users",
+    items: [
+      { id: "users", label: "Users", icon: Users },
+      { id: "subscriptions", label: "Subscriptions", icon: CreditCard },
+    ],
+  },
+  {
+    label: "Configuration",
+    items: [
+      { id: "plan-config", label: "Plan Config", icon: Settings },
+      { id: "payment", label: "Payment", icon: Globe },
+      { id: "email", label: "Email", icon: Mail },
+      { id: "branding", label: "Branding", icon: Image },
+      { id: "seo", label: "SEO", icon: Tag },
+    ],
+  },
+  {
+    label: "System",
+    items: [
+      { id: "api-keys", label: "API Keys", icon: Key },
+      { id: "domains", label: "Domain DB", icon: Database },
+      { id: "support", label: "Support", icon: MessageSquare },
+    ],
+  },
 ];
 
 const PLAN_COLORS: Record<string, string> = {
@@ -50,56 +70,68 @@ const PLAN_COLORS: Record<string, string> = {
   PRO: "bg-primary/15 text-primary",
 };
 
-function Sidebar({ active, onNav, collapsed, onToggle }: {
+function SidebarContent({ active, onNav, collapsed, onToggle, onClose }: {
   active: Section;
   onNav: (s: Section) => void;
   collapsed: boolean;
   onToggle: () => void;
+  onClose: () => void;
 }) {
   return (
-    <div className={`flex flex-col h-full bg-card border-r border-border transition-all duration-300 ${collapsed ? "w-16" : "w-56"}`}>
-      <div className="flex items-center justify-between px-3 py-4 border-b border-border">
+    <div className="flex flex-col h-full bg-card border-r border-border">
+      {/* Header */}
+      <div className="flex items-center gap-3 px-4 py-4 border-b border-border">
+        <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-violet-500 to-purple-700 flex items-center justify-center flex-shrink-0 shadow-sm">
+          <Shield className="w-4 h-4 text-white" />
+        </div>
         {!collapsed && (
-          <div className="flex items-center gap-2 overflow-hidden">
-            <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-violet-500 to-purple-700 flex items-center justify-center flex-shrink-0">
-              <Shield className="w-4 h-4 text-white" />
-            </div>
-            <span className="font-heading text-sm font-bold text-foreground truncate">Admin Portal</span>
-          </div>
-        )}
-        {collapsed && (
-          <div className="mx-auto w-7 h-7 rounded-lg bg-gradient-to-br from-violet-500 to-purple-700 flex items-center justify-center">
-            <Shield className="w-4 h-4 text-white" />
+          <div className="flex-1 min-w-0">
+            <div className="font-heading text-sm font-bold text-foreground leading-tight">LeadCop</div>
+            <div className="text-[10px] text-muted-foreground">Admin Portal</div>
           </div>
         )}
         {!collapsed && (
-          <button onClick={onToggle} className="text-muted-foreground hover:text-foreground transition-colors ml-1">
+          <button onClick={onToggle} className="hidden lg:flex text-muted-foreground hover:text-foreground transition-colors p-1 rounded-lg hover:bg-muted/50">
             <ChevronLeft className="w-4 h-4" />
           </button>
         )}
       </div>
 
-      <nav className="flex-1 py-3 space-y-0.5 px-2">
-        {NAV_ITEMS.map(({ id, label, icon: Icon }) => (
-          <button
-            key={id}
-            onClick={() => onNav(id)}
-            className={`w-full flex items-center gap-3 px-2.5 py-2 rounded-lg text-sm font-medium transition-all ${
-              active === id
-                ? "bg-primary/15 text-primary"
-                : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
-            } ${collapsed ? "justify-center" : ""}`}
-            title={collapsed ? label : undefined}
-          >
-            <Icon className="w-4 h-4 flex-shrink-0" />
-            {!collapsed && <span>{label}</span>}
-          </button>
+      {/* Nav groups */}
+      <nav className="flex-1 py-3 overflow-y-auto no-scrollbar">
+        {NAV_GROUPS.map(({ label, items }) => (
+          <div key={label} className="mb-4">
+            {!collapsed && (
+              <div className="px-4 mb-1">
+                <span className="text-[10px] font-semibold tracking-widest uppercase text-muted-foreground/50">{label}</span>
+              </div>
+            )}
+            {collapsed && <div className="mx-4 mb-1 border-t border-border/50" />}
+            <div className="space-y-0.5 px-2">
+              {items.map(({ id, label: itemLabel, icon: Icon }) => (
+                <button
+                  key={id}
+                  onClick={() => { onNav(id); onClose(); }}
+                  className={`w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-sm font-medium transition-all ${
+                    active === id
+                      ? "bg-primary/10 text-primary"
+                      : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                  } ${collapsed ? "justify-center" : ""}`}
+                  title={collapsed ? itemLabel : undefined}
+                >
+                  <Icon className={`w-4 h-4 flex-shrink-0 ${active === id ? "text-primary" : ""}`} />
+                  {!collapsed && <span className="truncate">{itemLabel}</span>}
+                </button>
+              ))}
+            </div>
+          </div>
         ))}
       </nav>
 
-      <div className="px-2 py-3 border-t border-border space-y-0.5">
+      {/* Footer */}
+      <div className="px-2 py-3 border-t border-border">
         {collapsed ? (
-          <button onClick={onToggle} className="w-full flex justify-center p-2 text-muted-foreground hover:text-foreground transition-colors">
+          <button onClick={onToggle} className="w-full flex justify-center p-2 text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-lg transition-colors">
             <ChevronRight className="w-4 h-4" />
           </button>
         ) : (
@@ -110,6 +142,51 @@ function Sidebar({ active, onNav, collapsed, onToggle }: {
         )}
       </div>
     </div>
+  );
+}
+
+function Sidebar({ active, onNav, collapsed, onToggle, mobileOpen, onMobileClose }: {
+  active: Section;
+  onNav: (s: Section) => void;
+  collapsed: boolean;
+  onToggle: () => void;
+  mobileOpen: boolean;
+  onMobileClose: () => void;
+}) {
+  return (
+    <>
+      {/* Desktop sidebar */}
+      <div className={`hidden lg:flex flex-col flex-shrink-0 h-full transition-all duration-300 ${collapsed ? "w-16" : "w-60"}`}>
+        <SidebarContent active={active} onNav={onNav} collapsed={collapsed} onToggle={onToggle} onClose={() => {}} />
+      </div>
+
+      {/* Mobile overlay drawer */}
+      <AnimatePresence>
+        {mobileOpen && (
+          <>
+            <motion.div
+              key="backdrop"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              onClick={onMobileClose}
+              className="lg:hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-40"
+            />
+            <motion.div
+              key="drawer"
+              initial={{ x: -256 }}
+              animate={{ x: 0 }}
+              exit={{ x: -256 }}
+              transition={{ type: "spring", damping: 28, stiffness: 300 }}
+              className="lg:hidden fixed left-0 top-0 bottom-0 w-64 z-50 shadow-2xl"
+            >
+              <SidebarContent active={active} onNav={onNav} collapsed={false} onToggle={onToggle} onClose={onMobileClose} />
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+    </>
   );
 }
 
@@ -2594,8 +2671,14 @@ export default function AdminPage() {
   const { user } = useAuth();
   const [section, setSection] = useState<Section>("overview");
   const [collapsed, setCollapsed] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
 
   if (!user || user.role !== "ADMIN") return null;
+
+  const allNavItems = NAV_GROUPS.flatMap(g => g.items);
+  const currentItem = allNavItems.find(i => i.id === section);
+  const CurrentIcon = currentItem?.icon ?? LayoutDashboard;
+  const currentLabel = currentItem?.label ?? "Admin";
 
   const sectionComponents: Record<Section, React.ReactNode> = {
     overview: <OverviewSection />,
@@ -2614,9 +2697,34 @@ export default function AdminPage() {
 
   return (
     <div className="flex h-screen bg-background overflow-hidden">
-      <Sidebar active={section} onNav={setSection} collapsed={collapsed} onToggle={() => setCollapsed(p => !p)} />
-      <main className="flex-1 overflow-y-auto">
-        <div className="max-w-5xl mx-auto px-6 py-8">
+      <Sidebar
+        active={section}
+        onNav={setSection}
+        collapsed={collapsed}
+        onToggle={() => setCollapsed(p => !p)}
+        mobileOpen={mobileOpen}
+        onMobileClose={() => setMobileOpen(false)}
+      />
+      <main className="flex-1 overflow-y-auto min-w-0">
+        {/* Mobile header — hidden on desktop */}
+        <div className="lg:hidden flex items-center gap-3 px-4 py-3 bg-card border-b border-border sticky top-0 z-30">
+          <button
+            onClick={() => setMobileOpen(true)}
+            className="p-2 -ml-1 text-muted-foreground hover:text-foreground rounded-lg hover:bg-muted/50 transition-colors"
+          >
+            <Menu className="w-5 h-5" />
+          </button>
+          <div className="flex items-center gap-2 flex-1 min-w-0">
+            <CurrentIcon className="w-4 h-4 text-primary flex-shrink-0" />
+            <span className="font-heading text-base font-semibold text-foreground truncate">{currentLabel}</span>
+          </div>
+          <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-violet-500 to-purple-700 flex items-center justify-center shadow-sm flex-shrink-0">
+            <Shield className="w-3.5 h-3.5 text-white" />
+          </div>
+        </div>
+
+        {/* Section content */}
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
           <AnimatePresence mode="wait">
             <motion.div
               key={section}

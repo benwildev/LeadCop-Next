@@ -161,4 +161,7 @@ html.dark {
   .font-heading {
     font-family: var(--font-heading);
   }
+
+  .no-scrollbar::-webkit-scrollbar { display: none; }
+  .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 }
