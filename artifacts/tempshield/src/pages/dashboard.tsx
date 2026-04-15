@@ -2087,7 +2087,7 @@ function BulkVerifyTab({ plan, maxBulkEmails }: { plan: string; maxBulkEmails: n
                         <td className="px-4 py-2.5 text-muted-foreground text-xs">{row.domain ?? "—"}</td>
                         <td className="px-4 py-2.5 text-xs">
                           {row.reputationScore !== undefined ? (
-                            <span className={`font-semibold ${row.reputationScore >= 70 ? "text-destructive" : row.reputationScore >= 40 ? "text-yellow-500" : "text-green-500"}`}>
+                            <span className={`font-semibold ${row.reputationScore >= 80 ? "text-green-500" : row.reputationScore >= 50 ? "text-yellow-500" : "text-destructive"}`}>
                               {row.reputationScore}
                             </span>
                           ) : "—"}
