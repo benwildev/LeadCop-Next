@@ -133,29 +133,6 @@ function SignalCard({ signal, index }: { signal: Signal; index: number }) {
   );
 }
 
-function ScoreDial({ score }: { score: number }) {
-  const color = score >= 80 ? "#22c55e" : score >= 50 ? "#facc15" : "#f87171";
-  const r = 28;
-  const circ = 2 * Math.PI * r;
-  const dash = (score / 100) * circ;
-  return (
-    <div className="relative flex items-center justify-center w-20 h-20">
-      <svg width="80" height="80" viewBox="0 0 80 80" className="-rotate-90">
-        <circle cx="40" cy="40" r={r} fill="none" stroke="currentColor" strokeWidth="6" className="text-border" />
-        <circle
-          cx="40" cy="40" r={r} fill="none"
-          stroke={color} strokeWidth="6"
-          strokeDasharray={`${dash} ${circ}`}
-          strokeLinecap="round"
-        />
-      </svg>
-      <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <span className="text-xl font-bold text-foreground leading-none">{score}</span>
-        <span className="text-[9px] text-muted-foreground uppercase tracking-wider">score</span>
-      </div>
-    </div>
-  );
-}
 
 export default function VerifyPage() {
   const [email, setEmail] = useState("");
@@ -325,9 +302,7 @@ export default function VerifyPage() {
                   {/* Verdict Banner */}
                   <div className={`glass-card rounded-2xl overflow-hidden shadow-lg ${verdictColor.glow} mb-4`}>
                     <div className={`h-1 w-full ${verdictColor.bar}`} />
-                    <div className="p-6 flex items-center gap-5">
-                      <ScoreDial score={result.reputationScore} />
-                      <div className="flex-1 min-w-0">
+                    <div className="p-6">
                         <div className="flex items-center gap-2 mb-1 flex-wrap">
                           <span className="font-mono text-sm font-semibold text-foreground truncate">{result.email}</span>
                           <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full border text-[10px] font-bold uppercase tracking-widest ${verdictColor.badge}`}>
@@ -346,7 +321,6 @@ export default function VerifyPage() {
                             {result.domain} · {result.mxRecords[0]}
                           </p>
                         )}
-                      </div>
                     </div>
                   </div>
 
