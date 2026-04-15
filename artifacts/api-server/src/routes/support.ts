@@ -73,7 +73,7 @@ router.post("/tickets", requireAuth, async (req: Request, res: Response) => {
 });
 
 router.get("/tickets/:id", requireAuth, async (req: Request, res: Response) => {
-  const id = parseInt(req.params.id);
+  const id = parseInt(req.params.id as string);
   if (isNaN(id)) {
     res.status(400).json({ error: "Invalid ID" });
     return;
@@ -107,7 +107,7 @@ router.get("/tickets/:id", requireAuth, async (req: Request, res: Response) => {
 });
 
 router.post("/tickets/:id/messages", requireAuth, async (req: Request, res: Response) => {
-  const id = parseInt(req.params.id);
+  const id = parseInt(req.params.id as string);
   if (isNaN(id)) {
     res.status(400).json({ error: "Invalid ID" });
     return;
@@ -170,7 +170,7 @@ router.get("/admin/tickets", requireAdmin, async (_req: Request, res: Response) 
 });
 
 router.get("/admin/tickets/:id", requireAdmin, async (req: Request, res: Response) => {
-  const id = parseInt(req.params.id);
+  const id = parseInt(req.params.id as string);
   if (isNaN(id)) {
     res.status(400).json({ error: "Invalid ID" });
     return;
@@ -215,7 +215,7 @@ router.get("/admin/tickets/:id", requireAdmin, async (req: Request, res: Respons
 });
 
 router.put("/admin/tickets/:id/status", requireAdmin, async (req: Request, res: Response) => {
-  const id = parseInt(req.params.id);
+  const id = parseInt(req.params.id as string);
   if (isNaN(id)) {
     res.status(400).json({ error: "Invalid ID" });
     return;
@@ -246,7 +246,7 @@ router.put("/admin/tickets/:id/status", requireAdmin, async (req: Request, res: 
 });
 
 router.post("/admin/tickets/:id/reply", requireAdmin, async (req: Request, res: Response) => {
-  const id = parseInt(req.params.id);
+  const id = parseInt(req.params.id as string);
   if (isNaN(id)) {
     res.status(400).json({ error: "Invalid ID" });
     return;

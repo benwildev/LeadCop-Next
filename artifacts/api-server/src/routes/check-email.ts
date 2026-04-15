@@ -436,7 +436,6 @@ router.post("/check-email/demo", async (req, res) => {
 });
 
 // ─── POST /api/check-email ─────────────────────────────────────────────────────
-
 router.post("/check-email", async (req, res) => {
   const auth = await resolveAuth(req);
 

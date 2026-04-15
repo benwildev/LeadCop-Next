@@ -551,3 +551,24 @@ export function useBulkCheckEmails(
     ...options,
   });
 }
+
+// ─── Admin: Add Domain ────────────────────────────────────────────────────────
+
+export interface AddDomainResponse {
+  domain: string;
+  totalDomains: number;
+}
+
+export function useAdminAddDomain(
+  options?: UseMutationOptions<AddDomainResponse, Error, string>
+) {
+  return useMutation({
+    mutationFn: (domain: string) =>
+      customFetch<AddDomainResponse>("/api/admin/domains", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ domain }),
+      }),
+    ...options,
+  });
+}

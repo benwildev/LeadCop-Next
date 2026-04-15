@@ -1,4 +1,4 @@
-import { Router } from "express";
+import { Router, type Request, type Response } from "express";
 import { Readable } from "stream";
 import { db, usersTable, apiUsageTable, domainsTable, upgradeRequestsTable, planConfigsTable, userWebsitesTable, userPagesTable, paymentSettingsTable, bulkJobsTable } from "@workspace/db";
 import { eq, sql, count, desc, and, gte } from "drizzle-orm";
@@ -382,6 +382,45 @@ router.post("/domains/sync", requireAdmin, async (req, res) => {
     domainsAdded: added,
     totalDomains: total,
   });
+});
+
+router.post("/domains", requireAdmin, async (req: Request, res: Response) => {
+  const { domain } = req.body as { domain?: string };
+  if (!domain || typeof domain !== "string" || domain.trim().length === 0) {
+    res.status(400).json({ error: "domain is required" });
+    return;
+  }
+  const clean = domain.trim().toLowerCase().replace(/^https?:\/\//, "").replace(/\/.*$/, "");
+  if (!/^[a-z0-9.-]+\.[a-z]{2,}$/.test(clean)) {
+    res.status(400).json({ error: "Invalid domain format" });
+    return;
+  }
+  try {
+    await db.insert(domainsTable).values({ domain: clean });
+    // Reload the in-memory cache so new domain is checked instantly
+    const { loadDomainCache } = await import("../lib/domain-cache.js");
+    await loadDomainCache();
+    const [{ count: total }] = await db.select({ count: count() }).from(domainsTable);
+    res.status(201).json({ domain: clean, totalDomains: Number(total) });
+  } catch (err: any) {
+    if (err?.code === "23505") {
+      res.status(409).json({ error: "Domain already exists in the blocklist" });
+    } else {
+      throw err;
+    }
+  }
+});
+
+router.delete("/domains/:domain", requireAdmin, async (req: Request, res: Response) => {
+  const domain = (req.params.domain as string).toLowerCase();
+  const deleted = await db.delete(domainsTable).where(eq(domainsTable.domain, domain)).returning();
+  if (deleted.length === 0) {
+    res.status(404).json({ error: "Domain not found" });
+    return;
+  }
+  const { loadDomainCache } = await import("../lib/domain-cache.js");
+  await loadDomainCache();
+  res.json({ ok: true });
 });
 
 router.get("/stats", requireAdmin, async (req, res) => {
