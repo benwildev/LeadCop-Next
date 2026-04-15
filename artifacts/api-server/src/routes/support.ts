@@ -8,6 +8,55 @@ import { uploadBuffer } from "../lib/cloudinary.js";
 
 const router = Router();
 
+// Proxy download endpoint — fetches the file from Cloudinary and sends it
+// with the correct Content-Disposition so the browser uses the original filename
+router.get("/download", requireAuth, async (req: Request, res: Response) => {
+  const { url, name } = req.query as { url?: string; name?: string };
+
+  if (!url || typeof url !== "string") {
+    res.status(400).json({ error: "Missing url" });
+    return;
+  }
+
+  // Only allow Cloudinary URLs to prevent SSRF abuse
+  if (!/^https:\/\/res\.cloudinary\.com\//i.test(url)) {
+    res.status(400).json({ error: "Invalid URL" });
+    return;
+  }
+
+  try {
+    const upstream = await fetch(url);
+    if (!upstream.ok) {
+      res.status(502).json({ error: "Failed to fetch file" });
+      return;
+    }
+
+    const contentType = upstream.headers.get("content-type") ?? "application/octet-stream";
+    const filename = name && typeof name === "string" ? name : "attachment";
+    const safeName = filename.replace(/[^\w.\-]/g, "_");
+
+    res.setHeader("Content-Type", contentType);
+    res.setHeader("Content-Disposition", `attachment; filename="${safeName}"`);
+
+    const ct = upstream.headers.get("content-length");
+    if (ct) res.setHeader("Content-Length", ct);
+
+    // Stream the body
+    const reader = upstream.body?.getReader();
+    if (!reader) { res.status(502).end(); return; }
+    const pump = async () => {
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) { res.end(); break; }
+        if (!res.write(value)) await new Promise(r => res.once("drain", r));
+      }
+    };
+    await pump();
+  } catch {
+    res.status(502).json({ error: "Download failed" });
+  }
+});
+
 const upload = multer({
   storage: multer.memoryStorage(),
   limits: { fileSize: 10 * 1024 * 1024 },
