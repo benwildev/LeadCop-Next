@@ -330,6 +330,17 @@ function OverviewTab({
   const [showModal, setShowModal] = useState(false);
   const [showEmbedScript, setShowEmbedScript] = useState(false);
 
+  // Build a complete 30-day series with 0 for days with no calls
+  const chartData = (() => {
+    const byDayMap = new Map((data.usageByDay as { date: string; count: number }[]).map((d) => [d.date, d.count]));
+    return Array.from({ length: 30 }, (_, i) => {
+      const d = new Date();
+      d.setDate(d.getDate() - (29 - i));
+      const key = d.toISOString().slice(0, 10);
+      return { date: key, count: byDayMap.get(key) ?? 0 };
+    });
+  })();
+
   const handleVerify = async () => {
     if (!verifyEmail.trim()) return;
     setIsVerifying(true);
@@ -468,14 +479,14 @@ function OverviewTab({
         </div>
         <div className="h-[260px] w-full">
           <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={(data.usageByDay as { date: string; count: number }[])} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+            <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
               <defs>
                 <linearGradient id="colorCount" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="5%" stopColor="hsl(262 83% 58%)" stopOpacity={0.25} />
                   <stop offset="95%" stopColor="hsl(262 83% 58%)" stopOpacity={0} />
                 </linearGradient>
               </defs>
-              <XAxis dataKey="date" stroke="hsl(var(--muted-foreground))" fontSize={11} tickLine={false} axisLine={false} tickFormatter={val => format(parseISO(val), "MMM d")} />
+              <XAxis dataKey="date" stroke="hsl(var(--muted-foreground))" fontSize={11} tickLine={false} axisLine={false} tickFormatter={val => format(parseISO(val), "MMM d")} interval={4} />
               <YAxis stroke="hsl(var(--muted-foreground))" fontSize={11} tickLine={false} axisLine={false} />
               <Tooltip contentStyle={{ backgroundColor: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: "12px", color: "hsl(var(--foreground))", fontSize: "12px" }} />
               <Area type="monotone" dataKey="count" stroke="hsl(262 83% 58%)" strokeWidth={2} fillOpacity={1} fill="url(#colorCount)" />
