@@ -46,7 +46,7 @@ const STATS = [
   { value: "100K+", label: "Fake Emails Blocked" },
   { value: "99.9%", label: "Detection Accuracy" },
   { value: "500+", label: "Businesses Protected" },
-  { value: "<50ms", label: "Response Time" },
+  { value: "2 min", label: "Avg. Setup Time" },
 ];
 
 const PAIN_POINTS = [
@@ -1084,7 +1084,7 @@ export default function LandingPage() {
                     href="/signup"
                     className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary hover:text-primary/80 transition-colors"
                   >
-                    Get your free API key <ArrowRight className="h-3 w-3" />
+                    Start protecting forms <ArrowRight className="h-3 w-3" />
                   </Link>
                 </div>
               </motion.div>
