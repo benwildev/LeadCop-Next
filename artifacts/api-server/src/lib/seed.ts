@@ -10,8 +10,8 @@ const DEFAULT_PLAN_CONFIGS = [
     websiteLimit: 0,
     pageLimit: 0,
     maxBulkEmails: 0,
-    mxDetectionEnabled: false,
-    inboxCheckEnabled: false,
+    mxDetectionEnabled: true,
+    inboxCheckEnabled: true,
     price: 0,
   },
   {

@@ -3,11 +3,10 @@ import { Link } from "wouter";
 import { Navbar, Footer } from "@/components/Layout";
 import {
   Shield, ShieldAlert, ShieldCheck, Loader2, ArrowRight,
-  CheckCircle2, XCircle, AlertTriangle, Mail,
+  CheckCircle2, XCircle, AlertTriangle, Mail, Zap, Database, Activity,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import ReputationBadge from "@/components/ReputationBadge";
-import VerificationModal from "@/components/VerificationModal";
 
 interface FreeVerifyResult {
   email: string;
@@ -19,15 +18,15 @@ interface FreeVerifyResult {
   isValidSyntax: boolean;
   isFreeEmail: boolean;
   isRoleAccount: boolean;
-  mxValid: null;
-  inboxSupport: null;
-  canConnectSmtp: null;
-  mxAcceptsMail: null;
+  mxValid: boolean | null;
+  inboxSupport: boolean | null;
+  canConnectSmtp: boolean | null;
+  mxAcceptsMail: boolean | null;
   mxRecords: string[];
-  isDeliverable: null;
-  isCatchAll: null;
-  isDisabled: null;
-  hasInboxFull: null;
+  isDeliverable: boolean | null;
+  isCatchAll: boolean | null;
+  isDisabled: boolean | null;
+  hasInboxFull: boolean | null;
   used: number;
   limit: number;
   remaining: number;
@@ -38,7 +37,6 @@ export default function VerifyPage() {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<FreeVerifyResult | null>(null);
-  const [showModal, setShowModal] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const [used, setUsed] = useState(0);
@@ -69,6 +67,7 @@ export default function VerifyPage() {
     if (!email.trim() || loading) return;
     setError(null);
     setLoading(true);
+    setResult(null);
     try {
       const r = await fetch("/api/verify/free", {
         method: "POST",
@@ -91,7 +90,6 @@ export default function VerifyPage() {
       setUsed(data.used ?? used + 1);
       setLimit(data.limit ?? limit);
       setLimitReached(data.limitReached ?? false);
-      setShowModal(true);
     } catch {
       setError("Network error. Please check your connection and try again.");
     } finally {
@@ -102,12 +100,27 @@ export default function VerifyPage() {
   const remaining = Math.max(0, limit - used);
   const pct = limit > 0 ? Math.round((used / limit) * 100) : 0;
 
+  const scoreColor = result ? (result.reputationScore >= 80 ? "text-green-500" : result.reputationScore >= 50 ? "text-yellow-400" : "text-red-400") : "";
+
+  const StatusBadge = ({ value, label }: { value: boolean | null | undefined; label: string }) => (
+    <div className="flex items-center justify-between rounded-lg bg-muted/30 px-4 py-3">
+      <span className="text-sm text-muted-foreground">{label}</span>
+      <span className={`px-2.5 py-0.5 rounded-lg font-bold text-xs ${
+        value === true ? "text-green-500 bg-green-500/10" :
+        value === false ? "text-red-400 bg-red-500/10" :
+        "text-muted-foreground bg-muted/30"
+      }`}>
+        {value === true ? "true" : value === false ? "false" : "null"}
+      </span>
+    </div>
+  );
+
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
 
       <main className="pt-28 pb-20 px-6">
-        <div className="mx-auto max-w-2xl">
+        <div className="mx-auto max-w-3xl">
 
           {/* Hero */}
           <motion.div
@@ -217,7 +230,7 @@ export default function VerifyPage() {
             )}
           </motion.div>
 
-          {/* Last Result Inline Summary */}
+          {/* Inline Result Card */}
           <AnimatePresence>
             {result && !limitReached && (
               <motion.div
@@ -225,63 +238,166 @@ export default function VerifyPage() {
                 initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -8 }}
-                className="glass-card rounded-2xl p-5 mb-6"
+                className="glass-card rounded-2xl overflow-hidden mb-6"
               >
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center gap-2">
-                    {result.isDisposable ? (
-                      <XCircle className="h-5 w-5 text-red-400" />
-                    ) : (
-                      <CheckCircle2 className="h-5 w-5 text-green-500" />
-                    )}
-                    <span className="font-mono text-sm font-medium text-foreground">{result.email}</span>
+                {/* Result Header */}
+                <div className="p-6 border-b border-border bg-muted/5">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      {result.isDisposable ? (
+                        <div className="h-10 w-10 rounded-full bg-red-500/10 flex items-center justify-center">
+                          <XCircle className="h-5 w-5 text-red-400" />
+                        </div>
+                      ) : (
+                        <div className="h-10 w-10 rounded-full bg-green-500/10 flex items-center justify-center">
+                          <CheckCircle2 className="h-5 w-5 text-green-500" />
+                        </div>
+                      )}
+                      <div>
+                        <h3 className="font-heading text-lg font-bold text-foreground">
+                          {result.email} {result.isDisposable ? "is disposable" : result.isDeliverable ? "is valid" : "is invalid"}
+                        </h3>
+                        <p className="text-xs text-muted-foreground">
+                          {result.isDisposable
+                            ? "This email address is from a disposable provider and should not be used."
+                            : result.isDeliverable
+                            ? "This email address can be used safely."
+                            : "This email address exists but cannot receive emails."}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-4">
+                      {result.isDisposable && (
+                        <span className="px-3 py-1 rounded-full bg-red-500/15 text-red-400 text-[10px] font-bold uppercase tracking-widest border border-red-500/20">
+                          Disposable
+                        </span>
+                      )}
+                      <div className="px-4 py-1.5 rounded-xl bg-secondary border border-border flex items-center gap-2">
+                        <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Score:</span>
+                        <span className={`text-base font-bold ${scoreColor}`}>{result.reputationScore}/100</span>
+                      </div>
+                    </div>
                   </div>
-                  <ReputationBadge score={result.reputationScore} />
                 </div>
 
-                <div className="grid grid-cols-2 gap-3 text-xs">
-                  <div className="flex items-center justify-between rounded-lg bg-muted/30 px-3 py-2">
-                    <span className="text-muted-foreground">Disposable</span>
-                    <span className={`font-bold ${result.isDisposable ? "text-red-400" : "text-green-500"}`}>
-                      {result.isDisposable ? "Yes" : "No"}
-                    </span>
+                {/* Verification Details */}
+                <div className="p-6">
+                  {/* Format & Type */}
+                  <div className="mb-6">
+                    <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">Format & Type</h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      <div className="rounded-lg bg-muted/30 px-4 py-3">
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="text-sm font-medium text-foreground">Format</span>
+                          <span className="px-2 py-0.5 rounded-md bg-green-500/10 text-green-500 text-xs font-bold">
+                            {result.isValidSyntax ? "Valid" : "Invalid"}
+                          </span>
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                          {result.isValidSyntax
+                            ? "This email address has the correct format and is not gibberish."
+                            : "This email address has an invalid format."}
+                        </p>
+                      </div>
+                      <div className="rounded-lg bg-muted/30 px-4 py-3">
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="text-sm font-medium text-foreground">Type</span>
+                          <span className={`px-2 py-0.5 rounded-md text-xs font-bold ${
+                            result.isFreeEmail ? "bg-yellow-500/10 text-yellow-400" : "bg-green-500/10 text-green-500"
+                          }`}>
+                            {result.isFreeEmail ? "Free" : "Professional"}
+                          </span>
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                          {result.isFreeEmail
+                            ? "This email uses a free provider like Gmail or Yahoo."
+                            : "The domain name isn't used for webmails or for creating temporary email addresses."}
+                        </p>
+                      </div>
+                    </div>
                   </div>
-                  <div className="flex items-center justify-between rounded-lg bg-muted/30 px-3 py-2">
-                    <span className="text-muted-foreground">Domain</span>
-                    <span className="font-mono text-foreground/80">{result.domain}</span>
+
+                  {/* Server Status */}
+                  <div className="mb-6">
+                    <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">Server Status</h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      <div className="rounded-lg bg-muted/30 px-4 py-3">
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="text-sm font-medium text-foreground">MX Records</span>
+                          <span className={`px-2 py-0.5 rounded-md text-xs font-bold ${
+                            result.mxValid ? "bg-green-500/10 text-green-500" : "bg-red-500/10 text-red-400"
+                          }`}>
+                            {result.mxValid ? "Valid" : "Invalid"}
+                          </span>
+                        </div>
+                        <p className="text-xs text-muted-foreground font-mono">
+                          {result.mxValid ? result.mxRecords.join(", ") : "No MX records found"}
+                        </p>
+                      </div>
+                      <div className="rounded-lg bg-muted/30 px-4 py-3">
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="text-sm font-medium text-foreground">SMTP Connection</span>
+                          <span className={`px-2 py-0.5 rounded-md text-xs font-bold ${
+                            result.canConnectSmtp ? "bg-green-500/10 text-green-500" : "bg-red-500/10 text-red-400"
+                          }`}>
+                            {result.canConnectSmtp ? "Valid" : "Invalid"}
+                          </span>
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                          {result.canConnectSmtp
+                            ? "We can connect to the SMTP server."
+                            : "Cannot connect to the SMTP server."}
+                        </p>
+                      </div>
+                    </div>
                   </div>
-                  <div className="flex items-center justify-between rounded-lg bg-muted/30 px-3 py-2">
-                    <span className="text-muted-foreground">Risk Level</span>
-                    <span className={`font-bold capitalize ${
-                      result.riskLevel === "low" ? "text-green-500" :
-                      result.riskLevel === "medium" ? "text-yellow-400" :
-                      result.riskLevel === "high" ? "text-orange-400" : "text-red-400"
-                    }`}>{result.riskLevel}</span>
+
+                  {/* Email Status */}
+                  <div className="mb-6">
+                    <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">Email Status</h4>
+                    <div className="rounded-lg bg-muted/30 px-4 py-3">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="text-sm font-medium text-foreground">Deliverable</span>
+                        <span className={`px-2 py-0.5 rounded-md text-xs font-bold ${
+                          result.isDeliverable ? "bg-green-500/10 text-green-500" : "bg-red-500/10 text-red-400"
+                        }`}>
+                          {result.isDeliverable ? "Valid" : "Invalid"}
+                        </span>
+                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        {result.isDeliverable
+                          ? "This email address exists and can receive emails."
+                          : "This email address does not exist or cannot receive emails."}
+                      </p>
+                    </div>
                   </div>
-                  <div className="flex items-center justify-between rounded-lg bg-muted/30 px-3 py-2">
-                    <span className="text-muted-foreground">Free Email</span>
-                    <span className={`font-bold ${result.isFreeEmail ? "text-yellow-400" : "text-foreground/60"}`}>
-                      {result.isFreeEmail ? "Yes" : "No"}
-                    </span>
+
+                  {/* Detailed Checks */}
+                  <div>
+                    <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">Detailed Checks</h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                      <StatusBadge value={result.isDisposable} label="is_disposable" />
+                      <StatusBadge value={!result.isDisposable} label="is_not_disposable" />
+                      <StatusBadge value={result.isValidSyntax} label="is_valid_syntax" />
+                      <StatusBadge value={result.isRoleAccount} label="is_role_account" />
+                      <StatusBadge value={result.isFreeEmail} label="is_free_email" />
+                      <StatusBadge value={result.isCatchAll} label="is_catch_all" />
+                      <StatusBadge value={result.isDisabled} label="is_disabled" />
+                      <StatusBadge value={result.hasInboxFull} label="has_inbox_full" />
+                    </div>
                   </div>
+
+                  {/* Tags */}
+                  {result.tags.length > 0 && (
+                    <div className="flex flex-wrap gap-1.5 mt-4 pt-4 border-t border-border">
+                      {result.tags.map(tag => (
+                        <span key={tag} className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-primary/10 text-primary text-[10px] font-medium uppercase tracking-wide">
+                          {tag.replace(/_/g, " ")}
+                        </span>
+                      ))}
+                    </div>
+                  )}
                 </div>
-
-                {result.tags.length > 0 && (
-                  <div className="flex flex-wrap gap-1.5 mt-3">
-                    {result.tags.map(tag => (
-                      <span key={tag} className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-primary/10 text-primary text-[10px] font-medium uppercase tracking-wide">
-                        {tag.replace(/_/g, " ")}
-                      </span>
-                    ))}
-                  </div>
-                )}
-
-                <button
-                  onClick={() => setShowModal(true)}
-                  className="mt-4 w-full text-center text-xs text-primary hover:text-primary/80 transition-colors font-medium"
-                >
-                  View full details →
-                </button>
               </motion.div>
             )}
           </AnimatePresence>
@@ -327,32 +443,6 @@ export default function VerifyPage() {
       </main>
 
       <Footer />
-
-      {/* Verification Modal */}
-      {result && (
-        <VerificationModal
-          isOpen={showModal}
-          onClose={() => setShowModal(false)}
-          result={{
-            isDisposable: result.isDisposable,
-            domain: result.domain,
-            reputationScore: result.reputationScore,
-            isValidSyntax: result.isValidSyntax,
-            isRoleAccount: result.isRoleAccount,
-            isFreeEmail: result.isFreeEmail,
-            mxValid: false,
-            inboxSupport: false,
-            canConnectSmtp: null,
-            mxAcceptsMail: null,
-            mxRecords: [],
-            isDeliverable: null,
-            isCatchAll: null,
-            isDisabled: null,
-            hasInboxFull: null,
-          }}
-          email={result.email}
-        />
-      )}
     </div>
   );
 }

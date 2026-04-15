@@ -4,6 +4,7 @@ import { v4 as uuidv4 } from "uuid";
 import { db, paymentSettingsTable } from "@workspace/db";
 import { eq } from "drizzle-orm";
 import { isDisposableDomain } from "../lib/domain-cache.js";
+import { verifySmtp } from "../lib/smtp-verifier.js";
 import {
   computeReputationScore,
   computeRiskLevel,
@@ -11,6 +12,18 @@ import {
   isRoleAccount,
   isFreeEmail,
 } from "../lib/reputation.js";
+import dns from "dns";
+
+const dnsPromises = dns.promises;
+
+async function checkMx(domain: string): Promise<boolean> {
+  try {
+    const records = await dnsPromises.resolveMx(domain);
+    return records.length > 0;
+  } catch {
+    return false;
+  }
+}
 
 const router = Router();
 
@@ -167,12 +180,21 @@ router.post("/verify/free", async (req, res) => {
   const roleAccount = isRoleAccount(localPart ?? "");
   const isFree = isFreeEmail(domain);
 
+  // Run MX check
+  const mxUsed = await checkMx(domain);
+
+  // Run full SMTP verification
+  const smtpResult = await verifySmtp(email);
+
   const reputationScore = computeReputationScore({
     isDisposable: disposable,
-    hasMx: undefined,
-    hasInbox: undefined,
+    hasMx: mxUsed,
+    hasInbox: smtpResult.isDeliverable,
     isAdmin: roleAccount,
     isFree,
+    isDeliverable: smtpResult.isDeliverable,
+    isCatchAll: smtpResult.isCatchAll,
+    canConnect: smtpResult.canConnect,
     domain,
   });
   const riskLevel = computeRiskLevel(reputationScore);
@@ -199,15 +221,15 @@ router.post("/verify/free", async (req, res) => {
     isValidSyntax: true,
     isFreeEmail: isFree,
     isRoleAccount: roleAccount,
-    mxValid: null,
-    inboxSupport: null,
-    canConnectSmtp: null,
-    mxAcceptsMail: null,
-    mxRecords: [],
-    isDeliverable: null,
-    isCatchAll: null,
-    isDisabled: null,
-    hasInboxFull: null,
+    mxValid: mxUsed,
+    inboxSupport: smtpResult.isDeliverable,
+    canConnectSmtp: smtpResult.canConnect,
+    mxAcceptsMail: smtpResult.mxAcceptsMail,
+    mxRecords: smtpResult.mxRecords,
+    isDeliverable: smtpResult.isDeliverable,
+    isCatchAll: smtpResult.isCatchAll,
+    isDisabled: smtpResult.isDisabled,
+    hasInboxFull: smtpResult.hasInboxFull,
     used: newUsed,
     limit,
     remaining: newRemaining,
