@@ -22,8 +22,6 @@ import {
   isRoleAccount,
   isFreeEmail,
   checkDnsbl,
-  smtpProbe,
-  catchAllProbe,
   FREE_EMAIL_PROVIDERS,
 } from "../lib/reputation.js";
 import { fireWebhook } from "../lib/webhooks.js";
@@ -285,46 +283,37 @@ export async function performChecks(
   // Role account — all plans
   const roleAccount = isRoleAccount(localPart ?? "");
 
-  let mxValidResult: boolean | undefined;
-  let inboxSupportResult: boolean | undefined;
-  let smtpDetails: Awaited<ReturnType<typeof verifySmtp>> | undefined;
+  // Fetch usage counts in parallel with blocklist check already done
+  const shouldCheckMx = planConfig.mxDetectionEnabled;
+  const shouldCheckInbox = planConfig.inboxCheckEnabled;
+  const shouldCheckDnsbl = planConfig.plan === "BASIC" || planConfig.plan === "PRO";
 
-  // Basic MX check for FREE/BASIC
-  if (planConfig.mxDetectionEnabled) {
-    const mxUsed = await countUsageByEndpoint(userId, "/check-email/mx");
-    if (planConfig.mxDetectLimit === 0 || mxUsed < planConfig.mxDetectLimit) {
-      mxValidResult = await checkMx(domain);
-      await db.insert(apiUsageTable).values({ userId, endpoint: "/check-email/mx" });
-    }
-  }
+  const [mxUsed, inboxUsed] = await Promise.all([
+    shouldCheckMx ? countUsageByEndpoint(userId, "/check-email/mx") : Promise.resolve(0),
+    shouldCheckInbox ? countUsageByEndpoint(userId, "/check-email/inbox") : Promise.resolve(0),
+  ]);
 
-  // Advanced SMTP check for PRO
-  if (planConfig.inboxCheckEnabled) {
-    const inboxUsed = await countUsageByEndpoint(userId, "/check-email/inbox");
-    if (planConfig.inboxCheckLimit === 0 || inboxUsed < planConfig.inboxCheckLimit) {
-      smtpDetails = await verifySmtp(email);
-      inboxSupportResult = smtpDetails.isDeliverable;
-      await db.insert(apiUsageTable).values({ userId, endpoint: "/check-email/inbox" });
-    }
-  }
+  const runMx = shouldCheckMx && (planConfig.mxDetectLimit === 0 || mxUsed < planConfig.mxDetectLimit);
+  const runInbox = shouldCheckInbox && (planConfig.inboxCheckLimit === 0 || inboxUsed < planConfig.inboxCheckLimit);
 
-  // DNSBL — BASIC + PRO
-  let dnsblHit: boolean | null | undefined = undefined;
-  if (planConfig.plan === "BASIC" || planConfig.plan === "PRO") {
-    dnsblHit = await checkDnsbl(domain);
-  }
+  // Run all independent network checks in parallel
+  const [mxValidResult, smtpDetails, dnsblHit] = await Promise.all([
+    runMx ? checkMx(domain) : Promise.resolve(undefined),
+    runInbox ? verifySmtp(email) : Promise.resolve(undefined),
+    shouldCheckDnsbl ? checkDnsbl(domain) : Promise.resolve(undefined),
+  ]);
 
-  // SMTP probe + catch-all — PRO only
-  let smtpValid: boolean | null | undefined = undefined;
-  let catchAll: boolean | null | undefined = undefined;
-  if (planConfig.plan === "PRO") {
-    smtpValid = await smtpProbe(domain, email);
-    if (smtpValid !== false) {
-      catchAll = await catchAllProbe(domain);
-    } else {
-      catchAll = undefined;
-    }
-  }
+  // Record usage in parallel
+  await Promise.all([
+    runMx ? db.insert(apiUsageTable).values({ userId, endpoint: "/check-email/mx" }) : Promise.resolve(),
+    runInbox && smtpDetails ? db.insert(apiUsageTable).values({ userId, endpoint: "/check-email/inbox" }) : Promise.resolve(),
+  ]);
+
+  const inboxSupportResult = smtpDetails?.isDeliverable;
+
+  // verifySmtp already probes catch-all in the same SMTP session — reuse those results
+  const catchAll: boolean | null | undefined = smtpDetails ? (smtpDetails.isCatchAll ?? null) : undefined;
+  const smtpValid: boolean | null | undefined = smtpDetails ? (smtpDetails.isDeliverable ?? null) : undefined;
 
   const reputationScore = computeReputationScore({
     isDisposable: disposable,

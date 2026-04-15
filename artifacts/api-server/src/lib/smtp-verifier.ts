@@ -18,9 +18,9 @@ export interface SmtpCheckResult {
  * Some servers return 4xx codes (450/451/452) meaning "try again later".
  * We retry up to 3 times with exponential backoff.
  */
-const MAX_RETRIES = 3;
-const INITIAL_RETRY_DELAY_MS = 5000; // 5 seconds
-const RETRY_MULTIPLIER = 2; // exponential: 5s → 10s → 20s
+const MAX_RETRIES = 0;
+const INITIAL_RETRY_DELAY_MS = 5000;
+const RETRY_MULTIPLIER = 2;
 
 /**
  * Sleep utility for retry delays.
@@ -177,7 +177,7 @@ async function attemptHandshake(
 
   return new Promise((resolve) => {
     const socket = net.createConnection(25, host);
-    socket.setTimeout(15000); // 15s timeout for greylist servers
+    socket.setTimeout(8000);
 
     let buffer = "";
     let stage = 0;
