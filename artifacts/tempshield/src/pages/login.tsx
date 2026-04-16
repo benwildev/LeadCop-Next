@@ -47,7 +47,7 @@ export default function LoginPage() {
               <img
                 src={siteSettings.logoUrl}
                 alt={siteSettings.siteTitle}
-                className="h-10 w-auto max-w-[180px] object-contain"
+                className="h-56 w-auto max-w-[180px] object-contain invert"
                 onError={() => setLogoError(true)}
               />
             ) : (

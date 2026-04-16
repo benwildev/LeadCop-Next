@@ -12,9 +12,7 @@ const DEFAULTS = {
   siteTitle: "LeadCop",
   tagline: "Block Fake Emails. Protect Your Platform.",
   logoUrl: null as string | null,
-  logoDarkUrl: null as string | null,
   faviconUrl: null as string | null,
-  faviconDarkUrl: null as string | null,
   globalMetaTitle: "LeadCop — Disposable Email Detection API",
   globalMetaDescription: "Industry-leading disposable email detection API. Real-time verification with 99.9% accuracy.",
   footerText: null as string | null,
@@ -32,9 +30,7 @@ function formatSettings(s: typeof siteSettingsTable.$inferSelect) {
     siteTitle: s.siteTitle ?? DEFAULTS.siteTitle,
     tagline: s.tagline ?? DEFAULTS.tagline,
     logoUrl: s.logoUrl ?? null,
-    logoDarkUrl: s.logoDarkUrl ?? null,
     faviconUrl: s.faviconUrl ?? null,
-    faviconDarkUrl: s.faviconDarkUrl ?? null,
     globalMetaTitle: s.globalMetaTitle ?? DEFAULTS.globalMetaTitle,
     globalMetaDescription: s.globalMetaDescription ?? DEFAULTS.globalMetaDescription,
     footerText: s.footerText ?? null,
@@ -98,9 +94,7 @@ const updateSiteSettingsSchema = z.object({
   siteTitle: z.string().min(1).max(120).optional(),
   tagline: z.string().max(240).optional(),
   logoUrl: z.string().url().max(2048).nullable().optional(),
-  logoDarkUrl: z.string().url().max(2048).nullable().optional(),
   faviconUrl: z.string().url().max(2048).nullable().optional(),
-  faviconDarkUrl: z.string().url().max(2048).nullable().optional(),
   globalMetaTitle: z.string().max(120).optional(),
   globalMetaDescription: z.string().max(320).optional(),
   footerText: z.string().max(320).nullable().optional(),
@@ -119,9 +113,7 @@ router.patch("/admin/site-settings", requireAdmin, async (req, res) => {
   if (d.siteTitle !== undefined) updates.siteTitle = d.siteTitle;
   if (d.tagline !== undefined) updates.tagline = d.tagline;
   if (d.logoUrl !== undefined) updates.logoUrl = d.logoUrl;
-  if (d.logoDarkUrl !== undefined) updates.logoDarkUrl = d.logoDarkUrl;
   if (d.faviconUrl !== undefined) updates.faviconUrl = d.faviconUrl;
-  if (d.faviconDarkUrl !== undefined) updates.faviconDarkUrl = d.faviconDarkUrl;
   if (d.globalMetaTitle !== undefined) updates.globalMetaTitle = d.globalMetaTitle;
   if (d.globalMetaDescription !== undefined) updates.globalMetaDescription = d.globalMetaDescription;
   if (d.footerText !== undefined) updates.footerText = d.footerText;

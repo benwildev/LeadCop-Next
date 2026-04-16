@@ -6,9 +6,7 @@ export interface SiteSettings {
   siteTitle: string;
   tagline: string;
   logoUrl: string | null;
-  logoDarkUrl: string | null;
   faviconUrl: string | null;
-  faviconDarkUrl: string | null;
   globalMetaTitle: string;
   globalMetaDescription: string;
   footerText: string | null;
@@ -31,9 +29,7 @@ const DEFAULTS: SiteSettings = {
   siteTitle: "LeadCop",
   tagline: "Block Fake Emails. Protect Your Platform.",
   logoUrl: null,
-  logoDarkUrl: null,
   faviconUrl: null,
-  faviconDarkUrl: null,
   globalMetaTitle: "LeadCop — Disposable Email Detection API",
   globalMetaDescription: "Industry-leading disposable email detection API. Real-time verification with 99.9% accuracy.",
   footerText: null,
