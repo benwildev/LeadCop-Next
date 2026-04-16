@@ -38,7 +38,7 @@ export default function LoginPage() {
         className="relative flex flex-col justify-center w-full lg:w-[480px] xl:w-[520px] flex-shrink-0 bg-white px-10 sm:px-16 py-12 z-10"
       >
         {/* Logo — links home */}
-        <div>
+        <div className="mb-1">
           <Link
             href="/"
             className="inline-block hover:opacity-80 transition-opacity"

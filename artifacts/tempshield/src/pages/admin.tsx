@@ -170,22 +170,40 @@ function SidebarContent({
 }) {
   const siteSettings = useSiteSettings();
   const [logoError, setLogoError] = React.useState(false);
+  const [faviconError, setFaviconError] = React.useState(false);
 
   return (
     <div className="flex flex-col h-full bg-card border-r border-border">
       {/* Header */}
       <div className="flex items-center gap-3 px-4 py-4 border-b border-border">
-        {siteSettings.logoUrl && !logoError ? (
-          <img
-            src={siteSettings.logoUrl}
-            alt={siteSettings.siteTitle}
-            className={`h-8 w-auto max-w-[120px] object-contain invert dark:invert-0 flex-shrink-0 ${collapsed ? "mx-auto" : ""}`}
-            onError={() => setLogoError(true)}
-          />
+        {collapsed ? (
+          /* Collapsed: show favicon */
+          siteSettings.faviconUrl && !faviconError ? (
+            <img
+              src={siteSettings.faviconUrl}
+              alt={siteSettings.siteTitle}
+              className="h-8 w-8 object-contain rounded-md mx-auto flex-shrink-0"
+              onError={() => setFaviconError(true)}
+            />
+          ) : (
+            <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-violet-500 to-purple-700 flex items-center justify-center flex-shrink-0 shadow-sm mx-auto">
+              <Shield className="w-4 h-4 text-white" />
+            </div>
+          )
         ) : (
-          <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-violet-500 to-purple-700 flex items-center justify-center flex-shrink-0 shadow-sm">
-            <Shield className="w-4 h-4 text-white" />
-          </div>
+          /* Expanded: show full logo */
+          siteSettings.logoUrl && !logoError ? (
+            <img
+              src={siteSettings.logoUrl}
+              alt={siteSettings.siteTitle}
+              className="h-8 w-auto max-w-[120px] object-contain invert dark:invert-0 flex-shrink-0"
+              onError={() => setLogoError(true)}
+            />
+          ) : (
+            <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-violet-500 to-purple-700 flex items-center justify-center flex-shrink-0 shadow-sm">
+              <Shield className="w-4 h-4 text-white" />
+            </div>
+          )
         )}
         {!collapsed && (
           <div className="flex-1 min-w-0">
