@@ -21,9 +21,16 @@ function useTheme() {
     return document.documentElement.classList.contains("dark");
   });
 
+  React.useEffect(() => {
+    const observer = new MutationObserver(() =>
+      setIsDark(document.documentElement.classList.contains("dark"))
+    );
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
+    return () => observer.disconnect();
+  }, []);
+
   const toggle = () => {
     const next = !isDark;
-    setIsDark(next);
     if (next) {
       document.documentElement.classList.add("dark");
       localStorage.setItem("tempshield-theme", "dark");
@@ -47,6 +54,8 @@ export function Navbar() {
   const logoSrc = isDark
     ? (siteSettings.logoDarkUrl ?? siteSettings.logoUrl)
     : siteSettings.logoUrl;
+
+  React.useEffect(() => { setLogoError(false); }, [logoSrc]);
 
   const scrollTo = (id: string) => {
     if (location === "/") {
@@ -288,19 +297,22 @@ export function Navbar() {
 export function Footer() {
   const siteSettings = useSiteSettings();
   const { isDark } = useTheme();
+  const [logoError, setLogoError] = React.useState(false);
   const footerLogoSrc = isDark
     ? (siteSettings.logoDarkUrl ?? siteSettings.logoUrl)
     : siteSettings.logoUrl;
+  React.useEffect(() => { setLogoError(false); }, [footerLogoSrc]);
   return (
     <footer className="border-t border-border/50 py-10 sm:py-12 px-4 sm:px-6">
       <div className="mx-auto max-w-6xl">
         <div className="flex flex-col items-center gap-6 sm:flex-row sm:justify-between">
           <div className="flex items-center gap-2">
-            {footerLogoSrc ? (
+            {footerLogoSrc && !logoError ? (
               <img
                 src={footerLogoSrc}
                 alt={siteSettings.siteTitle}
                 className="h-5 w-auto object-contain"
+                onError={() => setLogoError(true)}
               />
             ) : (
               <Shield className="h-5 w-5 text-primary" />

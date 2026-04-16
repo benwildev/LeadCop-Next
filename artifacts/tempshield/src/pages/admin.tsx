@@ -185,6 +185,9 @@ function SidebarContent({
   const logoSrc = isDark ? (siteSettings.logoDarkUrl ?? siteSettings.logoUrl) : siteSettings.logoUrl;
   const iconSrc = isDark ? (siteSettings.faviconDarkUrl ?? siteSettings.faviconUrl) : siteSettings.faviconUrl;
 
+  React.useEffect(() => { setLogoError(false); }, [logoSrc]);
+  React.useEffect(() => { setFaviconError(false); }, [iconSrc]);
+
   return (
     <div className="flex flex-col h-full bg-card border-r border-border">
       {/* Header */}
