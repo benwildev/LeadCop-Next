@@ -4,37 +4,110 @@ import CloudinaryUpload from "@/components/CloudinaryUpload";
 import { Link } from "wouter";
 import { useAuth } from "@/hooks/use-auth";
 import {
-  useAdminGetStats, useAdminGetUsers, useAdminGetUpgradeRequests,
-  useAdminUpdateUpgradeRequest, useAdminSyncDomains, useAdminUpdateUserPlan,
-  UpdatePlanRequestPlan, useAdminGetRevenue,
+  useAdminGetStats,
+  useAdminGetUsers,
+  useAdminGetUpgradeRequests,
+  useAdminUpdateUpgradeRequest,
+  useAdminSyncDomains,
+  useAdminUpdateUserPlan,
+  UpdatePlanRequestPlan,
+  useAdminGetRevenue,
 } from "@workspace/api-client-react";
 import {
-  useAdminGetPlanConfig, useAdminUpdatePlanConfig, useAdminCreatePlanConfig,
-  useAdminDeletePlanConfig, useAdminGetApiKeys,
-  useAdminDeleteUser, useAdminResetUsage, useAdminRevokeKey,
+  useAdminGetPlanConfig,
+  useAdminUpdatePlanConfig,
+  useAdminCreatePlanConfig,
+  useAdminDeletePlanConfig,
+  useAdminGetApiKeys,
+  useAdminDeleteUser,
+  useAdminResetUsage,
+  useAdminRevokeKey,
   useAdminAddDomain,
 } from "@workspace/api-client-react";
 import type { PlanConfig, AdminUserFull } from "@workspace/api-client-react";
 import {
-  LayoutDashboard, Users, CreditCard, Settings, Key, Database,
-  Shield, RefreshCw, Check, X, Loader2, Trash2, RotateCcw,
-  Search, ChevronLeft, ChevronRight, LogOut, ArrowLeft, Menu,
-  PieChart, BarChart3, Globe, FileText, Zap, Lock, Plus, Mail, Send,
-  Upload, Download, Paperclip, TrendingUp, DollarSign, Image, Tag,
-  MessageSquare, AlertCircle, Clock, CheckCircle, XCircle, ExternalLink,
+  LayoutDashboard,
+  Users,
+  CreditCard,
+  Settings,
+  Key,
+  Database,
+  Shield,
+  RefreshCw,
+  Check,
+  X,
+  Loader2,
+  Trash2,
+  RotateCcw,
+  Search,
+  ChevronLeft,
+  ChevronRight,
+  LogOut,
+  ArrowLeft,
+  Menu,
+  PieChart,
+  BarChart3,
+  Globe,
+  FileText,
+  Zap,
+  Lock,
+  Plus,
+  Mail,
+  Send,
+  Upload,
+  Download,
+  Paperclip,
+  TrendingUp,
+  DollarSign,
+  Image,
+  Tag,
+  MessageSquare,
+  AlertCircle,
+  Clock,
+  CheckCircle,
+  XCircle,
+  ExternalLink,
 } from "lucide-react";
 import { useQueryClient, useQuery, useMutation } from "@tanstack/react-query";
 import {
-  AreaChart, Area, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,
-  Cell, CartesianGrid, PieChart as RechartsPie, Pie, Legend,
+  AreaChart,
+  Area,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  Tooltip,
+  ResponsiveContainer,
+  Cell,
+  CartesianGrid,
+  PieChart as RechartsPie,
+  Pie,
+  Legend,
 } from "recharts";
 import { motion, AnimatePresence } from "framer-motion";
 import { format, parseISO } from "date-fns";
 import { useSiteSettings } from "@/hooks/use-site-settings";
 
-type Section = "overview" | "users" | "subscriptions" | "plan-config" | "api-keys" | "domains" | "payment" | "email" | "revenue" | "branding" | "seo" | "support" | "blog" | "newsletter";
+type Section =
+  | "overview"
+  | "users"
+  | "subscriptions"
+  | "plan-config"
+  | "api-keys"
+  | "domains"
+  | "payment"
+  | "email"
+  | "revenue"
+  | "branding"
+  | "seo"
+  | "support"
+  | "blog"
+  | "newsletter";
 
-const NAV_GROUPS: { label: string; items: { id: Section; label: string; icon: React.ElementType }[] }[] = [
+const NAV_GROUPS: {
+  label: string;
+  items: { id: Section; label: string; icon: React.ElementType }[];
+}[] = [
   {
     label: "Analytics",
     items: [
@@ -82,7 +155,13 @@ const PLAN_COLORS: Record<string, string> = {
   PRO: "bg-primary/15 text-primary",
 };
 
-function SidebarContent({ active, onNav, collapsed, onToggle, onClose }: {
+function SidebarContent({
+  active,
+  onNav,
+  collapsed,
+  onToggle,
+  onClose,
+}: {
   active: Section;
   onNav: (s: Section) => void;
   collapsed: boolean;
@@ -110,12 +189,19 @@ function SidebarContent({ active, onNav, collapsed, onToggle, onClose }: {
         )}
         {!collapsed && (
           <div className="flex-1 min-w-0">
-            <div className="font-heading text-sm font-bold text-foreground leading-tight">{siteSettings.siteTitle}</div>
-            <div className="text-[10px] text-muted-foreground">Admin Portal</div>
+            <div className="font-heading text-sm font-bold text-foreground leading-tight">
+              {siteSettings.siteTitle}
+            </div>
+            <div className="text-[10px] text-muted-foreground">
+              Admin Portal
+            </div>
           </div>
         )}
         {!collapsed && (
-          <button onClick={onToggle} className="hidden lg:flex text-muted-foreground hover:text-foreground transition-colors p-1 rounded-lg hover:bg-muted/50">
+          <button
+            onClick={onToggle}
+            className="hidden lg:flex text-muted-foreground hover:text-foreground transition-colors p-1 rounded-lg hover:bg-muted/50"
+          >
             <ChevronLeft className="w-4 h-4" />
           </button>
         )}
@@ -127,15 +213,22 @@ function SidebarContent({ active, onNav, collapsed, onToggle, onClose }: {
           <div key={label} className="mb-1">
             {!collapsed && (
               <div className="px-4 pt-2 pb-0.5">
-                <span className="text-[10px] font-semibold tracking-widest uppercase text-muted-foreground/50">{label}</span>
+                <span className="text-[10px] font-semibold tracking-widest uppercase text-muted-foreground/50">
+                  {label}
+                </span>
               </div>
             )}
-            {collapsed && <div className="mx-4 my-1 border-t border-border/50" />}
+            {collapsed && (
+              <div className="mx-4 my-1 border-t border-border/50" />
+            )}
             <div className="px-2">
               {items.map(({ id, label: itemLabel, icon: Icon }) => (
                 <button
                   key={id}
-                  onClick={() => { onNav(id); onClose(); }}
+                  onClick={() => {
+                    onNav(id);
+                    onClose();
+                  }}
                   className={`w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-sm font-medium transition-all ${
                     active === id
                       ? "bg-primary/10 text-primary"
@@ -143,7 +236,9 @@ function SidebarContent({ active, onNav, collapsed, onToggle, onClose }: {
                   } ${collapsed ? "justify-center" : ""}`}
                   title={collapsed ? itemLabel : undefined}
                 >
-                  <Icon className={`w-4 h-4 flex-shrink-0 ${active === id ? "text-primary" : ""}`} />
+                  <Icon
+                    className={`w-4 h-4 flex-shrink-0 ${active === id ? "text-primary" : ""}`}
+                  />
                   {!collapsed && <span className="truncate">{itemLabel}</span>}
                 </button>
               ))}
@@ -155,11 +250,17 @@ function SidebarContent({ active, onNav, collapsed, onToggle, onClose }: {
       {/* Footer */}
       <div className="px-2 py-3 border-t border-border">
         {collapsed ? (
-          <button onClick={onToggle} className="w-full flex justify-center p-2 text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-lg transition-colors">
+          <button
+            onClick={onToggle}
+            className="w-full flex justify-center p-2 text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-lg transition-colors"
+          >
             <ChevronRight className="w-4 h-4" />
           </button>
         ) : (
-          <Link href="/dashboard" className="w-full flex items-center gap-2 px-2.5 py-2 rounded-lg text-sm text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all">
+          <Link
+            href="/dashboard"
+            className="w-full flex items-center gap-2 px-2.5 py-2 rounded-lg text-sm text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all"
+          >
             <ArrowLeft className="w-4 h-4" />
             <span>Back to Dashboard</span>
           </Link>
@@ -169,7 +270,14 @@ function SidebarContent({ active, onNav, collapsed, onToggle, onClose }: {
   );
 }
 
-function Sidebar({ active, onNav, collapsed, onToggle, mobileOpen, onMobileClose }: {
+function Sidebar({
+  active,
+  onNav,
+  collapsed,
+  onToggle,
+  mobileOpen,
+  onMobileClose,
+}: {
   active: Section;
   onNav: (s: Section) => void;
   collapsed: boolean;
@@ -180,8 +288,16 @@ function Sidebar({ active, onNav, collapsed, onToggle, mobileOpen, onMobileClose
   return (
     <>
       {/* Desktop sidebar */}
-      <div className={`hidden lg:flex flex-col flex-shrink-0 h-full transition-all duration-300 ${collapsed ? "w-16" : "w-60"}`}>
-        <SidebarContent active={active} onNav={onNav} collapsed={collapsed} onToggle={onToggle} onClose={() => {}} />
+      <div
+        className={`hidden lg:flex flex-col flex-shrink-0 h-full transition-all duration-300 ${collapsed ? "w-16" : "w-60"}`}
+      >
+        <SidebarContent
+          active={active}
+          onNav={onNav}
+          collapsed={collapsed}
+          onToggle={onToggle}
+          onClose={() => {}}
+        />
       </div>
 
       {/* Mobile overlay drawer */}
@@ -205,7 +321,13 @@ function Sidebar({ active, onNav, collapsed, onToggle, mobileOpen, onMobileClose
               transition={{ type: "spring", damping: 28, stiffness: 300 }}
               className="lg:hidden fixed left-0 top-0 bottom-0 w-64 z-50 shadow-2xl"
             >
-              <SidebarContent active={active} onNav={onNav} collapsed={false} onToggle={onToggle} onClose={onMobileClose} />
+              <SidebarContent
+                active={active}
+                onNav={onNav}
+                collapsed={false}
+                onToggle={onToggle}
+                onClose={onMobileClose}
+              />
             </motion.div>
           </>
         )}
@@ -214,11 +336,21 @@ function Sidebar({ active, onNav, collapsed, onToggle, mobileOpen, onMobileClose
   );
 }
 
-function SectionHeader({ title, subtitle }: { title: string; subtitle?: string }) {
+function SectionHeader({
+  title,
+  subtitle,
+}: {
+  title: string;
+  subtitle?: string;
+}) {
   return (
     <div className="mb-6">
-      <h2 className="font-heading text-2xl font-bold text-foreground">{title}</h2>
-      {subtitle && <p className="text-sm text-muted-foreground mt-1">{subtitle}</p>}
+      <h2 className="font-heading text-2xl font-bold text-foreground">
+        {title}
+      </h2>
+      {subtitle && (
+        <p className="text-sm text-muted-foreground mt-1">{subtitle}</p>
+      )}
     </div>
   );
 }
@@ -229,48 +361,92 @@ const CHART_BLUE = "#60a5fa";
 const CHART_GREEN = "#34d399";
 
 function StatCard({
-  label, value, icon: Icon, trend, trendLabel, delay, accent,
+  label,
+  value,
+  icon: Icon,
+  trend,
+  trendLabel,
+  delay,
+  accent,
 }: {
-  label: string; value: string | number; icon: React.ElementType;
-  trend?: "up" | "down" | "neutral"; trendLabel?: string;
-  delay?: number; accent?: string;
+  label: string;
+  value: string | number;
+  icon: React.ElementType;
+  trend?: "up" | "down" | "neutral";
+  trendLabel?: string;
+  delay?: number;
+  accent?: string;
 }) {
-  const trendColor = trend === "up" ? "text-emerald-400" : trend === "down" ? "text-red-400" : "text-muted-foreground";
-  const TrendIcon = trend === "up" ? TrendingUp : trend === "down" ? TrendingUp : null;
+  const trendColor =
+    trend === "up"
+      ? "text-emerald-400"
+      : trend === "down"
+        ? "text-red-400"
+        : "text-muted-foreground";
+  const TrendIcon =
+    trend === "up" ? TrendingUp : trend === "down" ? TrendingUp : null;
   return (
-    <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: delay ?? 0 }}
-      className="glass-card rounded-xl p-5 flex flex-col gap-3 relative overflow-hidden">
+    <motion.div
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: delay ?? 0 }}
+      className="glass-card rounded-xl p-5 flex flex-col gap-3 relative overflow-hidden"
+    >
       <div className={`absolute inset-0 opacity-5 ${accent ?? "bg-primary"}`} />
       <div className="flex items-center justify-between relative">
         <div className="flex items-center gap-2">
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10">
             <Icon className="w-4 h-4 text-primary" />
           </div>
-          <span className="text-xs font-medium text-muted-foreground">{label}</span>
+          <span className="text-xs font-medium text-muted-foreground">
+            {label}
+          </span>
         </div>
         {trendLabel && TrendIcon && (
-          <span className={`flex items-center gap-0.5 text-[10px] font-semibold ${trendColor}`}>
-            <TrendIcon className={`w-3 h-3 ${trend === "down" ? "rotate-180" : ""}`} />
+          <span
+            className={`flex items-center gap-0.5 text-[10px] font-semibold ${trendColor}`}
+          >
+            <TrendIcon
+              className={`w-3 h-3 ${trend === "down" ? "rotate-180" : ""}`}
+            />
             {trendLabel}
           </span>
         )}
       </div>
-      <div className="font-heading text-3xl font-bold text-foreground relative">{value}</div>
+      <div className="font-heading text-3xl font-bold text-foreground relative">
+        {value}
+      </div>
     </motion.div>
   );
 }
 
-function ChartCard({ title, icon: Icon, delay, children, className }: {
-  title: string; icon: React.ElementType; delay?: number; children: React.ReactNode; className?: string;
+function ChartCard({
+  title,
+  icon: Icon,
+  delay,
+  children,
+  className,
+}: {
+  title: string;
+  icon: React.ElementType;
+  delay?: number;
+  children: React.ReactNode;
+  className?: string;
 }) {
   return (
-    <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: delay ?? 0 }}
-      className={`glass-card rounded-xl p-5 ${className ?? ""}`}>
+    <motion.div
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: delay ?? 0 }}
+      className={`glass-card rounded-xl p-5 ${className ?? ""}`}
+    >
       <div className="flex items-center gap-2 mb-4">
         <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary/10">
           <Icon className="w-3.5 h-3.5 text-primary" />
         </div>
-        <h3 className="font-heading text-sm font-semibold text-foreground">{title}</h3>
+        <h3 className="font-heading text-sm font-semibold text-foreground">
+          {title}
+        </h3>
       </div>
       {children}
     </motion.div>
@@ -292,41 +468,82 @@ function OverviewSection() {
   const trend = stats?.trendData ?? [];
 
   const apiCallsThisWeek = trend.slice(-7).reduce((s, d) => s + d.calls, 0);
-  const apiCallsPrevWeek = trend.slice(-14, -7).reduce((s, d) => s + d.calls, 0);
-  const apiTrend = apiCallsPrevWeek === 0 ? "neutral" as const :
-    apiCallsThisWeek >= apiCallsPrevWeek ? "up" as const : "down" as const;
-  const apiTrendPct = apiCallsPrevWeek === 0 ? "" :
-    `${Math.round(Math.abs((apiCallsThisWeek - apiCallsPrevWeek) / apiCallsPrevWeek) * 100)}%`;
+  const apiCallsPrevWeek = trend
+    .slice(-14, -7)
+    .reduce((s, d) => s + d.calls, 0);
+  const apiTrend =
+    apiCallsPrevWeek === 0
+      ? ("neutral" as const)
+      : apiCallsThisWeek >= apiCallsPrevWeek
+        ? ("up" as const)
+        : ("down" as const);
+  const apiTrendPct =
+    apiCallsPrevWeek === 0
+      ? ""
+      : `${Math.round(Math.abs((apiCallsThisWeek - apiCallsPrevWeek) / apiCallsPrevWeek) * 100)}%`;
 
   const newUsersThisWeek = trend.slice(-7).reduce((s, d) => s + d.users, 0);
-  const newUsersPrevWeek = trend.slice(-14, -7).reduce((s, d) => s + d.users, 0);
-  const userTrend = newUsersPrevWeek === 0 ? "neutral" as const :
-    newUsersThisWeek >= newUsersPrevWeek ? "up" as const : "down" as const;
-  const userTrendPct = newUsersPrevWeek === 0 ? "" :
-    `${Math.round(Math.abs((newUsersThisWeek - newUsersPrevWeek) / newUsersPrevWeek) * 100)}%`;
+  const newUsersPrevWeek = trend
+    .slice(-14, -7)
+    .reduce((s, d) => s + d.users, 0);
+  const userTrend =
+    newUsersPrevWeek === 0
+      ? ("neutral" as const)
+      : newUsersThisWeek >= newUsersPrevWeek
+        ? ("up" as const)
+        : ("down" as const);
+  const userTrendPct =
+    newUsersPrevWeek === 0
+      ? ""
+      : `${Math.round(Math.abs((newUsersThisWeek - newUsersPrevWeek) / newUsersPrevWeek) * 100)}%`;
 
-  const piePlanData = stats ? [
-    { name: "Free", value: stats.usersByPlan?.FREE || 0, color: CHART_PLAN_HEX.Free },
-    { name: "Basic", value: stats.usersByPlan?.BASIC || 0, color: CHART_PLAN_HEX.Basic },
-    { name: "Pro", value: stats.usersByPlan?.Pro || stats.usersByPlan?.PRO || 0, color: CHART_PLAN_HEX.Pro },
-  ] : [];
+  const piePlanData = stats
+    ? [
+        {
+          name: "Free",
+          value: stats.usersByPlan?.FREE || 0,
+          color: CHART_PLAN_HEX.Free,
+        },
+        {
+          name: "Basic",
+          value: stats.usersByPlan?.BASIC || 0,
+          color: CHART_PLAN_HEX.Basic,
+        },
+        {
+          name: "Pro",
+          value: stats.usersByPlan?.Pro || stats.usersByPlan?.PRO || 0,
+          color: CHART_PLAN_HEX.Pro,
+        },
+      ]
+    : [];
 
   const trendFilled = React.useMemo(() => {
     if (!trend.length) return [];
     const last30: { month: string; calls: number; users: number }[] = [];
-    const map = Object.fromEntries(trend.map(d => [d.date, d]));
+    const map = Object.fromEntries(trend.map((d) => [d.date, d]));
     for (let i = 29; i >= 0; i--) {
-      const d = new Date(); d.setDate(d.getDate() - i);
+      const d = new Date();
+      d.setDate(d.getDate() - i);
       const key = d.toISOString().slice(0, 10);
-      const label = d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
-      last30.push({ month: label, calls: map[key]?.calls ?? 0, users: map[key]?.users ?? 0 });
+      const label = d.toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+      });
+      last30.push({
+        month: label,
+        calls: map[key]?.calls ?? 0,
+        users: map[key]?.users ?? 0,
+      });
     }
     return last30;
   }, [trend]);
 
   return (
     <div>
-      <SectionHeader title="Overview" subtitle="Platform-wide statistics at a glance" />
+      <SectionHeader
+        title="Overview"
+        subtitle="Platform-wide statistics at a glance"
+      />
 
       {statsQuery.isLoading ? (
         <div className="flex justify-center py-16">
@@ -334,55 +551,156 @@ function OverviewSection() {
         </div>
       ) : stats ? (
         <div className="space-y-5">
-
           {/* ── KPI cards ─────────────────────────── */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-            <StatCard label="Total Users" value={stats.totalUsers.toLocaleString()} icon={Users}
-              trend={userTrend} trendLabel={userTrendPct ? `${userTrendPct} vs last week` : undefined} delay={0} />
-            <StatCard label="API Calls" value={stats.totalApiCalls.toLocaleString()} icon={BarChart3}
-              trend={apiTrend} trendLabel={apiTrendPct ? `${apiTrendPct} vs last week` : undefined} delay={0.06} />
-            <StatCard label="Known Domains" value={stats.totalDomains.toLocaleString()} icon={Database} delay={0.12} />
-            <StatCard label="Pending Upgrades" value={stats.pendingUpgradeRequests} icon={CreditCard}
+            <StatCard
+              label="Total Users"
+              value={stats.totalUsers.toLocaleString()}
+              icon={Users}
+              trend={userTrend}
+              trendLabel={
+                userTrendPct ? `${userTrendPct} vs last week` : undefined
+              }
+              delay={0}
+            />
+            <StatCard
+              label="API Calls"
+              value={stats.totalApiCalls.toLocaleString()}
+              icon={BarChart3}
+              trend={apiTrend}
+              trendLabel={
+                apiTrendPct ? `${apiTrendPct} vs last week` : undefined
+              }
+              delay={0.06}
+            />
+            <StatCard
+              label="Known Domains"
+              value={stats.totalDomains.toLocaleString()}
+              icon={Database}
+              delay={0.12}
+            />
+            <StatCard
+              label="Pending Upgrades"
+              value={stats.pendingUpgradeRequests}
+              icon={CreditCard}
               trend={stats.pendingUpgradeRequests > 0 ? "up" : "neutral"}
-              trendLabel={stats.pendingUpgradeRequests > 0 ? "Needs review" : undefined} delay={0.18} />
+              trendLabel={
+                stats.pendingUpgradeRequests > 0 ? "Needs review" : undefined
+              }
+              delay={0.18}
+            />
           </div>
 
           {/* ── API calls trend ───────────────────── */}
           <ChartCard title="API Calls — Last 30 Days" icon={Zap} delay={0.24}>
             <ResponsiveContainer width="100%" height={200}>
-              <AreaChart data={trendFilled} margin={{ top: 4, right: 4, left: -20, bottom: 0 }}>
+              <AreaChart
+                data={trendFilled}
+                margin={{ top: 4, right: 4, left: -20, bottom: 0 }}
+              >
                 <defs>
                   <linearGradient id="gradCalls" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor={CHART_PURPLE} stopOpacity={0.35} />
-                    <stop offset="95%" stopColor={CHART_PURPLE} stopOpacity={0} />
+                    <stop
+                      offset="5%"
+                      stopColor={CHART_PURPLE}
+                      stopOpacity={0.35}
+                    />
+                    <stop
+                      offset="95%"
+                      stopColor={CHART_PURPLE}
+                      stopOpacity={0}
+                    />
                   </linearGradient>
                 </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" strokeOpacity={0.5} />
-                <XAxis dataKey="month" tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }}
-                  tickLine={false} axisLine={false} interval={4} />
-                <YAxis tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }}
-                  tickLine={false} axisLine={false} allowDecimals={false} />
-                <Tooltip contentStyle={customTooltipStyle} cursor={{ stroke: CHART_PURPLE, strokeWidth: 1, strokeDasharray: "3 3" }} />
-                <Area type="monotone" dataKey="calls" name="API Calls" stroke={CHART_PURPLE}
-                  strokeWidth={2} fill="url(#gradCalls)" dot={false} activeDot={{ r: 4, fill: CHART_PURPLE }} />
+                <CartesianGrid
+                  strokeDasharray="3 3"
+                  stroke="hsl(var(--border))"
+                  strokeOpacity={0.5}
+                />
+                <XAxis
+                  dataKey="month"
+                  tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }}
+                  tickLine={false}
+                  axisLine={false}
+                  interval={4}
+                />
+                <YAxis
+                  tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }}
+                  tickLine={false}
+                  axisLine={false}
+                  allowDecimals={false}
+                />
+                <Tooltip
+                  contentStyle={customTooltipStyle}
+                  cursor={{
+                    stroke: CHART_PURPLE,
+                    strokeWidth: 1,
+                    strokeDasharray: "3 3",
+                  }}
+                />
+                <Area
+                  type="monotone"
+                  dataKey="calls"
+                  name="API Calls"
+                  stroke={CHART_PURPLE}
+                  strokeWidth={2}
+                  fill="url(#gradCalls)"
+                  dot={false}
+                  activeDot={{ r: 4, fill: CHART_PURPLE }}
+                />
               </AreaChart>
             </ResponsiveContainer>
           </ChartCard>
 
           {/* ── Bottom row: signups + plan donut ─── */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-
             {/* New signups bar chart */}
-            <ChartCard title="New Signups — Last 30 Days" icon={Users} delay={0.3}>
+            <ChartCard
+              title="New Signups — Last 30 Days"
+              icon={Users}
+              delay={0.3}
+            >
               <ResponsiveContainer width="100%" height={180}>
-                <BarChart data={trendFilled} margin={{ top: 4, right: 4, left: -20, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" strokeOpacity={0.5} vertical={false} />
-                  <XAxis dataKey="month" tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }}
-                    tickLine={false} axisLine={false} interval={4} />
-                  <YAxis tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }}
-                    tickLine={false} axisLine={false} allowDecimals={false} />
-                  <Tooltip contentStyle={customTooltipStyle} cursor={{ fill: "hsl(var(--muted))", opacity: 0.4 }} />
-                  <Bar dataKey="users" name="New Users" fill={CHART_GREEN} radius={[3, 3, 0, 0]} maxBarSize={18} />
+                <BarChart
+                  data={trendFilled}
+                  margin={{ top: 4, right: 4, left: -20, bottom: 0 }}
+                >
+                  <CartesianGrid
+                    strokeDasharray="3 3"
+                    stroke="hsl(var(--border))"
+                    strokeOpacity={0.5}
+                    vertical={false}
+                  />
+                  <XAxis
+                    dataKey="month"
+                    tick={{
+                      fontSize: 10,
+                      fill: "hsl(var(--muted-foreground))",
+                    }}
+                    tickLine={false}
+                    axisLine={false}
+                    interval={4}
+                  />
+                  <YAxis
+                    tick={{
+                      fontSize: 10,
+                      fill: "hsl(var(--muted-foreground))",
+                    }}
+                    tickLine={false}
+                    axisLine={false}
+                    allowDecimals={false}
+                  />
+                  <Tooltip
+                    contentStyle={customTooltipStyle}
+                    cursor={{ fill: "hsl(var(--muted))", opacity: 0.4 }}
+                  />
+                  <Bar
+                    dataKey="users"
+                    name="New Users"
+                    fill={CHART_GREEN}
+                    radius={[3, 3, 0, 0]}
+                    maxBarSize={18}
+                  />
                 </BarChart>
               </ResponsiveContainer>
             </ChartCard>
@@ -392,8 +710,16 @@ function OverviewSection() {
               <div className="flex items-center gap-4">
                 <ResponsiveContainer width="55%" height={180}>
                   <RechartsPie>
-                    <Pie data={piePlanData} cx="50%" cy="50%" innerRadius={48} outerRadius={72}
-                      paddingAngle={3} dataKey="value" strokeWidth={0}>
+                    <Pie
+                      data={piePlanData}
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={48}
+                      outerRadius={72}
+                      paddingAngle={3}
+                      dataKey="value"
+                      strokeWidth={0}
+                    >
                       {piePlanData.map((entry) => (
                         <Cell key={entry.name} fill={entry.color} />
                       ))}
@@ -403,12 +729,20 @@ function OverviewSection() {
                 </ResponsiveContainer>
                 <div className="flex flex-col gap-2.5 flex-1">
                   {piePlanData.map(({ name, value, color }) => {
-                    const total = piePlanData.reduce((s, d) => s + d.value, 0) || 1;
+                    const total =
+                      piePlanData.reduce((s, d) => s + d.value, 0) || 1;
                     return (
                       <div key={name} className="flex items-center gap-2">
-                        <span className="h-2.5 w-2.5 rounded-full shrink-0" style={{ background: color }} />
-                        <span className="text-xs text-muted-foreground flex-1">{name}</span>
-                        <span className="text-xs font-semibold text-foreground">{value}</span>
+                        <span
+                          className="h-2.5 w-2.5 rounded-full shrink-0"
+                          style={{ background: color }}
+                        />
+                        <span className="text-xs text-muted-foreground flex-1">
+                          {name}
+                        </span>
+                        <span className="text-xs font-semibold text-foreground">
+                          {value}
+                        </span>
                         <span className="text-[10px] text-muted-foreground w-8 text-right">
                           {Math.round((value / total) * 100)}%
                         </span>
@@ -418,14 +752,15 @@ function OverviewSection() {
                   <div className="mt-1 border-t border-border pt-2">
                     <div className="flex justify-between text-xs">
                       <span className="text-muted-foreground">Total</span>
-                      <span className="font-semibold text-foreground">{piePlanData.reduce((s, d) => s + d.value, 0)}</span>
+                      <span className="font-semibold text-foreground">
+                        {piePlanData.reduce((s, d) => s + d.value, 0)}
+                      </span>
                     </div>
                   </div>
                 </div>
               </div>
             </ChartCard>
           </div>
-
         </div>
       ) : null}
     </div>
@@ -442,21 +777,29 @@ function UsersSection() {
   const [search, setSearch] = useState("");
   const [loadingIds, setLoadingIds] = useState<Record<string, boolean>>({});
 
-  const users = (usersQuery.data?.users || []).filter(u =>
-    u.email.toLowerCase().includes(search.toLowerCase()) ||
-    u.name.toLowerCase().includes(search.toLowerCase())
+  const users = (usersQuery.data?.users || []).filter(
+    (u) =>
+      u.email.toLowerCase().includes(search.toLowerCase()) ||
+      u.name.toLowerCase().includes(search.toLowerCase()),
   );
 
-  const setLoading = (key: string, val: boolean) => setLoadingIds(p => ({ ...p, [key]: val }));
+  const setLoading = (key: string, val: boolean) =>
+    setLoadingIds((p) => ({ ...p, [key]: val }));
 
   const handlePlan = async (id: number, plan: string) => {
-    const planValue = UpdatePlanRequestPlan[plan as keyof typeof UpdatePlanRequestPlan];
+    const planValue =
+      UpdatePlanRequestPlan[plan as keyof typeof UpdatePlanRequestPlan];
     if (!planValue) return;
     setLoading(`plan-${id}`, true);
     try {
-      await updatePlanMutation.mutateAsync({ userId: id, data: { plan: planValue } });
+      await updatePlanMutation.mutateAsync({
+        userId: id,
+        data: { plan: planValue },
+      });
       qc.invalidateQueries({ queryKey: ["/api/admin/users"] });
-    } finally { setLoading(`plan-${id}`, false); }
+    } finally {
+      setLoading(`plan-${id}`, false);
+    }
   };
 
   const handleDelete = async (id: number, email: string) => {
@@ -466,7 +809,9 @@ function UsersSection() {
       await deleteUserMutation.mutateAsync(id);
       qc.invalidateQueries({ queryKey: ["/api/admin/users"] });
       qc.invalidateQueries({ queryKey: ["/api/admin/stats"] });
-    } finally { setLoading(`del-${id}`, false); }
+    } finally {
+      setLoading(`del-${id}`, false);
+    }
   };
 
   const handleReset = async (id: number) => {
@@ -474,16 +819,21 @@ function UsersSection() {
     try {
       await resetUsageMutation.mutateAsync(id);
       qc.invalidateQueries({ queryKey: ["/api/admin/users"] });
-    } finally { setLoading(`reset-${id}`, false); }
+    } finally {
+      setLoading(`reset-${id}`, false);
+    }
   };
 
   const handleRevoke = async (id: number) => {
-    if (!confirm("Revoke this API key? The user will need to get a new key.")) return;
+    if (!confirm("Revoke this API key? The user will need to get a new key."))
+      return;
     setLoading(`revoke-${id}`, true);
     try {
       await revokeKeyMutation.mutateAsync(id);
       qc.invalidateQueries({ queryKey: ["/api/admin/users"] });
-    } finally { setLoading(`revoke-${id}`, false); }
+    } finally {
+      setLoading(`revoke-${id}`, false);
+    }
   };
 
   return (
@@ -492,73 +842,136 @@ function UsersSection() {
       <div className="mb-4 relative">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
         <input
-          type="text" placeholder="Search by name or email…"
-          value={search} onChange={e => setSearch(e.target.value)}
+          type="text"
+          placeholder="Search by name or email…"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
           className="w-full pl-9 pr-4 py-2.5 rounded-xl bg-muted/40 border border-border text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 transition-all"
         />
       </div>
       <div className="glass-card rounded-xl overflow-hidden">
         {usersQuery.isLoading ? (
-          <div className="flex justify-center py-12"><Loader2 className="w-5 h-5 animate-spin text-primary" /></div>
+          <div className="flex justify-center py-12">
+            <Loader2 className="w-5 h-5 animate-spin text-primary" />
+          </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-sm text-left">
               <thead className="border-b border-border">
                 <tr>
-                  {["Name / Email", "Plan", "Usage", "Bulk Jobs", "Joined", "Actions"].map(h => (
-                    <th key={h} className="px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide">{h}</th>
+                  {[
+                    "Name / Email",
+                    "Plan",
+                    "Usage",
+                    "Bulk Jobs",
+                    "Joined",
+                    "Actions",
+                  ].map((h) => (
+                    <th
+                      key={h}
+                      className="px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide"
+                    >
+                      {h}
+                    </th>
                   ))}
                 </tr>
               </thead>
               <tbody>
                 {users.length === 0 ? (
-                  <tr><td colSpan={6} className="text-center py-10 text-muted-foreground text-sm">No users found.</td></tr>
-                ) : users.map(u => (
-                  <tr key={u.id} className="border-b border-border/50 last:border-0 hover:bg-muted/20 transition-colors">
-                    <td className="px-4 py-3">
-                      <div className="font-medium text-foreground">{u.name}</div>
-                      <div className="text-xs text-muted-foreground">{u.email}</div>
-                    </td>
-                    <td className="px-4 py-3">
-                      <select
-                        value={u.plan}
-                        onChange={e => handlePlan(u.id, e.target.value)}
-                        disabled={loadingIds[`plan-${u.id}`]}
-                        className={`text-xs font-bold rounded-md px-2 py-1 border border-border bg-background cursor-pointer ${PLAN_COLORS[u.plan]}`}
-                      >
-                        <option value="FREE">FREE</option>
-                        <option value="BASIC">BASIC</option>
-                        <option value="PRO">PRO</option>
-                      </select>
-                    </td>
-                    <td className="px-4 py-3 text-muted-foreground text-xs">
-                      {u.requestCount} / {u.requestLimit}
-                      <div className="mt-1 h-1 w-20 rounded-full bg-border overflow-hidden">
-                        <div className="h-1 rounded-full bg-primary" style={{ width: `${Math.min(100, (u.requestCount / u.requestLimit) * 100)}%` }} />
-                      </div>
-                    </td>
-                    <td className="px-4 py-3 text-xs text-muted-foreground">
-                      {u.bulkJobCount ?? 0}
-                    </td>
-                    <td className="px-4 py-3 text-xs text-muted-foreground">{format(parseISO(u.createdAt), "PP")}</td>
-                    <td className="px-4 py-3">
-                      <div className="flex items-center gap-1">
-                        <button onClick={() => handleReset(u.id)} disabled={loadingIds[`reset-${u.id}`]}
-                          title="Reset usage" className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">
-                          {loadingIds[`reset-${u.id}`] ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <RotateCcw className="w-3.5 h-3.5" />}
-                        </button>
-                        <button onClick={() => handleRevoke(u.id)} disabled={loadingIds[`revoke-${u.id}`]}
-                          title="Revoke API key" className="p-1.5 rounded-lg text-muted-foreground hover:text-yellow-400 hover:bg-yellow-500/10 transition-colors">
-                          {loadingIds[`revoke-${u.id}`] ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Key className="w-3.5 h-3.5" />}
-                        </button>
-                        <button onClick={() => handleDelete(u.id, u.email)} disabled={loadingIds[`del-${u.id}`]}
-                          title="Delete user" className="p-1.5 rounded-lg text-muted-foreground hover:text-red-400 hover:bg-red-500/10 transition-colors">
-                          {loadingIds[`del-${u.id}`] ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Trash2 className="w-3.5 h-3.5" />}
-                        </button>
-                      </div>
+                  <tr>
+                    <td
+                      colSpan={6}
+                      className="text-center py-10 text-muted-foreground text-sm"
+                    >
+                      No users found.
                     </td>
                   </tr>
-                ))}
+                ) : (
+                  users.map((u) => (
+                    <tr
+                      key={u.id}
+                      className="border-b border-border/50 last:border-0 hover:bg-muted/20 transition-colors"
+                    >
+                      <td className="px-4 py-3">
+                        <div className="font-medium text-foreground">
+                          {u.name}
+                        </div>
+                        <div className="text-xs text-muted-foreground">
+                          {u.email}
+                        </div>
+                      </td>
+                      <td className="px-4 py-3">
+                        <select
+                          value={u.plan}
+                          onChange={(e) => handlePlan(u.id, e.target.value)}
+                          disabled={loadingIds[`plan-${u.id}`]}
+                          className={`text-xs font-bold rounded-md px-2 py-1 border border-border bg-background cursor-pointer ${PLAN_COLORS[u.plan]}`}
+                        >
+                          <option value="FREE">FREE</option>
+                          <option value="BASIC">BASIC</option>
+                          <option value="PRO">PRO</option>
+                        </select>
+                      </td>
+                      <td className="px-4 py-3 text-muted-foreground text-xs">
+                        {u.requestCount} / {u.requestLimit}
+                        <div className="mt-1 h-1 w-20 rounded-full bg-border overflow-hidden">
+                          <div
+                            className="h-1 rounded-full bg-primary"
+                            style={{
+                              width: `${Math.min(100, (u.requestCount / u.requestLimit) * 100)}%`,
+                            }}
+                          />
+                        </div>
+                      </td>
+                      <td className="px-4 py-3 text-xs text-muted-foreground">
+                        {u.bulkJobCount ?? 0}
+                      </td>
+                      <td className="px-4 py-3 text-xs text-muted-foreground">
+                        {format(parseISO(u.createdAt), "PP")}
+                      </td>
+                      <td className="px-4 py-3">
+                        <div className="flex items-center gap-1">
+                          <button
+                            onClick={() => handleReset(u.id)}
+                            disabled={loadingIds[`reset-${u.id}`]}
+                            title="Reset usage"
+                            className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+                          >
+                            {loadingIds[`reset-${u.id}`] ? (
+                              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                            ) : (
+                              <RotateCcw className="w-3.5 h-3.5" />
+                            )}
+                          </button>
+                          <button
+                            onClick={() => handleRevoke(u.id)}
+                            disabled={loadingIds[`revoke-${u.id}`]}
+                            title="Revoke API key"
+                            className="p-1.5 rounded-lg text-muted-foreground hover:text-yellow-400 hover:bg-yellow-500/10 transition-colors"
+                          >
+                            {loadingIds[`revoke-${u.id}`] ? (
+                              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                            ) : (
+                              <Key className="w-3.5 h-3.5" />
+                            )}
+                          </button>
+                          <button
+                            onClick={() => handleDelete(u.id, u.email)}
+                            disabled={loadingIds[`del-${u.id}`]}
+                            title="Delete user"
+                            className="p-1.5 rounded-lg text-muted-foreground hover:text-red-400 hover:bg-red-500/10 transition-colors"
+                          >
+                            {loadingIds[`del-${u.id}`] ? (
+                              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                            ) : (
+                              <Trash2 className="w-3.5 h-3.5" />
+                            )}
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>
@@ -582,11 +995,16 @@ type UpgradeRequestWithInvoice = {
   createdAt: string;
 };
 
-async function requestInvoiceUploadUrl(requestId: number): Promise<{ uploadURL: string; objectPath: string }> {
-  const resp = await fetch(`/api/admin/upgrade-requests/${requestId}/invoice/upload-url`, {
-    method: "POST",
-    credentials: "include",
-  });
+async function requestInvoiceUploadUrl(
+  requestId: number,
+): Promise<{ uploadURL: string; objectPath: string }> {
+  const resp = await fetch(
+    `/api/admin/upgrade-requests/${requestId}/invoice/upload-url`,
+    {
+      method: "POST",
+      credentials: "include",
+    },
+  );
   if (!resp.ok) throw new Error("Failed to get upload URL");
   return resp.json();
 }
@@ -600,7 +1018,11 @@ async function uploadToGcs(uploadURL: string, file: File): Promise<void> {
   if (!resp.ok) throw new Error("Upload to storage failed");
 }
 
-async function attachInvoice(requestId: number, objectPath: string, fileName: string): Promise<void> {
+async function attachInvoice(
+  requestId: number,
+  objectPath: string,
+  fileName: string,
+): Promise<void> {
   const resp = await fetch(`/api/admin/upgrade-requests/${requestId}/invoice`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -627,9 +1049,9 @@ function SubscriptionsSection() {
   const [attachUploading, setAttachUploading] = useState(false);
   const [attachError, setAttachError] = useState("");
 
-  const requests = ((requestsQuery.data?.requests || []) as UpgradeRequestWithInvoice[]).filter(r =>
-    tab === "PENDING" ? r.status === "PENDING" : true
-  );
+  const requests = (
+    (requestsQuery.data?.requests || []) as UpgradeRequestWithInvoice[]
+  ).filter((r) => (tab === "PENDING" ? r.status === "PENDING" : true));
 
   const invalidate = () => {
     qc.invalidateQueries({ queryKey: ["/api/admin/upgrade-requests"] });
@@ -638,7 +1060,10 @@ function SubscriptionsSection() {
   };
 
   const handleReject = async (id: number) => {
-    await updateMutation.mutateAsync({ requestId: id, data: { status: "REJECTED" } });
+    await updateMutation.mutateAsync({
+      requestId: id,
+      data: { status: "REJECTED" },
+    });
     invalidate();
   };
 
@@ -647,11 +1072,17 @@ function SubscriptionsSection() {
     setApproveUploading(true);
     setApproveError("");
     try {
-      const updateData: { status: "APPROVED"; note?: string } = { status: "APPROVED" };
+      const updateData: { status: "APPROVED"; note?: string } = {
+        status: "APPROVED",
+      };
       if (approveNote.trim()) updateData.note = approveNote.trim();
-      await updateMutation.mutateAsync({ requestId: approvingId, data: updateData });
+      await updateMutation.mutateAsync({
+        requestId: approvingId,
+        data: updateData,
+      });
       if (approveFile) {
-        const { uploadURL, objectPath } = await requestInvoiceUploadUrl(approvingId);
+        const { uploadURL, objectPath } =
+          await requestInvoiceUploadUrl(approvingId);
         await uploadToGcs(uploadURL, approveFile);
         await attachInvoice(approvingId, objectPath, approveFile.name);
       }
@@ -671,7 +1102,8 @@ function SubscriptionsSection() {
     setAttachUploading(true);
     setAttachError("");
     try {
-      const { uploadURL, objectPath } = await requestInvoiceUploadUrl(attachingId);
+      const { uploadURL, objectPath } =
+        await requestInvoiceUploadUrl(attachingId);
       await uploadToGcs(uploadURL, attachFile);
       await attachInvoice(attachingId, objectPath, attachFile.name);
       invalidate();
@@ -686,7 +1118,10 @@ function SubscriptionsSection() {
 
   return (
     <div>
-      <SectionHeader title="Subscriptions" subtitle="Review and action upgrade requests" />
+      <SectionHeader
+        title="Subscriptions"
+        subtitle="Review and action upgrade requests"
+      />
 
       {/* Approval Modal */}
       <AnimatePresence>
@@ -696,7 +1131,14 @@ function SubscriptionsSection() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm px-4"
-            onClick={(e) => { if (e.target === e.currentTarget) { setApprovingId(null); setApproveFile(null); setApproveNote(""); setApproveError(""); } }}
+            onClick={(e) => {
+              if (e.target === e.currentTarget) {
+                setApprovingId(null);
+                setApproveFile(null);
+                setApproveNote("");
+                setApproveError("");
+              }
+            }}
           >
             <motion.div
               initial={{ scale: 0.95, opacity: 0 }}
@@ -708,33 +1150,48 @@ function SubscriptionsSection() {
                 <div className="h-8 w-8 rounded-xl bg-green-500/15 flex items-center justify-center">
                   <Check className="w-4 h-4 text-green-400" />
                 </div>
-                <h3 className="font-heading text-base font-semibold text-foreground">Approve Upgrade Request</h3>
+                <h3 className="font-heading text-base font-semibold text-foreground">
+                  Approve Upgrade Request
+                </h3>
               </div>
               <p className="text-xs text-muted-foreground mb-4">
-                You can optionally attach an invoice PDF and add an admin note for this upgrade.
+                You can optionally attach an invoice PDF and add an admin note
+                for this upgrade.
               </p>
 
               <div className="mb-4">
-                <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Admin note (optional)</label>
+                <label className="text-xs font-medium text-muted-foreground mb-1.5 block">
+                  Admin note (optional)
+                </label>
                 <textarea
                   rows={2}
                   placeholder="e.g. Upgraded to PRO — invoice #INV-2026-001"
                   value={approveNote}
-                  onChange={e => setApproveNote(e.target.value)}
+                  onChange={(e) => setApproveNote(e.target.value)}
                   className="w-full bg-muted/40 border border-border rounded-xl px-3 py-2 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 transition-all resize-none"
                 />
               </div>
 
               <label className="block mb-4">
-                <span className="text-xs font-medium text-muted-foreground mb-1.5 block">Invoice (optional, PDF only, max 5 MB)</span>
-                <div className={`relative flex items-center gap-2 border rounded-xl px-3 py-2.5 transition-colors cursor-pointer ${approveFile ? "border-green-500/40 bg-green-500/5" : "border-border bg-muted/30 hover:border-primary/40"}`}>
+                <span className="text-xs font-medium text-muted-foreground mb-1.5 block">
+                  Invoice (optional, PDF only, max 5 MB)
+                </span>
+                <div
+                  className={`relative flex items-center gap-2 border rounded-xl px-3 py-2.5 transition-colors cursor-pointer ${approveFile ? "border-green-500/40 bg-green-500/5" : "border-border bg-muted/30 hover:border-primary/40"}`}
+                >
                   <Paperclip className="h-4 w-4 text-muted-foreground shrink-0" />
                   <span className="text-xs text-foreground truncate flex-1">
                     {approveFile ? approveFile.name : "Click to select a PDF…"}
                   </span>
                   {approveFile && (
-                    <button type="button" onClick={(e) => { e.stopPropagation(); setApproveFile(null); }}
-                      className="text-muted-foreground hover:text-foreground">
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setApproveFile(null);
+                      }}
+                      className="text-muted-foreground hover:text-foreground"
+                    >
                       <X className="h-3.5 w-3.5" />
                     </button>
                   )}
@@ -744,7 +1201,10 @@ function SubscriptionsSection() {
                     className="absolute inset-0 opacity-0 cursor-pointer"
                     onChange={(e) => {
                       const f = e.target.files?.[0];
-                      if (f && f.size > 5 * 1024 * 1024) { setApproveError("File must be under 5 MB"); return; }
+                      if (f && f.size > 5 * 1024 * 1024) {
+                        setApproveError("File must be under 5 MB");
+                        return;
+                      }
                       setApproveFile(f ?? null);
                       setApproveError("");
                     }}
@@ -752,11 +1212,18 @@ function SubscriptionsSection() {
                 </div>
               </label>
 
-              {approveError && <p className="text-xs text-red-400 mb-3">{approveError}</p>}
+              {approveError && (
+                <p className="text-xs text-red-400 mb-3">{approveError}</p>
+              )}
 
               <div className="flex gap-2">
                 <button
-                  onClick={() => { setApprovingId(null); setApproveFile(null); setApproveNote(""); setApproveError(""); }}
+                  onClick={() => {
+                    setApprovingId(null);
+                    setApproveFile(null);
+                    setApproveNote("");
+                    setApproveError("");
+                  }}
                   disabled={approveUploading}
                   className="flex-1 py-2 rounded-xl bg-muted/40 text-muted-foreground text-xs font-semibold hover:bg-muted/60 transition-colors"
                 >
@@ -767,7 +1234,11 @@ function SubscriptionsSection() {
                   disabled={approveUploading}
                   className="flex-1 py-2 bg-green-500/15 text-green-400 hover:bg-green-500/25 rounded-xl text-xs font-semibold transition-colors flex items-center justify-center gap-1"
                 >
-                  {approveUploading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Check className="w-3.5 h-3.5" />}
+                  {approveUploading ? (
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                  ) : (
+                    <Check className="w-3.5 h-3.5" />
+                  )}
                   {approveUploading ? "Processing…" : "Approve"}
                 </button>
               </div>
@@ -784,7 +1255,13 @@ function SubscriptionsSection() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm px-4"
-            onClick={(e) => { if (e.target === e.currentTarget) { setAttachingId(null); setAttachFile(null); setAttachError(""); } }}
+            onClick={(e) => {
+              if (e.target === e.currentTarget) {
+                setAttachingId(null);
+                setAttachFile(null);
+                setAttachError("");
+              }
+            }}
           >
             <motion.div
               initial={{ scale: 0.95, opacity: 0 }}
@@ -796,22 +1273,35 @@ function SubscriptionsSection() {
                 <div className="h-8 w-8 rounded-xl bg-primary/10 flex items-center justify-center">
                   <Upload className="w-4 h-4 text-primary" />
                 </div>
-                <h3 className="font-heading text-base font-semibold text-foreground">Attach Invoice</h3>
+                <h3 className="font-heading text-base font-semibold text-foreground">
+                  Attach Invoice
+                </h3>
               </div>
               <p className="text-xs text-muted-foreground mb-4">
-                Upload a PDF invoice for this approved request. The user will be able to download it from their dashboard.
+                Upload a PDF invoice for this approved request. The user will be
+                able to download it from their dashboard.
               </p>
 
               <label className="block mb-4">
-                <span className="text-xs font-medium text-muted-foreground mb-1.5 block">Invoice PDF (max 5 MB)</span>
-                <div className={`relative flex items-center gap-2 border rounded-xl px-3 py-2.5 transition-colors cursor-pointer ${attachFile ? "border-green-500/40 bg-green-500/5" : "border-border bg-muted/30 hover:border-primary/40"}`}>
+                <span className="text-xs font-medium text-muted-foreground mb-1.5 block">
+                  Invoice PDF (max 5 MB)
+                </span>
+                <div
+                  className={`relative flex items-center gap-2 border rounded-xl px-3 py-2.5 transition-colors cursor-pointer ${attachFile ? "border-green-500/40 bg-green-500/5" : "border-border bg-muted/30 hover:border-primary/40"}`}
+                >
                   <Paperclip className="h-4 w-4 text-muted-foreground shrink-0" />
                   <span className="text-xs text-foreground truncate flex-1">
                     {attachFile ? attachFile.name : "Click to select a PDF…"}
                   </span>
                   {attachFile && (
-                    <button type="button" onClick={(e) => { e.stopPropagation(); setAttachFile(null); }}
-                      className="text-muted-foreground hover:text-foreground">
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setAttachFile(null);
+                      }}
+                      className="text-muted-foreground hover:text-foreground"
+                    >
                       <X className="h-3.5 w-3.5" />
                     </button>
                   )}
@@ -821,7 +1311,10 @@ function SubscriptionsSection() {
                     className="absolute inset-0 opacity-0 cursor-pointer"
                     onChange={(e) => {
                       const f = e.target.files?.[0];
-                      if (f && f.size > 5 * 1024 * 1024) { setAttachError("File must be under 5 MB"); return; }
+                      if (f && f.size > 5 * 1024 * 1024) {
+                        setAttachError("File must be under 5 MB");
+                        return;
+                      }
                       setAttachFile(f ?? null);
                       setAttachError("");
                     }}
@@ -829,11 +1322,17 @@ function SubscriptionsSection() {
                 </div>
               </label>
 
-              {attachError && <p className="text-xs text-red-400 mb-3">{attachError}</p>}
+              {attachError && (
+                <p className="text-xs text-red-400 mb-3">{attachError}</p>
+              )}
 
               <div className="flex gap-2">
                 <button
-                  onClick={() => { setAttachingId(null); setAttachFile(null); setAttachError(""); }}
+                  onClick={() => {
+                    setAttachingId(null);
+                    setAttachFile(null);
+                    setAttachError("");
+                  }}
                   disabled={attachUploading}
                   className="flex-1 py-2 rounded-xl bg-muted/40 text-muted-foreground text-xs font-semibold hover:bg-muted/60 transition-colors"
                 >
@@ -844,7 +1343,11 @@ function SubscriptionsSection() {
                   disabled={attachUploading || !attachFile}
                   className="flex-1 py-2 bg-primary/15 text-primary hover:bg-primary/25 rounded-xl text-xs font-semibold transition-colors flex items-center justify-center gap-1 disabled:opacity-50"
                 >
-                  {attachUploading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Upload className="w-3.5 h-3.5" />}
+                  {attachUploading ? (
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                  ) : (
+                    <Upload className="w-3.5 h-3.5" />
+                  )}
                   {attachUploading ? "Uploading…" : "Upload Invoice"}
                 </button>
               </div>
@@ -854,50 +1357,79 @@ function SubscriptionsSection() {
       </AnimatePresence>
 
       <div className="flex gap-2 mb-5">
-        {(["PENDING", "ALL"] as const).map(t => (
-          <button key={t} onClick={() => setTab(t)}
-            className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${tab === t ? "bg-primary/15 text-primary" : "text-muted-foreground hover:bg-muted/50"}`}>
+        {(["PENDING", "ALL"] as const).map((t) => (
+          <button
+            key={t}
+            onClick={() => setTab(t)}
+            className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${tab === t ? "bg-primary/15 text-primary" : "text-muted-foreground hover:bg-muted/50"}`}
+          >
             {t === "PENDING" ? "Pending" : "All Requests"}
           </button>
         ))}
       </div>
       {requestsQuery.isLoading ? (
-        <div className="flex justify-center py-12"><Loader2 className="w-5 h-5 animate-spin text-primary" /></div>
+        <div className="flex justify-center py-12">
+          <Loader2 className="w-5 h-5 animate-spin text-primary" />
+        </div>
       ) : requests.length === 0 ? (
         <div className="glass-card rounded-xl p-10 text-center text-muted-foreground text-sm">
-          {tab === "PENDING" ? "No pending upgrade requests." : "No requests yet."}
+          {tab === "PENDING"
+            ? "No pending upgrade requests."
+            : "No requests yet."}
         </div>
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {requests.map(req => (
+          {requests.map((req) => (
             <div key={req.id} className="glass-card rounded-xl p-5">
               <div className="flex justify-between items-start mb-3">
                 <div>
-                  <div className="font-semibold text-foreground text-sm">{req.userEmail}</div>
-                  <div className="text-xs text-muted-foreground">{req.userName}</div>
-                  <div className="text-xs text-muted-foreground mt-0.5">{format(parseISO(req.createdAt), "PP pp")}</div>
+                  <div className="font-semibold text-foreground text-sm">
+                    {req.userEmail}
+                  </div>
+                  <div className="text-xs text-muted-foreground">
+                    {req.userName}
+                  </div>
+                  <div className="text-xs text-muted-foreground mt-0.5">
+                    {format(parseISO(req.createdAt), "PP pp")}
+                  </div>
                 </div>
-                <span className={`px-2 py-0.5 rounded-md text-xs font-bold ${PLAN_COLORS[req.planRequested]}`}>
+                <span
+                  className={`px-2 py-0.5 rounded-md text-xs font-bold ${PLAN_COLORS[req.planRequested]}`}
+                >
                   → {req.planRequested}
                 </span>
               </div>
               {req.note && (
-                <p className="text-xs text-muted-foreground bg-muted/40 rounded-lg px-3 py-2 mb-3 italic">"{req.note}"</p>
+                <p className="text-xs text-muted-foreground bg-muted/40 rounded-lg px-3 py-2 mb-3 italic">
+                  "{req.note}"
+                </p>
               )}
               {req.status === "PENDING" ? (
                 <div className="flex gap-2">
-                  <button onClick={() => { setApprovingId(req.id); setApproveFile(null); setApproveError(""); }} disabled={updateMutation.isPending}
-                    className="flex-1 py-2 bg-green-500/15 text-green-400 hover:bg-green-500/25 rounded-lg text-xs font-semibold transition-colors flex items-center justify-center gap-1">
+                  <button
+                    onClick={() => {
+                      setApprovingId(req.id);
+                      setApproveFile(null);
+                      setApproveError("");
+                    }}
+                    disabled={updateMutation.isPending}
+                    className="flex-1 py-2 bg-green-500/15 text-green-400 hover:bg-green-500/25 rounded-lg text-xs font-semibold transition-colors flex items-center justify-center gap-1"
+                  >
                     <Check className="w-3.5 h-3.5" /> Approve
                   </button>
-                  <button onClick={() => handleReject(req.id)} disabled={updateMutation.isPending}
-                    className="flex-1 py-2 bg-red-500/15 text-red-400 hover:bg-red-500/25 rounded-lg text-xs font-semibold transition-colors flex items-center justify-center gap-1">
+                  <button
+                    onClick={() => handleReject(req.id)}
+                    disabled={updateMutation.isPending}
+                    className="flex-1 py-2 bg-red-500/15 text-red-400 hover:bg-red-500/25 rounded-lg text-xs font-semibold transition-colors flex items-center justify-center gap-1"
+                  >
                     <X className="w-3.5 h-3.5" /> Reject
                   </button>
                 </div>
               ) : (
                 <div>
-                  <span className={`inline-flex px-2 py-0.5 rounded-md text-xs font-semibold ${req.status === "APPROVED" ? "bg-green-500/15 text-green-400" : "bg-red-500/15 text-red-400"}`}>
+                  <span
+                    className={`inline-flex px-2 py-0.5 rounded-md text-xs font-semibold ${req.status === "APPROVED" ? "bg-green-500/15 text-green-400" : "bg-red-500/15 text-red-400"}`}
+                  >
                     {req.status}
                   </span>
                   {req.status === "APPROVED" && (
@@ -907,7 +1439,9 @@ function SubscriptionsSection() {
                           <div className="min-w-0">
                             <div className="flex items-center gap-1.5">
                               <FileText className="h-3.5 w-3.5 text-primary shrink-0" />
-                              <span className="text-xs text-muted-foreground truncate">{req.invoiceFileName ?? "invoice.pdf"}</span>
+                              <span className="text-xs text-muted-foreground truncate">
+                                {req.invoiceFileName ?? "invoice.pdf"}
+                              </span>
                             </div>
                             {req.invoiceUploadedAt && (
                               <p className="text-xs text-muted-foreground/60 mt-0.5 pl-5">
@@ -926,7 +1460,11 @@ function SubscriptionsSection() {
                               <Download className="h-3.5 w-3.5" />
                             </a>
                             <button
-                              onClick={() => { setAttachingId(req.id); setAttachFile(null); setAttachError(""); }}
+                              onClick={() => {
+                                setAttachingId(req.id);
+                                setAttachFile(null);
+                                setAttachError("");
+                              }}
                               className="p-1 rounded-lg bg-muted/40 text-muted-foreground hover:bg-muted/60 transition-colors"
                               title="Replace invoice"
                             >
@@ -936,7 +1474,11 @@ function SubscriptionsSection() {
                         </div>
                       ) : (
                         <button
-                          onClick={() => { setAttachingId(req.id); setAttachFile(null); setAttachError(""); }}
+                          onClick={() => {
+                            setAttachingId(req.id);
+                            setAttachFile(null);
+                            setAttachError("");
+                          }}
                           className="w-full py-1.5 flex items-center justify-center gap-1.5 rounded-lg border border-dashed border-border text-xs text-muted-foreground hover:border-primary/40 hover:text-primary transition-colors"
                         >
                           <Upload className="h-3.5 w-3.5" /> Attach Invoice
@@ -975,7 +1517,9 @@ function PlanConfigSection() {
   const createMutation = useAdminCreatePlanConfig();
   const deleteMutation = useAdminDeletePlanConfig();
 
-  const [editValues, setEditValues] = useState<Record<string, Partial<PlanConfig>>>({});
+  const [editValues, setEditValues] = useState<
+    Record<string, Partial<PlanConfig>>
+  >({});
   const [saving, setSaving] = useState<Record<string, boolean>>({});
   const [saved, setSaved] = useState<Record<string, boolean>>({});
   const [deleting, setDeleting] = useState<Record<string, boolean>>({});
@@ -986,34 +1530,46 @@ function PlanConfigSection() {
 
   const configs = configQuery.data?.configs || [];
 
-  const getValue = <K extends keyof PlanConfig>(plan: string, field: K, original: PlanConfig[K]): PlanConfig[K] => {
+  const getValue = <K extends keyof PlanConfig>(
+    plan: string,
+    field: K,
+    original: PlanConfig[K],
+  ): PlanConfig[K] => {
     const edits = editValues[plan];
     if (edits && field in edits) return edits[field] as PlanConfig[K];
     return original;
   };
 
-  const setValue = (plan: string, field: keyof Partial<PlanConfig>, value: number | boolean) => {
-    setEditValues(p => ({ ...p, [plan]: { ...p[plan], [field]: value } }));
+  const setValue = (
+    plan: string,
+    field: keyof Partial<PlanConfig>,
+    value: number | boolean,
+  ) => {
+    setEditValues((p) => ({ ...p, [plan]: { ...p[plan], [field]: value } }));
   };
 
   const handleSave = async (plan: string) => {
     const updates = editValues[plan];
     if (!updates || Object.keys(updates).length === 0) return;
-    setSaving(p => ({ ...p, [plan]: true }));
+    setSaving((p) => ({ ...p, [plan]: true }));
     try {
       await updateMutation.mutateAsync({ plan, data: updates });
       qc.invalidateQueries({ queryKey: ["/api/admin/plan-config"] });
-      setEditValues(p => { const n = { ...p }; delete n[plan]; return n; });
-      setSaved(p => ({ ...p, [plan]: true }));
-      setTimeout(() => setSaved(p => ({ ...p, [plan]: false })), 2000);
+      setEditValues((p) => {
+        const n = { ...p };
+        delete n[plan];
+        return n;
+      });
+      setSaved((p) => ({ ...p, [plan]: true }));
+      setTimeout(() => setSaved((p) => ({ ...p, [plan]: false })), 2000);
     } finally {
-      setSaving(p => ({ ...p, [plan]: false }));
+      setSaving((p) => ({ ...p, [plan]: false }));
     }
   };
 
   const handleDelete = async (plan: string) => {
     if (!confirm(`Delete plan "${plan}"? This cannot be undone.`)) return;
-    setDeleting(p => ({ ...p, [plan]: true }));
+    setDeleting((p) => ({ ...p, [plan]: true }));
     try {
       await deleteMutation.mutateAsync(plan);
       qc.invalidateQueries({ queryKey: ["/api/admin/plan-config"] });
@@ -1021,7 +1577,7 @@ function PlanConfigSection() {
       const msg = err instanceof Error ? err.message : "Delete failed";
       alert(msg);
     } finally {
-      setDeleting(p => ({ ...p, [plan]: false }));
+      setDeleting((p) => ({ ...p, [plan]: false }));
     }
   };
 
@@ -1029,7 +1585,9 @@ function PlanConfigSection() {
     setCreateError("");
     const planName = newPlan.plan.trim().toUpperCase();
     if (!planName || !/^[A-Z0-9_]+$/.test(planName)) {
-      setCreateError("Plan name must be uppercase letters, numbers, or underscores (e.g. ENTERPRISE)");
+      setCreateError(
+        "Plan name must be uppercase letters, numbers, or underscores (e.g. ENTERPRISE)",
+      );
       return;
     }
     try {
@@ -1038,11 +1596,16 @@ function PlanConfigSection() {
       setNewPlan({ plan: "", ...DEFAULT_NEW_PLAN });
       setShowAddForm(false);
     } catch (err: unknown) {
-      setCreateError(err instanceof Error ? err.message : "Failed to create plan");
+      setCreateError(
+        err instanceof Error ? err.message : "Failed to create plan",
+      );
     }
   };
 
-  const planMeta: Record<string, { label: string; color: string; icon: React.ElementType }> = {
+  const planMeta: Record<
+    string,
+    { label: string; color: string; icon: React.ElementType }
+  > = {
     FREE: { label: "Free", color: "text-muted-foreground", icon: Shield },
     BASIC: { label: "Basic", color: "text-blue-400", icon: Zap },
     PRO: { label: "Pro", color: "text-primary", icon: Lock },
@@ -1066,11 +1629,18 @@ function PlanConfigSection() {
     <div>
       <div className="flex items-start justify-between mb-6">
         <div>
-          <h2 className="font-heading text-2xl font-bold text-foreground">Plan Config</h2>
-          <p className="text-sm text-muted-foreground mt-1">Adjust limits and features per subscription tier</p>
+          <h2 className="font-heading text-2xl font-bold text-foreground">
+            Plan Config
+          </h2>
+          <p className="text-sm text-muted-foreground mt-1">
+            Adjust limits and features per subscription tier
+          </p>
         </div>
         <button
-          onClick={() => { setShowAddForm(p => !p); setCreateError(""); }}
+          onClick={() => {
+            setShowAddForm((p) => !p);
+            setCreateError("");
+          }}
           className="flex items-center gap-1.5 px-3 py-2 bg-primary/15 text-primary hover:bg-primary/25 rounded-xl text-sm font-semibold transition-all flex-shrink-0 mt-1"
         >
           <Plus className="w-4 h-4" />
@@ -1086,37 +1656,65 @@ function PlanConfigSection() {
             exit={{ opacity: 0, y: -8 }}
             className="glass-card rounded-xl p-5 mb-6"
           >
-            <h3 className="font-heading text-base font-semibold text-foreground mb-4">New Subscription Plan</h3>
+            <h3 className="font-heading text-base font-semibold text-foreground mb-4">
+              New Subscription Plan
+            </h3>
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="sm:col-span-2">
-                <label className="text-xs text-muted-foreground block mb-1">Plan Name <span className="text-muted-foreground/60">(uppercase, e.g. ENTERPRISE)</span></label>
+                <label className="text-xs text-muted-foreground block mb-1">
+                  Plan Name{" "}
+                  <span className="text-muted-foreground/60">
+                    (uppercase, e.g. ENTERPRISE)
+                  </span>
+                </label>
                 <input
                   type="text"
                   placeholder="ENTERPRISE"
                   value={newPlan.plan}
-                  onChange={e => setNewPlan(p => ({ ...p, plan: e.target.value.toUpperCase() }))}
+                  onChange={(e) =>
+                    setNewPlan((p) => ({
+                      ...p,
+                      plan: e.target.value.toUpperCase(),
+                    }))
+                  }
                   className="w-full bg-muted/40 border border-border rounded-lg px-3 py-1.5 text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 transition-all font-mono"
                 />
               </div>
               <div>
-                <label className="text-xs text-muted-foreground block mb-1">Price (USD/mo)</label>
+                <label className="text-xs text-muted-foreground block mb-1">
+                  Price (USD/mo)
+                </label>
                 <div className="flex items-center gap-1.5">
                   <span className="text-muted-foreground text-sm">$</span>
                   <input
-                    type="number" min={0} step={0.01}
+                    type="number"
+                    min={0}
+                    step={0.01}
                     value={newPlan.price}
-                    onChange={e => setNewPlan(p => ({ ...p, price: parseFloat(e.target.value) || 0 }))}
+                    onChange={(e) =>
+                      setNewPlan((p) => ({
+                        ...p,
+                        price: parseFloat(e.target.value) || 0,
+                      }))
+                    }
                     className="w-full bg-muted/40 border border-border rounded-lg px-3 py-1.5 text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 transition-all"
                   />
                 </div>
               </div>
               {numFields.map(({ key, label }) => (
                 <div key={key}>
-                  <label className="text-xs text-muted-foreground block mb-1">{label}</label>
+                  <label className="text-xs text-muted-foreground block mb-1">
+                    {label}
+                  </label>
                   <input
                     type="number"
                     value={newPlan[key]}
-                    onChange={e => setNewPlan(p => ({ ...p, [key]: parseInt(e.target.value) || 0 }))}
+                    onChange={(e) =>
+                      setNewPlan((p) => ({
+                        ...p,
+                        [key]: parseInt(e.target.value) || 0,
+                      }))
+                    }
                     className="w-full bg-muted/40 border border-border rounded-lg px-3 py-1.5 text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 transition-all"
                   />
                 </div>
@@ -1126,26 +1724,39 @@ function PlanConfigSection() {
                   <span className="text-xs text-muted-foreground">{label}</span>
                   <button
                     type="button"
-                    onClick={() => setNewPlan(p => ({ ...p, [key]: !p[key] }))}
+                    onClick={() =>
+                      setNewPlan((p) => ({ ...p, [key]: !p[key] }))
+                    }
                     className={`relative inline-flex h-5 w-9 rounded-full transition-colors ${newPlan[key] ? "bg-primary" : "bg-border"}`}
                   >
-                    <span className={`absolute top-0.5 left-0.5 h-4 w-4 rounded-full bg-white transition-transform ${newPlan[key] ? "translate-x-4" : ""}`} />
+                    <span
+                      className={`absolute top-0.5 left-0.5 h-4 w-4 rounded-full bg-white transition-transform ${newPlan[key] ? "translate-x-4" : ""}`}
+                    />
                   </button>
                 </div>
               ))}
             </div>
-            {createError && <p className="text-xs text-red-400 mt-3">{createError}</p>}
+            {createError && (
+              <p className="text-xs text-red-400 mt-3">{createError}</p>
+            )}
             <div className="flex gap-2 mt-4">
               <button
                 onClick={handleCreate}
                 disabled={createMutation.isPending}
                 className="flex items-center gap-1.5 px-4 py-2 bg-primary text-primary-foreground hover:bg-primary/90 rounded-xl text-sm font-semibold transition-all disabled:opacity-60"
               >
-                {createMutation.isPending ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Check className="w-3.5 h-3.5" />}
+                {createMutation.isPending ? (
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                ) : (
+                  <Check className="w-3.5 h-3.5" />
+                )}
                 Create Plan
               </button>
               <button
-                onClick={() => { setShowAddForm(false); setCreateError(""); }}
+                onClick={() => {
+                  setShowAddForm(false);
+                  setCreateError("");
+                }}
                 className="px-4 py-2 text-muted-foreground hover:text-foreground text-sm transition-colors"
               >
                 Cancel
@@ -1156,21 +1767,38 @@ function PlanConfigSection() {
       </AnimatePresence>
 
       {configQuery.isLoading ? (
-        <div className="flex justify-center py-12"><Loader2 className="w-5 h-5 animate-spin text-primary" /></div>
+        <div className="flex justify-center py-12">
+          <Loader2 className="w-5 h-5 animate-spin text-primary" />
+        </div>
       ) : (
         <div className="grid gap-6 md:grid-cols-3">
-          {configs.map(cfg => {
-            const meta = planMeta[cfg.plan] || { label: cfg.plan, color: "text-orange-400", icon: Zap };
+          {configs.map((cfg) => {
+            const meta = planMeta[cfg.plan] || {
+              label: cfg.plan,
+              color: "text-orange-400",
+              icon: Zap,
+            };
             const Icon = meta.icon;
-            const hasChanges = !!(editValues[cfg.plan] && Object.keys(editValues[cfg.plan]).length > 0);
+            const hasChanges = !!(
+              editValues[cfg.plan] &&
+              Object.keys(editValues[cfg.plan]).length > 0
+            );
             const isBuiltIn = BUILT_IN_PLANS.includes(cfg.plan);
             return (
-              <motion.div key={cfg.plan} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
-                className="glass-card rounded-xl p-5 flex flex-col gap-4">
+              <motion.div
+                key={cfg.plan}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="glass-card rounded-xl p-5 flex flex-col gap-4"
+              >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <Icon className={`w-5 h-5 ${meta.color}`} />
-                    <h3 className={`font-heading text-lg font-bold ${meta.color}`}>{meta.label}</h3>
+                    <h3
+                      className={`font-heading text-lg font-bold ${meta.color}`}
+                    >
+                      {meta.label}
+                    </h3>
                   </div>
                   {!isBuiltIn && (
                     <button
@@ -1179,19 +1807,39 @@ function PlanConfigSection() {
                       title={`Delete ${cfg.plan} plan`}
                       className="p-1.5 text-muted-foreground hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors"
                     >
-                      {deleting[cfg.plan] ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Trash2 className="w-3.5 h-3.5" />}
+                      {deleting[cfg.plan] ? (
+                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                      ) : (
+                        <Trash2 className="w-3.5 h-3.5" />
+                      )}
                     </button>
                   )}
                 </div>
                 <div className="space-y-3 text-sm">
                   <div>
-                    <label className="text-xs text-muted-foreground block mb-1">Price (USD/mo)</label>
+                    <label className="text-xs text-muted-foreground block mb-1">
+                      Price (USD/mo)
+                    </label>
                     <div className="flex items-center gap-1.5">
                       <span className="text-muted-foreground text-sm">$</span>
                       <input
-                        type="number" min={0} step={0.01}
-                        value={getValue(cfg.plan, "price" as any, (cfg as any).price) as number}
-                        onChange={e => setValue(cfg.plan, "price" as any, parseFloat(e.target.value) || 0)}
+                        type="number"
+                        min={0}
+                        step={0.01}
+                        value={
+                          getValue(
+                            cfg.plan,
+                            "price" as any,
+                            (cfg as any).price,
+                          ) as number
+                        }
+                        onChange={(e) =>
+                          setValue(
+                            cfg.plan,
+                            "price" as any,
+                            parseFloat(e.target.value) || 0,
+                          )
+                        }
                         className="w-full bg-muted/40 border border-border rounded-lg px-3 py-1.5 text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 transition-all"
                       />
                     </div>
@@ -1200,26 +1848,45 @@ function PlanConfigSection() {
                     const numVal = getValue(cfg.plan, key, cfg[key]) as number;
                     return (
                       <div key={key}>
-                        <label className="text-xs text-muted-foreground block mb-1">{label}</label>
+                        <label className="text-xs text-muted-foreground block mb-1">
+                          {label}
+                        </label>
                         <input
                           type="number"
                           value={numVal}
-                          onChange={e => setValue(cfg.plan, key, parseInt(e.target.value) || 0)}
+                          onChange={(e) =>
+                            setValue(
+                              cfg.plan,
+                              key,
+                              parseInt(e.target.value) || 0,
+                            )
+                          }
                           className="w-full bg-muted/40 border border-border rounded-lg px-3 py-1.5 text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 transition-all"
                         />
                       </div>
                     );
                   })}
                   {boolFields.map(({ key, label }) => {
-                    const boolVal = getValue(cfg.plan, key, cfg[key]) as boolean;
+                    const boolVal = getValue(
+                      cfg.plan,
+                      key,
+                      cfg[key],
+                    ) as boolean;
                     return (
-                      <div key={key} className="flex items-center justify-between">
-                        <span className="text-xs text-muted-foreground">{label}</span>
+                      <div
+                        key={key}
+                        className="flex items-center justify-between"
+                      >
+                        <span className="text-xs text-muted-foreground">
+                          {label}
+                        </span>
                         <button
                           onClick={() => setValue(cfg.plan, key, !boolVal)}
                           className={`relative inline-flex h-5 w-9 rounded-full transition-colors ${boolVal ? "bg-primary" : "bg-border"}`}
                         >
-                          <span className={`absolute top-0.5 left-0.5 h-4 w-4 rounded-full bg-white transition-transform ${boolVal ? "translate-x-4" : ""}`} />
+                          <span
+                            className={`absolute top-0.5 left-0.5 h-4 w-4 rounded-full bg-white transition-transform ${boolVal ? "translate-x-4" : ""}`}
+                          />
                         </button>
                       </div>
                     );
@@ -1236,7 +1903,11 @@ function PlanConfigSection() {
                         : "bg-muted/30 text-muted-foreground cursor-not-allowed"
                   }`}
                 >
-                  {saving[cfg.plan] ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : saved[cfg.plan] ? <Check className="w-3.5 h-3.5" /> : null}
+                  {saving[cfg.plan] ? (
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                  ) : saved[cfg.plan] ? (
+                    <Check className="w-3.5 h-3.5" />
+                  ) : null}
                   {saved[cfg.plan] ? "Saved!" : "Save Changes"}
                 </button>
               </motion.div>
@@ -1255,66 +1926,115 @@ function ApiKeysSection() {
   const [loadingIds, setLoadingIds] = useState<Record<number, boolean>>({});
   const [search, setSearch] = useState("");
 
-  const keys = (keysQuery.data?.keys || []).filter(k =>
-    k.email.toLowerCase().includes(search.toLowerCase()) ||
-    k.name.toLowerCase().includes(search.toLowerCase())
+  const keys = (keysQuery.data?.keys || []).filter(
+    (k) =>
+      k.email.toLowerCase().includes(search.toLowerCase()) ||
+      k.name.toLowerCase().includes(search.toLowerCase()),
   );
 
   const handleRevoke = async (userId: number, email: string) => {
     if (!confirm(`Revoke API key for "${email}"?`)) return;
-    setLoadingIds(p => ({ ...p, [userId]: true }));
+    setLoadingIds((p) => ({ ...p, [userId]: true }));
     try {
       await revokeKeyMutation.mutateAsync(userId);
       qc.invalidateQueries({ queryKey: ["/api/admin/api-keys"] });
     } finally {
-      setLoadingIds(p => ({ ...p, [userId]: false }));
+      setLoadingIds((p) => ({ ...p, [userId]: false }));
     }
   };
 
   return (
     <div>
-      <SectionHeader title="API Keys" subtitle="View and revoke user API keys" />
+      <SectionHeader
+        title="API Keys"
+        subtitle="View and revoke user API keys"
+      />
       <div className="mb-4 relative">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-        <input type="text" placeholder="Search users…" value={search} onChange={e => setSearch(e.target.value)}
-          className="w-full pl-9 pr-4 py-2.5 rounded-xl bg-muted/40 border border-border text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 transition-all" />
+        <input
+          type="text"
+          placeholder="Search users…"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="w-full pl-9 pr-4 py-2.5 rounded-xl bg-muted/40 border border-border text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 transition-all"
+        />
       </div>
       <div className="glass-card rounded-xl overflow-hidden">
         {keysQuery.isLoading ? (
-          <div className="flex justify-center py-12"><Loader2 className="w-5 h-5 animate-spin text-primary" /></div>
+          <div className="flex justify-center py-12">
+            <Loader2 className="w-5 h-5 animate-spin text-primary" />
+          </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-sm text-left">
               <thead className="border-b border-border">
                 <tr>
-                  {["User", "Plan", "Masked Key", "Since", "Action"].map(h => (
-                    <th key={h} className="px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide">{h}</th>
-                  ))}
+                  {["User", "Plan", "Masked Key", "Since", "Action"].map(
+                    (h) => (
+                      <th
+                        key={h}
+                        className="px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide"
+                      >
+                        {h}
+                      </th>
+                    ),
+                  )}
                 </tr>
               </thead>
               <tbody>
                 {keys.length === 0 ? (
-                  <tr><td colSpan={5} className="text-center py-10 text-muted-foreground text-sm">No keys found.</td></tr>
-                ) : keys.map(k => (
-                  <tr key={k.userId} className="border-b border-border/50 last:border-0 hover:bg-muted/20 transition-colors">
-                    <td className="px-4 py-3">
-                      <div className="font-medium text-foreground">{k.name}</div>
-                      <div className="text-xs text-muted-foreground">{k.email}</div>
-                    </td>
-                    <td className="px-4 py-3">
-                      <span className={`px-2 py-0.5 rounded-md text-xs font-bold ${PLAN_COLORS[k.plan]}`}>{k.plan}</span>
-                    </td>
-                    <td className="px-4 py-3 font-mono text-xs text-muted-foreground">{k.maskedKey}</td>
-                    <td className="px-4 py-3 text-xs text-muted-foreground">{format(parseISO(k.createdAt), "PP")}</td>
-                    <td className="px-4 py-3">
-                      <button onClick={() => handleRevoke(k.userId, k.email)} disabled={loadingIds[k.userId]}
-                        className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium text-muted-foreground hover:text-yellow-400 hover:bg-yellow-500/10 transition-colors">
-                        {loadingIds[k.userId] ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Key className="w-3.5 h-3.5" />}
-                        Revoke
-                      </button>
+                  <tr>
+                    <td
+                      colSpan={5}
+                      className="text-center py-10 text-muted-foreground text-sm"
+                    >
+                      No keys found.
                     </td>
                   </tr>
-                ))}
+                ) : (
+                  keys.map((k) => (
+                    <tr
+                      key={k.userId}
+                      className="border-b border-border/50 last:border-0 hover:bg-muted/20 transition-colors"
+                    >
+                      <td className="px-4 py-3">
+                        <div className="font-medium text-foreground">
+                          {k.name}
+                        </div>
+                        <div className="text-xs text-muted-foreground">
+                          {k.email}
+                        </div>
+                      </td>
+                      <td className="px-4 py-3">
+                        <span
+                          className={`px-2 py-0.5 rounded-md text-xs font-bold ${PLAN_COLORS[k.plan]}`}
+                        >
+                          {k.plan}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 font-mono text-xs text-muted-foreground">
+                        {k.maskedKey}
+                      </td>
+                      <td className="px-4 py-3 text-xs text-muted-foreground">
+                        {format(parseISO(k.createdAt), "PP")}
+                      </td>
+                      <td className="px-4 py-3">
+                        <button
+                          onClick={() => handleRevoke(k.userId, k.email)}
+                          disabled={loadingIds[k.userId]}
+                          className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium text-muted-foreground hover:text-yellow-400 hover:bg-yellow-500/10 transition-colors"
+                        >
+                          {loadingIds[k.userId] ? (
+                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                          ) : (
+                            <Key className="w-3.5 h-3.5" />
+                          )}
+                          Revoke
+                        </button>
+                      </td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>
@@ -1329,9 +2049,15 @@ function DomainsSection() {
   const statsQuery = useAdminGetStats();
   const syncMutation = useAdminSyncDomains();
   const addMutation = useAdminAddDomain();
-  const [syncResult, setSyncResult] = useState<{ added: number; total: number } | null>(null);
+  const [syncResult, setSyncResult] = useState<{
+    added: number;
+    total: number;
+  } | null>(null);
   const [newDomain, setNewDomain] = useState("");
-  const [addResult, setAddResult] = useState<{ ok: boolean; msg: string } | null>(null);
+  const [addResult, setAddResult] = useState<{
+    ok: boolean;
+    msg: string;
+  } | null>(null);
 
   const handleSync = async () => {
     setSyncResult(null);
@@ -1351,63 +2077,104 @@ function DomainsSection() {
     if (!trimmed) return;
     try {
       const data = await addMutation.mutateAsync(trimmed);
-      setAddResult({ ok: true, msg: `✓ "${data.domain}" added — total: ${data.totalDomains.toLocaleString()}` });
+      setAddResult({
+        ok: true,
+        msg: `✓ "${data.domain}" added — total: ${data.totalDomains.toLocaleString()}`,
+      });
       setNewDomain("");
       qc.invalidateQueries({ queryKey: ["/api/admin/stats"] });
     } catch (err: any) {
-      const msg = err?.message?.includes("409") || err?.message?.toLowerCase().includes("already")
-        ? "Domain already exists in the blocklist"
-        : err?.message ?? "Failed to add domain";
+      const msg =
+        err?.message?.includes("409") ||
+        err?.message?.toLowerCase().includes("already")
+          ? "Domain already exists in the blocklist"
+          : (err?.message ?? "Failed to add domain");
       setAddResult({ ok: false, msg: `✗ ${msg}` });
     }
   };
 
   return (
     <div>
-      <SectionHeader title="Domain Database" subtitle="Manage the disposable email domain blocklist" />
+      <SectionHeader
+        title="Domain Database"
+        subtitle="Manage the disposable email domain blocklist"
+      />
       <div className="grid gap-4 md:grid-cols-2 mb-6">
         {/* Stats card */}
-        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="glass-card rounded-xl p-6">
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="glass-card rounded-xl p-6"
+        >
           <div className="flex items-center gap-2 mb-2">
             <Database className="w-4 h-4 text-primary" />
-            <span className="text-xs text-muted-foreground font-medium">Total Domains</span>
+            <span className="text-xs text-muted-foreground font-medium">
+              Total Domains
+            </span>
           </div>
           <div className="font-heading text-3xl font-bold text-foreground">
             {statsQuery.data?.totalDomains.toLocaleString() ?? "—"}
           </div>
-          <p className="text-xs text-muted-foreground mt-2">Disposable email domains in the blocklist</p>
+          <p className="text-xs text-muted-foreground mt-2">
+            Disposable email domains in the blocklist
+          </p>
         </motion.div>
 
         {/* GitHub sync card */}
-        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="glass-card rounded-xl p-6">
-          <h3 className="font-heading text-base font-semibold text-foreground mb-2">Sync from GitHub</h3>
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+          className="glass-card rounded-xl p-6"
+        >
+          <h3 className="font-heading text-base font-semibold text-foreground mb-2">
+            Sync from GitHub
+          </h3>
           <p className="text-sm text-muted-foreground mb-4">
-            Pull the latest disposable domain list from the upstream GitHub repository.
+            Pull the latest disposable domain list from the upstream GitHub
+            repository.
           </p>
-          <button onClick={handleSync} disabled={syncMutation.isPending}
-            className="flex items-center gap-2 px-4 py-2 bg-primary/15 text-primary hover:bg-primary/25 rounded-xl text-sm font-semibold transition-all disabled:opacity-60">
-            <RefreshCw className={`w-4 h-4 ${syncMutation.isPending ? "animate-spin" : ""}`} />
+          <button
+            onClick={handleSync}
+            disabled={syncMutation.isPending}
+            className="flex items-center gap-2 px-4 py-2 bg-primary/15 text-primary hover:bg-primary/25 rounded-xl text-sm font-semibold transition-all disabled:opacity-60"
+          >
+            <RefreshCw
+              className={`w-4 h-4 ${syncMutation.isPending ? "animate-spin" : ""}`}
+            />
             {syncMutation.isPending ? "Syncing…" : "Sync Now"}
           </button>
           {syncResult && (
             <p className="text-xs text-green-400 mt-3">
-              ✓ Added {syncResult.added} domains — total: {syncResult.total.toLocaleString()}
+              ✓ Added {syncResult.added} domains — total:{" "}
+              {syncResult.total.toLocaleString()}
             </p>
           )}
         </motion.div>
       </div>
 
       {/* Add domain card */}
-      <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }} className="glass-card rounded-xl p-6">
-        <h3 className="font-heading text-base font-semibold text-foreground mb-1">Add Domain Manually</h3>
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.15 }}
+        className="glass-card rounded-xl p-6"
+      >
+        <h3 className="font-heading text-base font-semibold text-foreground mb-1">
+          Add Domain Manually
+        </h3>
         <p className="text-sm text-muted-foreground mb-4">
-          Add a single domain to the blocklist immediately. It takes effect in real-time without a restart.
+          Add a single domain to the blocklist immediately. It takes effect in
+          real-time without a restart.
         </p>
         <form onSubmit={handleAdd} className="flex gap-2 flex-wrap">
           <input
             type="text"
             value={newDomain}
-            onChange={e => { setNewDomain(e.target.value); setAddResult(null); }}
+            onChange={(e) => {
+              setNewDomain(e.target.value);
+              setAddResult(null);
+            }}
             placeholder="e.g. mailinator.com"
             className="flex-1 min-w-48 px-3 py-2 rounded-lg border border-border bg-background text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40"
             disabled={addMutation.isPending}
@@ -1417,12 +2184,18 @@ function DomainsSection() {
             disabled={addMutation.isPending || !newDomain.trim()}
             className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground hover:bg-primary/90 rounded-lg text-sm font-semibold transition-all disabled:opacity-60"
           >
-            {addMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
+            {addMutation.isPending ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <Plus className="w-4 h-4" />
+            )}
             {addMutation.isPending ? "Adding…" : "Add Domain"}
           </button>
         </form>
         {addResult && (
-          <p className={`text-xs mt-3 ${addResult.ok ? "text-green-400" : "text-red-400"}`}>
+          <p
+            className={`text-xs mt-3 ${addResult.ok ? "text-green-400" : "text-red-400"}`}
+          >
             {addResult.msg}
           </p>
         )}
@@ -1472,7 +2245,9 @@ function useAdminPaymentSettings() {
     setLoading(true);
     setError(null);
     try {
-      const resp = await fetch("/api/admin/payment-settings", { credentials: "include" });
+      const resp = await fetch("/api/admin/payment-settings", {
+        credentials: "include",
+      });
       if (!resp.ok) throw new Error("Failed to load");
       setData(await resp.json());
     } catch {
@@ -1482,21 +2257,35 @@ function useAdminPaymentSettings() {
     }
   }, []);
 
-  React.useEffect(() => { refetch(); }, [refetch]);
+  React.useEffect(() => {
+    refetch();
+  }, [refetch]);
 
   return { data, loading, error, refetch };
 }
 
-function StatusBadge({ status, message }: { status: "ready" | "partial" | "unconfigured"; message: string }) {
+function StatusBadge({
+  status,
+  message,
+}: {
+  status: "ready" | "partial" | "unconfigured";
+  message: string;
+}) {
   const styles = {
     ready: "bg-green-500/15 text-green-400 border-green-500/30",
     partial: "bg-yellow-500/15 text-yellow-400 border-yellow-500/30",
     unconfigured: "bg-muted/40 text-muted-foreground border-border",
   };
-  const labels = { ready: "Ready", partial: "Partial", unconfigured: "Not configured" };
+  const labels = {
+    ready: "Ready",
+    partial: "Partial",
+    unconfigured: "Not configured",
+  };
   return (
     <div className="flex items-center gap-2">
-      <span className={`px-2 py-0.5 rounded-full text-xs font-semibold border ${styles[status]}`}>
+      <span
+        className={`px-2 py-0.5 rounded-full text-xs font-semibold border ${styles[status]}`}
+      >
         {labels[status]}
       </span>
       <span className="text-xs text-muted-foreground">{message}</span>
@@ -1516,7 +2305,7 @@ function PaymentSection() {
   }, [data]);
 
   const set = (key: keyof PaymentSettingsData, value: unknown) =>
-    setForm(prev => prev ? { ...prev, [key]: value } : prev);
+    setForm((prev) => (prev ? { ...prev, [key]: value } : prev));
 
   const handleSave = async () => {
     if (!form) return;
@@ -1544,63 +2333,91 @@ function PaymentSection() {
     }
   };
 
-  if (loading) return (
-    <div className="flex items-center justify-center h-48">
-      <Loader2 className="w-6 h-6 animate-spin text-primary" />
-    </div>
-  );
+  if (loading)
+    return (
+      <div className="flex items-center justify-center h-48">
+        <Loader2 className="w-6 h-6 animate-spin text-primary" />
+      </div>
+    );
 
-  if (error || !form) return (
-    <div className="flex items-center gap-2 text-red-400">
-      <X className="w-4 h-4" /> {error || "No data"}
-    </div>
-  );
+  if (error || !form)
+    return (
+      <div className="flex items-center gap-2 text-red-400">
+        <X className="w-4 h-4" /> {error || "No data"}
+      </div>
+    );
 
   const gateway = form.gateway || "MANUAL";
   const cs = data?.connectionStatus;
 
   return (
     <div>
-      <SectionHeader title="Payment Gateway" subtitle="Configure how users pay for upgrades" />
+      <SectionHeader
+        title="Payment Gateway"
+        subtitle="Configure how users pay for upgrades"
+      />
 
       {/* Gateway Status Overview */}
       {cs && (
         <div className="glass-card rounded-xl p-6 mb-4">
-          <h3 className="font-heading text-sm font-semibold text-foreground mb-4">Connection Status</h3>
+          <h3 className="font-heading text-sm font-semibold text-foreground mb-4">
+            Connection Status
+          </h3>
           <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <span className="text-sm font-medium text-foreground">Manual Approval</span>
-              <StatusBadge status={cs.manual.status} message={cs.manual.message} />
+              <span className="text-sm font-medium text-foreground">
+                Manual Approval
+              </span>
+              <StatusBadge
+                status={cs.manual.status}
+                message={cs.manual.message}
+              />
             </div>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <span className="text-sm font-medium text-foreground">Stripe</span>
+                <span className="text-sm font-medium text-foreground">
+                  Stripe
+                </span>
                 <button
                   onClick={() => set("stripeEnabled", !form.stripeEnabled)}
                   className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${
                     form.stripeEnabled ? "bg-primary" : "bg-muted"
-                  }`}>
-                  <span className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform ${
-                    form.stripeEnabled ? "translate-x-4" : "translate-x-1"
-                  }`} />
+                  }`}
+                >
+                  <span
+                    className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform ${
+                      form.stripeEnabled ? "translate-x-4" : "translate-x-1"
+                    }`}
+                  />
                 </button>
               </div>
-              <StatusBadge status={cs.stripe.status} message={cs.stripe.message} />
+              <StatusBadge
+                status={cs.stripe.status}
+                message={cs.stripe.message}
+              />
             </div>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <span className="text-sm font-medium text-foreground">PayPal</span>
+                <span className="text-sm font-medium text-foreground">
+                  PayPal
+                </span>
                 <button
                   onClick={() => set("paypalEnabled", !form.paypalEnabled)}
                   className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${
                     form.paypalEnabled ? "bg-primary" : "bg-muted"
-                  }`}>
-                  <span className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform ${
-                    form.paypalEnabled ? "translate-x-4" : "translate-x-1"
-                  }`} />
+                  }`}
+                >
+                  <span
+                    className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform ${
+                      form.paypalEnabled ? "translate-x-4" : "translate-x-1"
+                    }`}
+                  />
                 </button>
               </div>
-              <StatusBadge status={cs.paypal.status} message={cs.paypal.message} />
+              <StatusBadge
+                status={cs.paypal.status}
+                message={cs.paypal.message}
+              />
             </div>
           </div>
         </div>
@@ -1608,25 +2425,38 @@ function PaymentSection() {
 
       {/* Active Gateway selector */}
       <div className="glass-card rounded-xl p-6 mb-4">
-        <h3 className="font-heading text-sm font-semibold text-foreground mb-1">Active Gateway</h3>
-        <p className="text-xs text-muted-foreground mb-4">Which gateway processes payments on the upgrade page</p>
+        <h3 className="font-heading text-sm font-semibold text-foreground mb-1">
+          Active Gateway
+        </h3>
+        <p className="text-xs text-muted-foreground mb-4">
+          Which gateway processes payments on the upgrade page
+        </p>
         <div className="flex gap-3 flex-wrap">
-          {(["MANUAL", "STRIPE", "PAYPAL"] as const).map(gw => (
-            <button key={gw}
+          {(["MANUAL", "STRIPE", "PAYPAL"] as const).map((gw) => (
+            <button
+              key={gw}
               onClick={() => set("gateway", gw)}
               className={`px-5 py-2 rounded-xl font-semibold text-sm transition-all border ${
                 gateway === gw
                   ? "bg-primary text-primary-foreground border-primary"
                   : "border-border text-muted-foreground hover:border-primary/50"
-              }`}>
-              {gw === "MANUAL" ? "Manual" : gw === "STRIPE" ? "Stripe" : "PayPal"}
+              }`}
+            >
+              {gw === "MANUAL"
+                ? "Manual"
+                : gw === "STRIPE"
+                  ? "Stripe"
+                  : "PayPal"}
             </button>
           ))}
         </div>
         <p className="text-xs text-muted-foreground mt-3">
-          {gateway === "MANUAL" && "Admins manually approve upgrade requests. No payment processing."}
-          {gateway === "STRIPE" && "Users pay via Stripe Checkout. Webhooks auto-upgrade the account."}
-          {gateway === "PAYPAL" && "Users pay via PayPal. Orders are captured and plan is upgraded instantly."}
+          {gateway === "MANUAL" &&
+            "Admins manually approve upgrade requests. No payment processing."}
+          {gateway === "STRIPE" &&
+            "Users pay via Stripe Checkout. Webhooks auto-upgrade the account."}
+          {gateway === "PAYPAL" &&
+            "Users pay via PayPal. Orders are captured and plan is upgraded instantly."}
         </p>
       </div>
 
@@ -1640,23 +2470,45 @@ function PaymentSection() {
         </div>
         <div className="space-y-4">
           {[
-            { key: "stripePublishableKey", label: "Publishable Key", placeholder: "pk_live_...", type: "text" },
-            { key: "stripeSecretKey", label: "Secret Key", placeholder: "sk_live_...", type: "password" },
-            { key: "stripeWebhookSecret", label: "Webhook Secret", placeholder: "whsec_...", type: "password" },
+            {
+              key: "stripePublishableKey",
+              label: "Publishable Key",
+              placeholder: "pk_live_...",
+              type: "text",
+            },
+            {
+              key: "stripeSecretKey",
+              label: "Secret Key",
+              placeholder: "sk_live_...",
+              type: "password",
+            },
+            {
+              key: "stripeWebhookSecret",
+              label: "Webhook Secret",
+              placeholder: "whsec_...",
+              type: "password",
+            },
           ].map(({ key, label, placeholder, type }) => (
             <div key={key}>
-              <label className="text-xs text-muted-foreground font-medium block mb-1">{label}</label>
+              <label className="text-xs text-muted-foreground font-medium block mb-1">
+                {label}
+              </label>
               <input
                 type={type}
                 value={(form[key as keyof typeof form] as string) || ""}
-                onChange={e => set(key as keyof PaymentSettingsData, e.target.value || null)}
+                onChange={(e) =>
+                  set(key as keyof PaymentSettingsData, e.target.value || null)
+                }
                 placeholder={placeholder}
                 className="w-full bg-background/50 border border-border rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40"
               />
             </div>
           ))}
           <p className="text-xs text-muted-foreground">
-            Webhook URL: <code className="bg-background/70 px-1.5 py-0.5 rounded text-primary">/api/webhooks/stripe</code>
+            Webhook URL:{" "}
+            <code className="bg-background/70 px-1.5 py-0.5 rounded text-primary">
+              /api/webhooks/stripe
+            </code>
           </p>
         </div>
       </div>
@@ -1671,36 +2523,44 @@ function PaymentSection() {
         </div>
         <div className="space-y-4">
           <div>
-            <label className="text-xs text-muted-foreground font-medium block mb-1">Client ID</label>
+            <label className="text-xs text-muted-foreground font-medium block mb-1">
+              Client ID
+            </label>
             <input
               type="text"
               value={(form.paypalClientId as string) || ""}
-              onChange={e => set("paypalClientId", e.target.value || null)}
+              onChange={(e) => set("paypalClientId", e.target.value || null)}
               placeholder="AXxxxxxxx..."
               className="w-full bg-background/50 border border-border rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40"
             />
           </div>
           <div>
-            <label className="text-xs text-muted-foreground font-medium block mb-1">Secret</label>
+            <label className="text-xs text-muted-foreground font-medium block mb-1">
+              Secret
+            </label>
             <input
               type="password"
               value={(form.paypalSecret as string) || ""}
-              onChange={e => set("paypalSecret", e.target.value || null)}
+              onChange={(e) => set("paypalSecret", e.target.value || null)}
               placeholder="EJxxxxxxx..."
               className="w-full bg-background/50 border border-border rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40"
             />
           </div>
           <div>
-            <label className="text-xs text-muted-foreground font-medium block mb-1">Mode</label>
+            <label className="text-xs text-muted-foreground font-medium block mb-1">
+              Mode
+            </label>
             <div className="flex gap-3">
-              {(["sandbox", "live"] as const).map(mode => (
-                <button key={mode}
+              {(["sandbox", "live"] as const).map((mode) => (
+                <button
+                  key={mode}
                   onClick={() => set("paypalMode", mode)}
                   className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all border ${
                     form.paypalMode === mode
                       ? "bg-primary text-primary-foreground border-primary"
                       : "border-border text-muted-foreground hover:border-primary/50"
-                  }`}>
+                  }`}
+                >
                   {mode === "sandbox" ? "Sandbox" : "Live"}
                 </button>
               ))}
@@ -1723,11 +2583,20 @@ function PaymentSection() {
             min={0}
             max={1000}
             value={form.freeVerifyLimit ?? 5}
-            onChange={e => set("freeVerifyLimit", Math.max(0, Math.min(1000, parseInt(e.target.value, 10) || 0)))}
+            onChange={(e) =>
+              set(
+                "freeVerifyLimit",
+                Math.max(0, Math.min(1000, parseInt(e.target.value, 10) || 0)),
+              )
+            }
             className="w-32 bg-background/50 border border-border rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40"
           />
           <p className="text-xs text-muted-foreground mt-1.5">
-            Controls how many free checks anonymous visitors can run on the <code className="bg-background/70 px-1 py-0.5 rounded text-primary">/verify</code> page per 24-hour session.
+            Controls how many free checks anonymous visitors can run on the{" "}
+            <code className="bg-background/70 px-1 py-0.5 rounded text-primary">
+              /verify
+            </code>{" "}
+            page per 24-hour session.
           </p>
         </div>
       </div>
@@ -1737,11 +2606,18 @@ function PaymentSection() {
         <button
           onClick={handleSave}
           disabled={saving}
-          className="flex items-center gap-2 px-5 py-2.5 bg-primary text-primary-foreground rounded-xl font-semibold text-sm hover:bg-primary/90 transition-all disabled:opacity-60">
-          {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
+          className="flex items-center gap-2 px-5 py-2.5 bg-primary text-primary-foreground rounded-xl font-semibold text-sm hover:bg-primary/90 transition-all disabled:opacity-60"
+        >
+          {saving ? (
+            <Loader2 className="w-4 h-4 animate-spin" />
+          ) : (
+            <Check className="w-4 h-4" />
+          )}
           {saving ? "Saving…" : "Save Settings"}
         </button>
-        {saved && <span className="text-green-400 text-sm font-medium">✓ Saved</span>}
+        {saved && (
+          <span className="text-green-400 text-sm font-medium">✓ Saved</span>
+        )}
         {saveError && <span className="text-red-400 text-sm">{saveError}</span>}
         {data?.updatedAt && (
           <span className="text-xs text-muted-foreground ml-auto">
@@ -1780,7 +2656,9 @@ function useEmailSettings() {
     setLoading(true);
     setError(null);
     try {
-      const resp = await fetch("/api/admin/email-settings", { credentials: "include" });
+      const resp = await fetch("/api/admin/email-settings", {
+        credentials: "include",
+      });
       if (!resp.ok) throw new Error("Failed to load");
       setData(await resp.json());
     } catch {
@@ -1790,7 +2668,9 @@ function useEmailSettings() {
     }
   }, []);
 
-  React.useEffect(() => { refetch(); }, [refetch]);
+  React.useEffect(() => {
+    refetch();
+  }, [refetch]);
   return { data, loading, error, refetch };
 }
 
@@ -1802,14 +2682,17 @@ function EmailSection() {
   const [saveError, setSaveError] = useState<string | null>(null);
   const [testEmail, setTestEmail] = useState("");
   const [testing, setTesting] = useState(false);
-  const [testResult, setTestResult] = useState<{ ok: boolean; msg: string } | null>(null);
+  const [testResult, setTestResult] = useState<{
+    ok: boolean;
+    msg: string;
+  } | null>(null);
 
   React.useEffect(() => {
     if (data) setForm({ ...data });
   }, [data]);
 
   const set = (key: keyof EmailSettingsData, value: unknown) =>
-    setForm(prev => prev ? { ...prev, [key]: value } : prev);
+    setForm((prev) => (prev ? { ...prev, [key]: value } : prev));
 
   const handleSave = async () => {
     if (!form) return;
@@ -1849,7 +2732,10 @@ function EmailSection() {
         body: JSON.stringify({ to: testEmail }),
       });
       const body = await resp.json();
-      setTestResult({ ok: resp.ok, msg: body.message || body.error || "Unknown" });
+      setTestResult({
+        ok: resp.ok,
+        msg: body.message || body.error || "Unknown",
+      });
     } catch {
       setTestResult({ ok: false, msg: "Request failed" });
     } finally {
@@ -1857,37 +2743,50 @@ function EmailSection() {
     }
   };
 
-  if (loading) return (
-    <div className="flex items-center justify-center h-48">
-      <Loader2 className="w-6 h-6 animate-spin text-primary" />
-    </div>
-  );
+  if (loading)
+    return (
+      <div className="flex items-center justify-center h-48">
+        <Loader2 className="w-6 h-6 animate-spin text-primary" />
+      </div>
+    );
 
-  if (error || !form) return (
-    <div className="flex items-center gap-2 text-red-400">
-      <X className="w-4 h-4" /> {error || "No data"}
-    </div>
-  );
+  if (error || !form)
+    return (
+      <div className="flex items-center gap-2 text-red-400">
+        <X className="w-4 h-4" /> {error || "No data"}
+      </div>
+    );
 
   const statusColors = {
     ready: "bg-green-500/15 text-green-400 border-green-500/30",
     configured: "bg-yellow-500/15 text-yellow-400 border-yellow-500/30",
     unconfigured: "bg-muted/40 text-muted-foreground border-border",
   };
-  const statusLabels = { ready: "Active", configured: "Configured (disabled)", unconfigured: "Not configured" };
+  const statusLabels = {
+    ready: "Active",
+    configured: "Configured (disabled)",
+    unconfigured: "Not configured",
+  };
   const cs = data?.connectionStatus || "unconfigured";
 
   return (
     <div>
-      <SectionHeader title="Email Settings" subtitle="Configure SMTP to send upgrade request notifications" />
+      <SectionHeader
+        title="Email Settings"
+        subtitle="Configure SMTP to send upgrade request notifications"
+      />
 
       {/* Status + Enable toggle */}
       <div className="glass-card rounded-xl p-6 mb-4 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <Mail className="w-5 h-5 text-primary" />
           <div>
-            <p className="text-sm font-semibold text-foreground">Email Notifications</p>
-            <span className={`px-2 py-0.5 rounded-full text-xs font-semibold border mt-1 inline-block ${statusColors[cs]}`}>
+            <p className="text-sm font-semibold text-foreground">
+              Email Notifications
+            </p>
+            <span
+              className={`px-2 py-0.5 rounded-full text-xs font-semibold border mt-1 inline-block ${statusColors[cs]}`}
+            >
               {statusLabels[cs]}
             </span>
           </div>
@@ -1896,10 +2795,13 @@ function EmailSection() {
           onClick={() => set("enabled", !form.enabled)}
           className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
             form.enabled ? "bg-primary" : "bg-muted"
-          }`}>
-          <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-            form.enabled ? "translate-x-6" : "translate-x-1"
-          }`} />
+          }`}
+        >
+          <span
+            className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+              form.enabled ? "translate-x-6" : "translate-x-1"
+            }`}
+          />
         </button>
       </div>
 
@@ -1910,21 +2812,25 @@ function EmailSection() {
         </h3>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="sm:col-span-2">
-            <label className="text-xs text-muted-foreground font-medium block mb-1">SMTP Host</label>
+            <label className="text-xs text-muted-foreground font-medium block mb-1">
+              SMTP Host
+            </label>
             <input
               type="text"
               value={form.smtpHost || ""}
-              onChange={e => set("smtpHost", e.target.value || null)}
+              onChange={(e) => set("smtpHost", e.target.value || null)}
               placeholder="smtp.gmail.com"
               className="w-full bg-background/50 border border-border rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40"
             />
           </div>
           <div>
-            <label className="text-xs text-muted-foreground font-medium block mb-1">Port</label>
+            <label className="text-xs text-muted-foreground font-medium block mb-1">
+              Port
+            </label>
             <input
               type="number"
               value={form.smtpPort ?? 587}
-              onChange={e => set("smtpPort", Number(e.target.value))}
+              onChange={(e) => set("smtpPort", Number(e.target.value))}
               className="w-full bg-background/50 border border-border rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40"
             />
           </div>
@@ -1933,29 +2839,38 @@ function EmailSection() {
               onClick={() => set("smtpSecure", !form.smtpSecure)}
               className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${
                 form.smtpSecure ? "bg-primary" : "bg-muted"
-              }`}>
-              <span className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform ${
-                form.smtpSecure ? "translate-x-4" : "translate-x-1"
-              }`} />
+              }`}
+            >
+              <span
+                className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform ${
+                  form.smtpSecure ? "translate-x-4" : "translate-x-1"
+                }`}
+              />
             </button>
-            <span className="text-sm text-muted-foreground">TLS/SSL (port 465)</span>
+            <span className="text-sm text-muted-foreground">
+              TLS/SSL (port 465)
+            </span>
           </div>
           <div>
-            <label className="text-xs text-muted-foreground font-medium block mb-1">Username</label>
+            <label className="text-xs text-muted-foreground font-medium block mb-1">
+              Username
+            </label>
             <input
               type="text"
               value={form.smtpUser || ""}
-              onChange={e => set("smtpUser", e.target.value || null)}
+              onChange={(e) => set("smtpUser", e.target.value || null)}
               placeholder="you@gmail.com"
               className="w-full bg-background/50 border border-border rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40"
             />
           </div>
           <div>
-            <label className="text-xs text-muted-foreground font-medium block mb-1">Password / App Password</label>
+            <label className="text-xs text-muted-foreground font-medium block mb-1">
+              Password / App Password
+            </label>
             <input
               type="password"
               value={form.smtpPass || ""}
-              onChange={e => set("smtpPass", e.target.value || null)}
+              onChange={(e) => set("smtpPass", e.target.value || null)}
               placeholder="••••••••"
               className="w-full bg-background/50 border border-border rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40"
             />
@@ -1965,34 +2880,42 @@ function EmailSection() {
 
       {/* Sender + Recipients */}
       <div className="glass-card rounded-xl p-6 mb-4">
-        <h3 className="font-heading text-sm font-semibold text-foreground mb-4">Sender &amp; Recipients</h3>
+        <h3 className="font-heading text-sm font-semibold text-foreground mb-4">
+          Sender &amp; Recipients
+        </h3>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label className="text-xs text-muted-foreground font-medium block mb-1">From Name</label>
+            <label className="text-xs text-muted-foreground font-medium block mb-1">
+              From Name
+            </label>
             <input
               type="text"
               value={form.fromName || ""}
-              onChange={e => set("fromName", e.target.value)}
+              onChange={(e) => set("fromName", e.target.value)}
               placeholder="LeadCop"
               className="w-full bg-background/50 border border-border rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40"
             />
           </div>
           <div>
-            <label className="text-xs text-muted-foreground font-medium block mb-1">From Email</label>
+            <label className="text-xs text-muted-foreground font-medium block mb-1">
+              From Email
+            </label>
             <input
               type="email"
               value={form.fromEmail || ""}
-              onChange={e => set("fromEmail", e.target.value || null)}
+              onChange={(e) => set("fromEmail", e.target.value || null)}
               placeholder="noreply@yourdomain.com"
               className="w-full bg-background/50 border border-border rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40"
             />
           </div>
           <div className="sm:col-span-2">
-            <label className="text-xs text-muted-foreground font-medium block mb-1">Admin Email (receives new request alerts)</label>
+            <label className="text-xs text-muted-foreground font-medium block mb-1">
+              Admin Email (receives new request alerts)
+            </label>
             <input
               type="email"
               value={form.adminEmail || ""}
-              onChange={e => set("adminEmail", e.target.value || null)}
+              onChange={(e) => set("adminEmail", e.target.value || null)}
               placeholder="admin@yourdomain.com"
               className="w-full bg-background/50 border border-border rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40"
             />
@@ -2002,22 +2925,30 @@ function EmailSection() {
 
       {/* Notification triggers */}
       <div className="glass-card rounded-xl p-6 mb-4">
-        <h3 className="font-heading text-sm font-semibold text-foreground mb-4">Notification Triggers</h3>
+        <h3 className="font-heading text-sm font-semibold text-foreground mb-4">
+          Notification Triggers
+        </h3>
         <div className="space-y-4">
           <div className="flex items-start gap-4">
             <button
               onClick={() => set("notifyOnSubmit", !form.notifyOnSubmit)}
               className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors shrink-0 mt-0.5 ${
                 form.notifyOnSubmit ? "bg-primary" : "bg-muted"
-              }`}>
-              <span className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform ${
-                form.notifyOnSubmit ? "translate-x-4" : "translate-x-1"
-              }`} />
+              }`}
+            >
+              <span
+                className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform ${
+                  form.notifyOnSubmit ? "translate-x-4" : "translate-x-1"
+                }`}
+              />
             </button>
             <div>
-              <p className="text-sm font-medium text-foreground">On upgrade request submitted</p>
+              <p className="text-sm font-medium text-foreground">
+                On upgrade request submitted
+              </p>
               <p className="text-xs text-muted-foreground mt-0.5">
-                Sends a confirmation to the user and an alert to the admin email.
+                Sends a confirmation to the user and an alert to the admin
+                email.
               </p>
             </div>
           </div>
@@ -2026,15 +2957,21 @@ function EmailSection() {
               onClick={() => set("notifyOnDecision", !form.notifyOnDecision)}
               className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors shrink-0 mt-0.5 ${
                 form.notifyOnDecision ? "bg-primary" : "bg-muted"
-              }`}>
-              <span className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform ${
-                form.notifyOnDecision ? "translate-x-4" : "translate-x-1"
-              }`} />
+              }`}
+            >
+              <span
+                className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform ${
+                  form.notifyOnDecision ? "translate-x-4" : "translate-x-1"
+                }`}
+              />
             </button>
             <div>
-              <p className="text-sm font-medium text-foreground">On upgrade approved / rejected</p>
+              <p className="text-sm font-medium text-foreground">
+                On upgrade approved / rejected
+              </p>
               <p className="text-xs text-muted-foreground mt-0.5">
-                Sends the user an email when their request is approved or rejected.
+                Sends the user an email when their request is approved or
+                rejected.
               </p>
             </div>
           </div>
@@ -2046,11 +2983,18 @@ function EmailSection() {
         <button
           onClick={handleSave}
           disabled={saving}
-          className="flex items-center gap-2 px-5 py-2.5 bg-primary text-primary-foreground rounded-xl font-semibold text-sm hover:bg-primary/90 transition-all disabled:opacity-60">
-          {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
+          className="flex items-center gap-2 px-5 py-2.5 bg-primary text-primary-foreground rounded-xl font-semibold text-sm hover:bg-primary/90 transition-all disabled:opacity-60"
+        >
+          {saving ? (
+            <Loader2 className="w-4 h-4 animate-spin" />
+          ) : (
+            <Check className="w-4 h-4" />
+          )}
           {saving ? "Saving…" : "Save Settings"}
         </button>
-        {saved && <span className="text-green-400 text-sm font-medium">✓ Saved</span>}
+        {saved && (
+          <span className="text-green-400 text-sm font-medium">✓ Saved</span>
+        )}
         {saveError && <span className="text-red-400 text-sm">{saveError}</span>}
         {data?.updatedAt && (
           <span className="text-xs text-muted-foreground ml-auto">
@@ -2065,26 +3009,34 @@ function EmailSection() {
           <Send className="w-4 h-4 text-primary" /> Send Test Email
         </h3>
         <p className="text-xs text-muted-foreground mb-4">
-          Verify your SMTP settings by sending a test email. The connection is established live.
+          Verify your SMTP settings by sending a test email. The connection is
+          established live.
         </p>
         <div className="flex gap-3">
           <input
             type="email"
             value={testEmail}
-            onChange={e => setTestEmail(e.target.value)}
+            onChange={(e) => setTestEmail(e.target.value)}
             placeholder="test@example.com"
             className="flex-1 bg-background/50 border border-border rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40"
           />
           <button
             onClick={handleTestEmail}
             disabled={testing || !testEmail}
-            className="flex items-center gap-2 px-4 py-2 bg-primary/15 text-primary hover:bg-primary/25 rounded-xl text-sm font-semibold transition-all disabled:opacity-60">
-            {testing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+            className="flex items-center gap-2 px-4 py-2 bg-primary/15 text-primary hover:bg-primary/25 rounded-xl text-sm font-semibold transition-all disabled:opacity-60"
+          >
+            {testing ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <Send className="w-4 h-4" />
+            )}
             {testing ? "Sending…" : "Send"}
           </button>
         </div>
         {testResult && (
-          <p className={`text-xs mt-3 font-medium ${testResult.ok ? "text-green-400" : "text-red-400"}`}>
+          <p
+            className={`text-xs mt-3 font-medium ${testResult.ok ? "text-green-400" : "text-red-400"}`}
+          >
             {testResult.ok ? "✓" : "✗"} {testResult.msg}
           </p>
         )}
@@ -2105,10 +3057,15 @@ function RevenueSection() {
 
   return (
     <div>
-      <SectionHeader title="Revenue" subtitle="Earnings, subscriptions, and plan breakdown" />
+      <SectionHeader
+        title="Revenue"
+        subtitle="Earnings, subscriptions, and plan breakdown"
+      />
 
       {revenueQuery.isLoading ? (
-        <div className="flex justify-center py-16"><Loader2 className="w-6 h-6 animate-spin text-primary" /></div>
+        <div className="flex justify-center py-16">
+          <Loader2 className="w-6 h-6 animate-spin text-primary" />
+        </div>
       ) : data ? (
         <div className="space-y-6">
           {/* Summary cards */}
@@ -2130,46 +3087,68 @@ function RevenueSection() {
               },
               {
                 label: "Plan Revenue Breakdown",
-                val: data.revenueByPlan
-                  .filter(r => r.plan !== "FREE" && r.userCount > 0)
-                  .map(r => `${r.plan} $${r.revenue.toFixed(0)}`)
-                  .join(" · ") || "—",
+                val:
+                  data.revenueByPlan
+                    .filter((r) => r.plan !== "FREE" && r.userCount > 0)
+                    .map((r) => `${r.plan} $${r.revenue.toFixed(0)}`)
+                    .join(" · ") || "—",
                 icon: TrendingUp,
                 color: "text-primary",
                 bg: "bg-primary/10",
               },
             ].map(({ label, val, icon: Icon, color, bg }, i) => (
-              <motion.div key={i} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.08 }}
-                className="glass-card rounded-xl p-5">
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.08 }}
+                className="glass-card rounded-xl p-5"
+              >
                 <div className="flex items-center gap-2 mb-2">
-                  <div className={`w-7 h-7 rounded-lg ${bg} flex items-center justify-center`}>
+                  <div
+                    className={`w-7 h-7 rounded-lg ${bg} flex items-center justify-center`}
+                  >
                     <Icon className={`w-4 h-4 ${color}`} />
                   </div>
-                  <span className="text-xs font-medium text-muted-foreground">{label}</span>
+                  <span className="text-xs font-medium text-muted-foreground">
+                    {label}
+                  </span>
                 </div>
-                <div className="font-heading text-2xl font-bold text-foreground">{val}</div>
+                <div className="font-heading text-2xl font-bold text-foreground">
+                  {val}
+                </div>
               </motion.div>
             ))}
           </div>
 
           {/* Revenue by plan */}
-          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}
-            className="glass-card rounded-xl p-6">
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+            className="glass-card rounded-xl p-6"
+          >
             <h3 className="font-heading text-base font-semibold text-foreground mb-4 flex items-center gap-2">
               <PieChart className="w-4 h-4 text-primary" /> Revenue by Plan
             </h3>
             <div className="space-y-3">
               {data.revenueByPlan.map((row) => {
-                const maxRevenue = Math.max(...data.revenueByPlan.map(r => r.revenue), 1);
+                const maxRevenue = Math.max(
+                  ...data.revenueByPlan.map((r) => r.revenue),
+                  1,
+                );
                 return (
                   <div key={row.plan} className="flex items-center gap-3">
-                    <span className="text-xs font-medium text-muted-foreground w-14 shrink-0">{row.plan}</span>
+                    <span className="text-xs font-medium text-muted-foreground w-14 shrink-0">
+                      {row.plan}
+                    </span>
                     <div className="flex-1 h-2 rounded-full bg-border overflow-hidden">
                       <div
                         className="h-2 rounded-full transition-all"
                         style={{
                           width: `${(row.revenue / maxRevenue) * 100}%`,
-                          backgroundColor: PLAN_BAR_COLORS[row.plan] || "hsl(var(--primary))",
+                          backgroundColor:
+                            PLAN_BAR_COLORS[row.plan] || "hsl(var(--primary))",
                         }}
                       />
                     </div>
@@ -2177,7 +3156,12 @@ function RevenueSection() {
                       {row.userCount} user{row.userCount !== 1 ? "s" : ""}
                     </span>
                     <span className="text-xs font-semibold text-foreground w-20 text-right shrink-0">
-                      ${row.revenue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} / mo
+                      $
+                      {row.revenue.toLocaleString(undefined, {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2,
+                      })}{" "}
+                      / mo
                     </span>
                   </div>
                 );
@@ -2186,14 +3170,22 @@ function RevenueSection() {
           </motion.div>
 
           {/* Monthly subscriptions chart */}
-          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}
-            className="glass-card rounded-xl p-6">
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4 }}
+            className="glass-card rounded-xl p-6"
+          >
             <h3 className="font-heading text-base font-semibold text-foreground mb-4 flex items-center gap-2">
-              <BarChart3 className="w-4 h-4 text-primary" /> New Subscriptions — Last 12 Months
+              <BarChart3 className="w-4 h-4 text-primary" /> New Subscriptions —
+              Last 12 Months
             </h3>
             <div className="h-[220px] w-full">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={data.monthlySubs} margin={{ top: 8, right: 8, left: -24, bottom: 0 }}>
+                <BarChart
+                  data={data.monthlySubs}
+                  margin={{ top: 8, right: 8, left: -24, bottom: 0 }}
+                >
                   <XAxis
                     dataKey="month"
                     stroke="hsl(var(--muted-foreground))"
@@ -2202,7 +3194,10 @@ function RevenueSection() {
                     axisLine={false}
                     tickFormatter={(val: string) => {
                       const [year, month] = val.split("-");
-                      return new Date(Number(year), Number(month) - 1).toLocaleString("default", { month: "short" });
+                      return new Date(
+                        Number(year),
+                        Number(month) - 1,
+                      ).toLocaleString("default", { month: "short" });
                     }}
                   />
                   <YAxis
@@ -2223,12 +3218,22 @@ function RevenueSection() {
                     formatter={(value: number) => [value, "New subscriptions"]}
                     labelFormatter={(label: string) => {
                       const [year, month] = label.split("-");
-                      return new Date(Number(year), Number(month) - 1).toLocaleString("default", { month: "long", year: "numeric" });
+                      return new Date(
+                        Number(year),
+                        Number(month) - 1,
+                      ).toLocaleString("default", {
+                        month: "long",
+                        year: "numeric",
+                      });
                     }}
                   />
                   <Bar dataKey="count" radius={[4, 4, 0, 0]}>
                     {data.monthlySubs.map((_entry, index) => (
-                      <Cell key={`cell-${index}`} fill="hsl(262 83% 58%)" fillOpacity={0.8} />
+                      <Cell
+                        key={`cell-${index}`}
+                        fill="hsl(262 83% 58%)"
+                        fillOpacity={0.8}
+                      />
                     ))}
                   </Bar>
                 </BarChart>
@@ -2237,41 +3242,71 @@ function RevenueSection() {
           </motion.div>
 
           {/* Recent subscriptions table */}
-          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }}
-            className="glass-card rounded-xl overflow-hidden">
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5 }}
+            className="glass-card rounded-xl overflow-hidden"
+          >
             <div className="px-6 py-4 border-b border-border flex items-center gap-2">
               <CreditCard className="w-4 h-4 text-primary" />
-              <h3 className="font-heading text-base font-semibold text-foreground">Recent Approved Subscriptions</h3>
+              <h3 className="font-heading text-base font-semibold text-foreground">
+                Recent Approved Subscriptions
+              </h3>
             </div>
             {data.recent.length === 0 ? (
-              <div className="py-12 text-center text-sm text-muted-foreground">No approved subscriptions yet.</div>
+              <div className="py-12 text-center text-sm text-muted-foreground">
+                No approved subscriptions yet.
+              </div>
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full text-sm text-left">
                   <thead className="border-b border-border">
                     <tr>
-                      {["User", "Plan", "Price / mo", "Approved On"].map(h => (
-                        <th key={h} className="px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide">{h}</th>
-                      ))}
+                      {["User", "Plan", "Price / mo", "Approved On"].map(
+                        (h) => (
+                          <th
+                            key={h}
+                            className="px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide"
+                          >
+                            {h}
+                          </th>
+                        ),
+                      )}
                     </tr>
                   </thead>
                   <tbody>
                     {data.recent.map((row) => (
-                      <tr key={row.id} className="border-b border-border/50 last:border-0 hover:bg-muted/20 transition-colors">
+                      <tr
+                        key={row.id}
+                        className="border-b border-border/50 last:border-0 hover:bg-muted/20 transition-colors"
+                      >
                         <td className="px-4 py-3">
-                          <div className="font-medium text-foreground">{row.userName}</div>
-                          <div className="text-xs text-muted-foreground">{row.userEmail}</div>
+                          <div className="font-medium text-foreground">
+                            {row.userName}
+                          </div>
+                          <div className="text-xs text-muted-foreground">
+                            {row.userEmail}
+                          </div>
                         </td>
                         <td className="px-4 py-3">
-                          <span className={`text-xs font-bold rounded-md px-2 py-1 ${PLAN_COLORS[row.plan] || "bg-muted/60 text-muted-foreground"}`}>
+                          <span
+                            className={`text-xs font-bold rounded-md px-2 py-1 ${PLAN_COLORS[row.plan] || "bg-muted/60 text-muted-foreground"}`}
+                          >
                             {row.plan}
                           </span>
                         </td>
                         <td className="px-4 py-3 text-sm font-semibold text-foreground">
-                          ${row.price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                          $
+                          {row.price.toLocaleString(undefined, {
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2,
+                          })}
                         </td>
                         <td className="px-4 py-3 text-xs text-muted-foreground">
-                          {row.approvedAt ? format(parseISO(row.approvedAt), "PP") : "—"}
+                          {row.approvedAt
+                            ? format(parseISO(row.approvedAt), "PP")
+                            : "—"}
                         </td>
                       </tr>
                     ))}
@@ -2300,7 +3335,7 @@ function BrandingSection() {
   const qc = useQueryClient();
   const { data, isLoading } = useQuery<SiteSettingsData>({
     queryKey: ["/api/admin/site-settings"],
-    queryFn: () => fetch("/api/admin/site-settings").then(r => r.json()),
+    queryFn: () => fetch("/api/admin/site-settings").then((r) => r.json()),
   });
 
   const [form, setForm] = useState<SiteSettingsData>({
@@ -2309,7 +3344,8 @@ function BrandingSection() {
     logoUrl: null,
     faviconUrl: null,
     globalMetaTitle: "LeadCop — Disposable Email Detection API",
-    globalMetaDescription: "Industry-leading disposable email detection API. Real-time verification with 99.9% accuracy.",
+    globalMetaDescription:
+      "Industry-leading disposable email detection API. Real-time verification with 99.9% accuracy.",
     footerText: null,
   });
   const [saved, setSaved] = useState(false);
@@ -2356,13 +3392,21 @@ function BrandingSection() {
     }
   };
 
-  const field = (label: string, key: keyof SiteSettingsData, placeholder?: string, hint?: string, textarea?: boolean) => (
+  const field = (
+    label: string,
+    key: keyof SiteSettingsData,
+    placeholder?: string,
+    hint?: string,
+    textarea?: boolean,
+  ) => (
     <div className="space-y-1.5">
       <label className="text-sm font-medium text-foreground">{label}</label>
       {textarea ? (
         <textarea
           value={(form[key] as string) ?? ""}
-          onChange={e => setForm(f => ({ ...f, [key]: e.target.value || null }))}
+          onChange={(e) =>
+            setForm((f) => ({ ...f, [key]: e.target.value || null }))
+          }
           placeholder={placeholder}
           rows={3}
           className="w-full rounded-lg border border-border bg-muted/30 px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 resize-none"
@@ -2371,7 +3415,9 @@ function BrandingSection() {
         <input
           type="text"
           value={(form[key] as string) ?? ""}
-          onChange={e => setForm(f => ({ ...f, [key]: e.target.value || null }))}
+          onChange={(e) =>
+            setForm((f) => ({ ...f, [key]: e.target.value || null }))
+          }
           placeholder={placeholder}
           className="w-full rounded-lg border border-border bg-muted/30 px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40"
         />
@@ -2382,45 +3428,92 @@ function BrandingSection() {
 
   return (
     <div>
-      <SectionHeader title="Branding" subtitle="Customise the site title, logo, favicon and footer" />
+      <SectionHeader
+        title="Branding"
+        subtitle="Customise the site title, logo, favicon and footer"
+      />
       {isLoading ? (
-        <div className="flex justify-center py-16"><Loader2 className="w-6 h-6 animate-spin text-primary" /></div>
+        <div className="flex justify-center py-16">
+          <Loader2 className="w-6 h-6 animate-spin text-primary" />
+        </div>
       ) : (
         <div className="max-w-xl space-y-6">
-          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="glass-card rounded-xl p-6 space-y-5">
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="glass-card rounded-xl p-6 space-y-5"
+          >
             <h3 className="font-heading text-sm font-semibold text-foreground flex items-center gap-2">
               <Image className="w-4 h-4 text-primary" /> Site Identity
             </h3>
-            {field("Site Title", "siteTitle", "LeadCop", "Shown in the navbar and footer")}
-            {field("Tagline", "tagline", "Block Fake Emails. Protect Your Platform.", "Short hero tagline (optional)", true)}
+            {field(
+              "Site Title",
+              "siteTitle",
+              "LeadCop",
+              "Shown in the navbar and footer",
+            )}
+            {field(
+              "Tagline",
+              "tagline",
+              "Block Fake Emails. Protect Your Platform.",
+              "Short hero tagline (optional)",
+              true,
+            )}
             <CloudinaryUpload
               label="Logo"
               value={form.logoUrl}
-              onChange={url => setForm(f => ({ ...f, logoUrl: url }))}
+              onChange={(url) => setForm((f) => ({ ...f, logoUrl: url }))}
               hint="Replaces the default Shield icon in the navbar — PNG, SVG or WebP recommended"
             />
             <CloudinaryUpload
               label="Favicon"
               value={form.faviconUrl}
-              onChange={url => setForm(f => ({ ...f, faviconUrl: url }))}
+              onChange={(url) => setForm((f) => ({ ...f, faviconUrl: url }))}
               accept="image/png,image/jpeg,image/svg+xml,image/x-icon,image/vnd.microsoft.icon"
               hint="Browser tab icon — ICO, PNG or SVG, ideally 32×32 or 64×64 px"
             />
           </motion.div>
 
-          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.08 }} className="glass-card rounded-xl p-6 space-y-5">
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.08 }}
+            className="glass-card rounded-xl p-6 space-y-5"
+          >
             <h3 className="font-heading text-sm font-semibold text-foreground flex items-center gap-2">
               <FileText className="w-4 h-4 text-primary" /> Global Meta Defaults
             </h3>
-            {field("Default Meta Title", "globalMetaTitle", "LeadCop — Disposable Email Detection API", "Used as the browser tab title on all pages")}
-            {field("Default Meta Description", "globalMetaDescription", "", "Default SEO description for all pages", true)}
+            {field(
+              "Default Meta Title",
+              "globalMetaTitle",
+              "LeadCop — Disposable Email Detection API",
+              "Used as the browser tab title on all pages",
+            )}
+            {field(
+              "Default Meta Description",
+              "globalMetaDescription",
+              "",
+              "Default SEO description for all pages",
+              true,
+            )}
           </motion.div>
 
-          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.14 }} className="glass-card rounded-xl p-6 space-y-5">
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.14 }}
+            className="glass-card rounded-xl p-6 space-y-5"
+          >
             <h3 className="font-heading text-sm font-semibold text-foreground flex items-center gap-2">
               <Globe className="w-4 h-4 text-primary" /> Footer
             </h3>
-            {field("Footer Text", "footerText", "Built for developers, by developers. © 2025 LeadCop.", "Overrides the default footer copyright line. Leave blank to use the default.", true)}
+            {field(
+              "Footer Text",
+              "footerText",
+              "Built for developers, by developers. © 2025 LeadCop.",
+              "Overrides the default footer copyright line. Leave blank to use the default.",
+              true,
+            )}
           </motion.div>
 
           {error && <p className="text-sm text-red-400">{error}</p>}
@@ -2430,7 +3523,11 @@ function BrandingSection() {
             disabled={saving}
             className="inline-flex items-center gap-2 rounded-lg bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-60"
           >
-            {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : saved ? <Check className="w-4 h-4" /> : null}
+            {saving ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : saved ? (
+              <Check className="w-4 h-4" />
+            ) : null}
             {saved ? "Saved!" : "Save Branding"}
           </button>
         </div>
@@ -2467,7 +3564,8 @@ function PageSeoEditor({ slug, label }: { slug: string; label: string }) {
   const slugParam = slugToPathParam(slug);
   const { data, isLoading } = useQuery<PageSeoData>({
     queryKey: [`/api/admin/site-settings/page/${slugParam}`],
-    queryFn: () => fetch(`/api/admin/site-settings/page/${slugParam}`).then(r => r.json()),
+    queryFn: () =>
+      fetch(`/api/admin/site-settings/page/${slugParam}`).then((r) => r.json()),
   });
 
   const [form, setForm] = useState<Omit<PageSeoData, "slug">>({
@@ -2510,8 +3608,12 @@ function PageSeoEditor({ slug, label }: { slug: string; label: string }) {
         const j = await res.json();
         throw new Error(j.error || "Failed to save");
       }
-      qc.invalidateQueries({ queryKey: [`/api/admin/site-settings/page/${slugParam}`] });
-      qc.invalidateQueries({ queryKey: [`/api/site-settings/page?slug=${slug}`] });
+      qc.invalidateQueries({
+        queryKey: [`/api/admin/site-settings/page/${slugParam}`],
+      });
+      qc.invalidateQueries({
+        queryKey: [`/api/site-settings/page?slug=${slug}`],
+      });
       setSaved(true);
       setTimeout(() => setSaved(false), 2500);
     } catch (e) {
@@ -2526,39 +3628,58 @@ function PageSeoEditor({ slug, label }: { slug: string; label: string }) {
       <div className="px-5 py-3 border-b border-border flex items-center gap-2 bg-muted/20">
         <Tag className="w-3.5 h-3.5 text-primary" />
         <span className="text-sm font-semibold text-foreground">{label}</span>
-        <span className="ml-auto font-mono text-xs text-muted-foreground">{slug}</span>
+        <span className="ml-auto font-mono text-xs text-muted-foreground">
+          {slug}
+        </span>
       </div>
       {isLoading ? (
-        <div className="py-6 flex justify-center"><Loader2 className="w-5 h-5 animate-spin text-primary" /></div>
+        <div className="py-6 flex justify-center">
+          <Loader2 className="w-5 h-5 animate-spin text-primary" />
+        </div>
       ) : (
         <div className="p-5 space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-1.5">
-              <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Meta Title</label>
+              <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                Meta Title
+              </label>
               <input
                 type="text"
                 value={form.metaTitle ?? ""}
-                onChange={e => setForm(f => ({ ...f, metaTitle: e.target.value || null }))}
+                onChange={(e) =>
+                  setForm((f) => ({ ...f, metaTitle: e.target.value || null }))
+                }
                 placeholder="Page title for SEO (max 120 chars)"
                 className="w-full rounded-lg border border-border bg-muted/30 px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40"
               />
             </div>
             <div className="space-y-1.5">
-              <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Keywords</label>
+              <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                Keywords
+              </label>
               <input
                 type="text"
                 value={form.keywords ?? ""}
-                onChange={e => setForm(f => ({ ...f, keywords: e.target.value || null }))}
+                onChange={(e) =>
+                  setForm((f) => ({ ...f, keywords: e.target.value || null }))
+                }
                 placeholder="comma, separated, keywords"
                 className="w-full rounded-lg border border-border bg-muted/30 px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40"
               />
             </div>
           </div>
           <div className="space-y-1.5">
-            <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Meta Description</label>
+            <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+              Meta Description
+            </label>
             <textarea
               value={form.metaDescription ?? ""}
-              onChange={e => setForm(f => ({ ...f, metaDescription: e.target.value || null }))}
+              onChange={(e) =>
+                setForm((f) => ({
+                  ...f,
+                  metaDescription: e.target.value || null,
+                }))
+              }
               placeholder="Page description for search engines (max 320 chars)"
               rows={2}
               className="w-full rounded-lg border border-border bg-muted/30 px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 resize-none"
@@ -2566,31 +3687,46 @@ function PageSeoEditor({ slug, label }: { slug: string; label: string }) {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-1.5">
-              <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">OG Title</label>
+              <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                OG Title
+              </label>
               <input
                 type="text"
                 value={form.ogTitle ?? ""}
-                onChange={e => setForm(f => ({ ...f, ogTitle: e.target.value || null }))}
+                onChange={(e) =>
+                  setForm((f) => ({ ...f, ogTitle: e.target.value || null }))
+                }
                 placeholder="Open Graph title (social previews)"
                 className="w-full rounded-lg border border-border bg-muted/30 px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40"
               />
             </div>
             <div className="space-y-1.5">
-              <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">OG Image URL</label>
+              <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                OG Image URL
+              </label>
               <input
                 type="text"
                 value={form.ogImage ?? ""}
-                onChange={e => setForm(f => ({ ...f, ogImage: e.target.value || null }))}
+                onChange={(e) =>
+                  setForm((f) => ({ ...f, ogImage: e.target.value || null }))
+                }
                 placeholder="https://example.com/og-image.png"
                 className="w-full rounded-lg border border-border bg-muted/30 px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40"
               />
             </div>
           </div>
           <div className="space-y-1.5">
-            <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">OG Description</label>
+            <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+              OG Description
+            </label>
             <textarea
               value={form.ogDescription ?? ""}
-              onChange={e => setForm(f => ({ ...f, ogDescription: e.target.value || null }))}
+              onChange={(e) =>
+                setForm((f) => ({
+                  ...f,
+                  ogDescription: e.target.value || null,
+                }))
+              }
               placeholder="Open Graph description for social sharing"
               rows={2}
               className="w-full rounded-lg border border-border bg-muted/30 px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 resize-none"
@@ -2603,7 +3739,11 @@ function PageSeoEditor({ slug, label }: { slug: string; label: string }) {
               disabled={saving}
               className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-60"
             >
-              {saving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : saved ? <Check className="w-3.5 h-3.5" /> : null}
+              {saving ? (
+                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+              ) : saved ? (
+                <Check className="w-3.5 h-3.5" />
+              ) : null}
               {saved ? "Saved!" : "Save"}
             </button>
           </div>
@@ -2616,7 +3756,10 @@ function PageSeoEditor({ slug, label }: { slug: string; label: string }) {
 function SeoSection() {
   return (
     <div>
-      <SectionHeader title="SEO" subtitle="Per-page meta titles, descriptions, keywords and Open Graph tags" />
+      <SectionHeader
+        title="SEO"
+        subtitle="Per-page meta titles, descriptions, keywords and Open Graph tags"
+      />
       <div className="space-y-4 max-w-3xl">
         {PAGE_SLUGS.map(({ slug, label }) => (
           <PageSeoEditor key={slug} slug={slug} label={label} />
@@ -2648,11 +3791,30 @@ type SupportMessage = {
   createdAt: string;
 };
 
-const TICKET_STATUS_CONFIG: Record<string, { label: string; icon: React.ElementType; cls: string }> = {
-  open: { label: "Open", icon: AlertCircle, cls: "bg-blue-500/15 text-blue-400" },
-  in_progress: { label: "In Progress", icon: Clock, cls: "bg-yellow-500/15 text-yellow-400" },
-  resolved: { label: "Resolved", icon: CheckCircle, cls: "bg-green-500/15 text-green-400" },
-  closed: { label: "Closed", icon: XCircle, cls: "bg-muted/60 text-muted-foreground" },
+const TICKET_STATUS_CONFIG: Record<
+  string,
+  { label: string; icon: React.ElementType; cls: string }
+> = {
+  open: {
+    label: "Open",
+    icon: AlertCircle,
+    cls: "bg-blue-500/15 text-blue-400",
+  },
+  in_progress: {
+    label: "In Progress",
+    icon: Clock,
+    cls: "bg-yellow-500/15 text-yellow-400",
+  },
+  resolved: {
+    label: "Resolved",
+    icon: CheckCircle,
+    cls: "bg-green-500/15 text-green-400",
+  },
+  closed: {
+    label: "Closed",
+    icon: XCircle,
+    cls: "bg-muted/60 text-muted-foreground",
+  },
 };
 
 const CATEGORY_LABELS: Record<string, string> = {
@@ -2673,17 +3835,35 @@ function makeProxyDownloadUrl(url: string, filename: string): string {
   return `/api/support/download?url=${encodeURIComponent(url)}&name=${encodeURIComponent(filename)}`;
 }
 
-function AdminAttachmentPreview({ url, name }: { url: string; name?: string | null }) {
+function AdminAttachmentPreview({
+  url,
+  name,
+}: {
+  url: string;
+  name?: string | null;
+}) {
   if (isAttachImage(url)) {
     return (
-      <a href={url} target="_blank" rel="noopener noreferrer" className="block mt-2">
-        <img src={url} alt={name ?? "attachment"} className="max-w-[200px] max-h-[140px] rounded-xl object-cover border border-border hover:opacity-90 transition-opacity" />
+      <a
+        href={url}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="block mt-2"
+      >
+        <img
+          src={url}
+          alt={name ?? "attachment"}
+          className="max-w-[200px] max-h-[140px] rounded-xl object-cover border border-border hover:opacity-90 transition-opacity"
+        />
       </a>
     );
   }
   const downloadUrl = makeProxyDownloadUrl(url, name ?? "attachment");
   return (
-    <a href={downloadUrl} className="inline-flex items-center gap-2 mt-2 px-3 py-1.5 rounded-xl bg-muted/60 border border-border text-xs text-foreground hover:bg-muted transition-colors">
+    <a
+      href={downloadUrl}
+      className="inline-flex items-center gap-2 mt-2 px-3 py-1.5 rounded-xl bg-muted/60 border border-border text-xs text-foreground hover:bg-muted transition-colors"
+    >
       <FileText className="w-3.5 h-3.5 text-primary flex-shrink-0" />
       <span className="truncate max-w-[140px]">{name ?? "attachment"}</span>
       <ExternalLink className="w-3 h-3 text-muted-foreground flex-shrink-0" />
@@ -2691,7 +3871,13 @@ function AdminAttachmentPreview({ url, name }: { url: string; name?: string | nu
   );
 }
 
-function AdminTicketDetail({ ticketId, onBack }: { ticketId: number; onBack: () => void }) {
+function AdminTicketDetail({
+  ticketId,
+  onBack,
+}: {
+  ticketId: number;
+  onBack: () => void;
+}) {
   const qc = useQueryClient();
   const [reply, setReply] = useState("");
   const [file, setFile] = useState<File | null>(null);
@@ -2701,9 +3887,15 @@ function AdminTicketDetail({ ticketId, onBack }: { ticketId: number; onBack: () 
   const [newStatus, setNewStatus] = useState<string>("");
   const [updatingStatus, setUpdatingStatus] = useState(false);
 
-  const detailQuery = useQuery<{ ticket: AdminTicket; messages: SupportMessage[] }>({
+  const detailQuery = useQuery<{
+    ticket: AdminTicket;
+    messages: SupportMessage[];
+  }>({
     queryKey: [`/api/support/admin/tickets/${ticketId}`],
-    queryFn: () => fetch(`/api/support/admin/tickets/${ticketId}`, { credentials: "include" }).then(r => r.json()),
+    queryFn: () =>
+      fetch(`/api/support/admin/tickets/${ticketId}`, {
+        credentials: "include",
+      }).then((r) => r.json()),
   });
 
   const ticket = detailQuery.data?.ticket;
@@ -2723,7 +3915,9 @@ function AdminTicketDetail({ ticketId, onBack }: { ticketId: number; onBack: () 
         credentials: "include",
         body: JSON.stringify({ status: newStatus }),
       });
-      qc.invalidateQueries({ queryKey: [`/api/support/admin/tickets/${ticketId}`] });
+      qc.invalidateQueries({
+        queryKey: [`/api/support/admin/tickets/${ticketId}`],
+      });
       qc.invalidateQueries({ queryKey: ["/api/support/admin/tickets"] });
     } finally {
       setUpdatingStatus(false);
@@ -2733,9 +3927,18 @@ function AdminTicketDetail({ ticketId, onBack }: { ticketId: number; onBack: () 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const f = e.target.files?.[0];
     setFileError("");
-    if (!f) { setFile(null); return; }
-    if (f.size > MAX_ATTACH_SIZE) { setFileError("File must be under 10 MB"); return; }
-    if (!ALLOWED_ATTACH.test(f.name)) { setFileError("File type not allowed"); return; }
+    if (!f) {
+      setFile(null);
+      return;
+    }
+    if (f.size > MAX_ATTACH_SIZE) {
+      setFileError("File must be under 10 MB");
+      return;
+    }
+    if (!ALLOWED_ATTACH.test(f.name)) {
+      setFileError("File type not allowed");
+      return;
+    }
     setFile(f);
   };
 
@@ -2755,7 +3958,9 @@ function AdminTicketDetail({ ticketId, onBack }: { ticketId: number; onBack: () 
       setReply("");
       setFile(null);
       if (fileInputRef.current) fileInputRef.current.value = "";
-      qc.invalidateQueries({ queryKey: [`/api/support/admin/tickets/${ticketId}`] });
+      qc.invalidateQueries({
+        queryKey: [`/api/support/admin/tickets/${ticketId}`],
+      });
       qc.invalidateQueries({ queryKey: ["/api/support/admin/tickets"] });
     } finally {
       setSending(false);
@@ -2763,34 +3968,44 @@ function AdminTicketDetail({ ticketId, onBack }: { ticketId: number; onBack: () 
   };
 
   if (detailQuery.isLoading) {
-    return <div className="flex justify-center py-12"><Loader2 className="w-5 h-5 animate-spin text-primary" /></div>;
+    return (
+      <div className="flex justify-center py-12">
+        <Loader2 className="w-5 h-5 animate-spin text-primary" />
+      </div>
+    );
   }
 
   if (!ticket) return null;
 
-  const statusCfg = TICKET_STATUS_CONFIG[ticket.status] ?? TICKET_STATUS_CONFIG.open;
+  const statusCfg =
+    TICKET_STATUS_CONFIG[ticket.status] ?? TICKET_STATUS_CONFIG.open;
   const StatusIcon = statusCfg.icon;
 
   return (
     <div>
-      <button onClick={onBack} className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors mb-5">
+      <button
+        onClick={onBack}
+        className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors mb-5"
+      >
         <ArrowLeft className="w-4 h-4" /> Back to Tickets
       </button>
 
       <div className="glass-card rounded-2xl overflow-hidden">
         <div className="px-6 py-5 border-b border-border flex items-start justify-between gap-4">
           <div>
-            <h3 className="font-heading text-lg font-bold text-foreground">{ticket.subject}</h3>
+            <h3 className="font-heading text-lg font-bold text-foreground">
+              {ticket.subject}
+            </h3>
             <p className="text-xs text-muted-foreground mt-1">
               {CATEGORY_LABELS[ticket.category] ?? ticket.category} ·{" "}
-              {ticket.userName ?? "Unknown"} ({ticket.userEmail}) ·{" "}
-              Opened {format(parseISO(ticket.createdAt), "MMM d, yyyy")}
+              {ticket.userName ?? "Unknown"} ({ticket.userEmail}) · Opened{" "}
+              {format(parseISO(ticket.createdAt), "MMM d, yyyy")}
             </p>
           </div>
           <div className="flex items-center gap-2 flex-shrink-0">
             <select
               value={newStatus}
-              onChange={e => setNewStatus(e.target.value)}
+              onChange={(e) => setNewStatus(e.target.value)}
               className="text-xs rounded-lg px-2 py-1.5 bg-muted/40 border border-border text-foreground focus:outline-none"
             >
               <option value="open">Open</option>
@@ -2803,7 +4018,11 @@ function AdminTicketDetail({ ticketId, onBack }: { ticketId: number; onBack: () 
               disabled={updatingStatus || newStatus === ticket.status}
               className="px-3 py-1.5 bg-primary/15 text-primary hover:bg-primary/25 rounded-lg text-xs font-semibold transition-colors disabled:opacity-40"
             >
-              {updatingStatus ? <Loader2 className="w-3 h-3 animate-spin" /> : "Update"}
+              {updatingStatus ? (
+                <Loader2 className="w-3 h-3 animate-spin" />
+              ) : (
+                "Update"
+              )}
             </button>
           </div>
         </div>
@@ -2812,23 +4031,42 @@ function AdminTicketDetail({ ticketId, onBack }: { ticketId: number; onBack: () 
           {messages.map((msg, i) => {
             const isAdmin = msg.senderRole === "admin";
             return (
-              <div key={msg.id} className={`flex gap-3 ${isAdmin ? "flex-row-reverse" : ""}`}>
-                <div className={`w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 text-xs font-bold ${
-                  isAdmin ? "bg-primary/15 text-primary" : "bg-muted/60 text-muted-foreground"
-                }`}>
+              <div
+                key={msg.id}
+                className={`flex gap-3 ${isAdmin ? "flex-row-reverse" : ""}`}
+              >
+                <div
+                  className={`w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 text-xs font-bold ${
+                    isAdmin
+                      ? "bg-primary/15 text-primary"
+                      : "bg-muted/60 text-muted-foreground"
+                  }`}
+                >
                   {isAdmin ? "A" : "U"}
                 </div>
-                <div className={`flex-1 max-w-[85%] ${isAdmin ? "text-right" : ""}`}>
-                  <div className={`inline-block px-4 py-3 rounded-2xl text-sm text-foreground ${
-                    isAdmin ? "bg-primary/15 rounded-tr-sm" : "bg-muted/40 rounded-tl-sm"
-                  }`}>
-                    {msg.message && <p className="whitespace-pre-wrap">{msg.message}</p>}
+                <div
+                  className={`flex-1 max-w-[85%] ${isAdmin ? "text-right" : ""}`}
+                >
+                  <div
+                    className={`inline-block px-4 py-3 rounded-2xl text-sm text-foreground ${
+                      isAdmin
+                        ? "bg-primary/15 rounded-tr-sm"
+                        : "bg-muted/40 rounded-tl-sm"
+                    }`}
+                  >
+                    {msg.message && (
+                      <p className="whitespace-pre-wrap">{msg.message}</p>
+                    )}
                     {msg.attachmentUrl && (
-                      <AdminAttachmentPreview url={msg.attachmentUrl} name={msg.attachmentName} />
+                      <AdminAttachmentPreview
+                        url={msg.attachmentUrl}
+                        name={msg.attachmentName}
+                      />
                     )}
                   </div>
                   <p className="text-xs text-muted-foreground mt-1">
-                    {isAdmin ? "Admin" : "Customer"} · {format(parseISO(msg.createdAt), "MMM d, h:mm a")}
+                    {isAdmin ? "Admin" : "Customer"} ·{" "}
+                    {format(parseISO(msg.createdAt), "MMM d, h:mm a")}
                   </p>
                 </div>
               </div>
@@ -2841,7 +4079,7 @@ function AdminTicketDetail({ ticketId, onBack }: { ticketId: number; onBack: () 
             <div className="flex gap-3">
               <textarea
                 value={reply}
-                onChange={e => setReply(e.target.value)}
+                onChange={(e) => setReply(e.target.value)}
                 placeholder="Type your reply…"
                 rows={3}
                 maxLength={5000}
@@ -2852,7 +4090,11 @@ function AdminTicketDetail({ ticketId, onBack }: { ticketId: number; onBack: () 
                 disabled={sending || (!reply.trim() && !file)}
                 className="self-end px-4 py-2.5 bg-primary text-primary-foreground rounded-xl text-sm font-semibold hover:bg-primary/90 transition-colors disabled:opacity-50 flex items-center gap-1.5"
               >
-                {sending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+                {sending ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <Send className="w-4 h-4" />
+                )}
                 Reply
               </button>
             </div>
@@ -2867,7 +4109,10 @@ function AdminTicketDetail({ ticketId, onBack }: { ticketId: number; onBack: () 
                 className="hidden"
                 id="admin-reply-file"
               />
-              <label htmlFor="admin-reply-file" className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground cursor-pointer transition-colors">
+              <label
+                htmlFor="admin-reply-file"
+                className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground cursor-pointer transition-colors"
+              >
                 <Paperclip className="w-3.5 h-3.5" />
                 Attach file
               </label>
@@ -2875,13 +4120,24 @@ function AdminTicketDetail({ ticketId, onBack }: { ticketId: number; onBack: () 
                 <div className="flex items-center gap-1.5 px-2.5 py-1 bg-muted/50 rounded-lg border border-border text-xs text-foreground">
                   <FileText className="w-3.5 h-3.5 text-primary flex-shrink-0" />
                   <span className="truncate max-w-[140px]">{file.name}</span>
-                  <button type="button" onClick={() => { setFile(null); if (fileInputRef.current) fileInputRef.current.value = ""; }} className="text-muted-foreground hover:text-foreground ml-0.5">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setFile(null);
+                      if (fileInputRef.current) fileInputRef.current.value = "";
+                    }}
+                    className="text-muted-foreground hover:text-foreground ml-0.5"
+                  >
                     <X className="w-3 h-3" />
                   </button>
                 </div>
               )}
-              {fileError && <span className="text-xs text-red-400">{fileError}</span>}
-              <span className="ml-auto text-xs text-muted-foreground">Max 10 MB · Images, PDF, DOC, ZIP</span>
+              {fileError && (
+                <span className="text-xs text-red-400">{fileError}</span>
+              )}
+              <span className="ml-auto text-xs text-muted-foreground">
+                Max 10 MB · Images, PDF, DOC, ZIP
+              </span>
             </div>
           </form>
         </div>
@@ -2896,28 +4152,41 @@ function SupportSection() {
 
   const ticketsQuery = useQuery<{ tickets: AdminTicket[] }>({
     queryKey: ["/api/support/admin/tickets"],
-    queryFn: () => fetch("/api/support/admin/tickets", { credentials: "include" }).then(r => r.json()),
+    queryFn: () =>
+      fetch("/api/support/admin/tickets", { credentials: "include" }).then(
+        (r) => r.json(),
+      ),
   });
 
-  const tickets = (ticketsQuery.data?.tickets ?? []).filter(t =>
-    statusFilter === "all" ? true : t.status === statusFilter
+  const tickets = (ticketsQuery.data?.tickets ?? []).filter((t) =>
+    statusFilter === "all" ? true : t.status === statusFilter,
   );
 
   if (selectedTicketId !== null) {
-    return <AdminTicketDetail ticketId={selectedTicketId} onBack={() => setSelectedTicketId(null)} />;
+    return (
+      <AdminTicketDetail
+        ticketId={selectedTicketId}
+        onBack={() => setSelectedTicketId(null)}
+      />
+    );
   }
 
   return (
     <div>
-      <SectionHeader title="Support" subtitle="Manage customer support tickets" />
+      <SectionHeader
+        title="Support"
+        subtitle="Manage customer support tickets"
+      />
 
       <div className="flex gap-2 mb-5 flex-wrap">
-        {["all", "open", "in_progress", "resolved", "closed"].map(f => (
+        {["all", "open", "in_progress", "resolved", "closed"].map((f) => (
           <button
             key={f}
             onClick={() => setStatusFilter(f)}
             className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
-              statusFilter === f ? "bg-primary/15 text-primary" : "bg-muted/40 text-muted-foreground hover:text-foreground"
+              statusFilter === f
+                ? "bg-primary/15 text-primary"
+                : "bg-muted/40 text-muted-foreground hover:text-foreground"
             }`}
           >
             {f === "all" ? "All" : (TICKET_STATUS_CONFIG[f]?.label ?? f)}
@@ -2927,7 +4196,9 @@ function SupportSection() {
 
       <div className="glass-card rounded-xl overflow-hidden">
         {ticketsQuery.isLoading ? (
-          <div className="flex justify-center py-12"><Loader2 className="w-5 h-5 animate-spin text-primary" /></div>
+          <div className="flex justify-center py-12">
+            <Loader2 className="w-5 h-5 animate-spin text-primary" />
+          </div>
         ) : tickets.length === 0 ? (
           <div className="text-center py-14 text-muted-foreground text-sm">
             <MessageSquare className="w-8 h-8 mx-auto mb-2 opacity-40" />
@@ -2938,27 +4209,51 @@ function SupportSection() {
             <table className="w-full text-sm text-left">
               <thead className="border-b border-border">
                 <tr>
-                  {["Subject", "Customer", "Category", "Status", "Updated", ""].map(h => (
-                    <th key={h} className="px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide">{h}</th>
+                  {[
+                    "Subject",
+                    "Customer",
+                    "Category",
+                    "Status",
+                    "Updated",
+                    "",
+                  ].map((h) => (
+                    <th
+                      key={h}
+                      className="px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide"
+                    >
+                      {h}
+                    </th>
                   ))}
                 </tr>
               </thead>
               <tbody>
-                {tickets.map(t => {
-                  const cfg = TICKET_STATUS_CONFIG[t.status] ?? TICKET_STATUS_CONFIG.open;
+                {tickets.map((t) => {
+                  const cfg =
+                    TICKET_STATUS_CONFIG[t.status] ?? TICKET_STATUS_CONFIG.open;
                   const Icon = cfg.icon;
                   return (
-                    <tr key={t.id} className="border-b border-border/50 last:border-0 hover:bg-muted/20 transition-colors">
-                      <td className="px-4 py-3 font-medium text-foreground max-w-xs truncate">{t.subject}</td>
+                    <tr
+                      key={t.id}
+                      className="border-b border-border/50 last:border-0 hover:bg-muted/20 transition-colors"
+                    >
+                      <td className="px-4 py-3 font-medium text-foreground max-w-xs truncate">
+                        {t.subject}
+                      </td>
                       <td className="px-4 py-3">
-                        <div className="text-xs text-foreground">{t.userName ?? "—"}</div>
-                        <div className="text-xs text-muted-foreground">{t.userEmail}</div>
+                        <div className="text-xs text-foreground">
+                          {t.userName ?? "—"}
+                        </div>
+                        <div className="text-xs text-muted-foreground">
+                          {t.userEmail}
+                        </div>
                       </td>
                       <td className="px-4 py-3 text-xs text-muted-foreground capitalize">
                         {CATEGORY_LABELS[t.category] ?? t.category}
                       </td>
                       <td className="px-4 py-3">
-                        <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold ${cfg.cls}`}>
+                        <span
+                          className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold ${cfg.cls}`}
+                        >
                           <Icon className="w-3 h-3" />
                           {cfg.label}
                         </span>
@@ -3023,7 +4318,10 @@ const EMPTY_POST = {
 };
 
 function slugify(text: string): string {
-  return text.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+  return text
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
 }
 
 function BlogAdminSection() {
@@ -3038,7 +4336,9 @@ function BlogAdminSection() {
   const postsQuery = useQuery<{ posts: BlogPost[] }>({
     queryKey: ["/api/admin/blog/posts"],
     queryFn: async () => {
-      const res = await fetch("/api/admin/blog/posts", { credentials: "include" });
+      const res = await fetch("/api/admin/blog/posts", {
+        credentials: "include",
+      });
       if (!res.ok) throw new Error("Failed to fetch posts");
       return res.json();
     },
@@ -3070,7 +4370,10 @@ function BlogAdminSection() {
     setCreating(false);
   };
 
-  const handleClose = () => { setEditing(null); setCreating(false); };
+  const handleClose = () => {
+    setEditing(null);
+    setCreating(false);
+  };
 
   const handleSave = async () => {
     setSaving(true);
@@ -3082,7 +4385,9 @@ function BlogAdminSection() {
         seoDescription: form.seoDescription || null,
         ogImage: form.ogImage || null,
       };
-      const url = editing ? `/api/admin/blog/posts/${editing.id}` : "/api/admin/blog/posts";
+      const url = editing
+        ? `/api/admin/blog/posts/${editing.id}`
+        : "/api/admin/blog/posts";
       const method = editing ? "PATCH" : "POST";
       const res = await fetch(url, {
         method,
@@ -3106,7 +4411,10 @@ function BlogAdminSection() {
     if (!confirm("Delete this post? This cannot be undone.")) return;
     setDeleting(id);
     try {
-      await fetch(`/api/admin/blog/posts/${id}`, { method: "DELETE", credentials: "include" });
+      await fetch(`/api/admin/blog/posts/${id}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
       qc.invalidateQueries({ queryKey: ["/api/admin/blog/posts"] });
     } finally {
       setDeleting(null);
@@ -3116,8 +4424,15 @@ function BlogAdminSection() {
   const handlePublishToggle = async (id: number) => {
     setPublishing(id);
     try {
-      const res = await fetch(`/api/admin/blog/posts/${id}/publish`, { method: "POST", credentials: "include" });
-      if (!res.ok) { const d = await res.json(); alert(d.error || "Failed"); return; }
+      const res = await fetch(`/api/admin/blog/posts/${id}/publish`, {
+        method: "POST",
+        credentials: "include",
+      });
+      if (!res.ok) {
+        const d = await res.json();
+        alert(d.error || "Failed");
+        return;
+      }
       qc.invalidateQueries({ queryKey: ["/api/admin/blog/posts"] });
     } finally {
       setPublishing(null);
@@ -3130,8 +4445,12 @@ function BlogAdminSection() {
     <div>
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h2 className="font-heading text-2xl font-bold text-foreground">Blog</h2>
-          <p className="text-sm text-muted-foreground mt-1">Create and manage blog posts</p>
+          <h2 className="font-heading text-2xl font-bold text-foreground">
+            Blog
+          </h2>
+          <p className="text-sm text-muted-foreground mt-1">
+            Create and manage blog posts
+          </p>
         </div>
         <button
           onClick={openCreate}
@@ -3153,37 +4472,60 @@ function BlogAdminSection() {
           </h3>
           <div className="grid md:grid-cols-2 gap-4">
             <div className="md:col-span-2">
-              <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1">Title</label>
+              <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1">
+                Title
+              </label>
               <input
                 value={form.title}
-                onChange={e => setForm(f => ({ ...f, title: e.target.value, slug: f.slug || slugify(e.target.value) }))}
+                onChange={(e) =>
+                  setForm((f) => ({
+                    ...f,
+                    title: e.target.value,
+                    slug: f.slug || slugify(e.target.value),
+                  }))
+                }
                 placeholder="Post title…"
                 className="w-full px-3 py-2 rounded-lg bg-muted/40 border border-border text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40"
               />
             </div>
             <div>
-              <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1">Slug</label>
+              <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1">
+                Slug
+              </label>
               <input
                 value={form.slug}
-                onChange={e => setForm(f => ({ ...f, slug: slugify(e.target.value) }))}
+                onChange={(e) =>
+                  setForm((f) => ({ ...f, slug: slugify(e.target.value) }))
+                }
                 placeholder="url-friendly-slug"
                 className="w-full px-3 py-2 rounded-lg bg-muted/40 border border-border text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 font-mono"
               />
             </div>
             <div>
-              <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1">Author</label>
+              <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1">
+                Author
+              </label>
               <input
                 value={form.author}
-                onChange={e => setForm(f => ({ ...f, author: e.target.value }))}
+                onChange={(e) =>
+                  setForm((f) => ({ ...f, author: e.target.value }))
+                }
                 placeholder="Author name"
                 className="w-full px-3 py-2 rounded-lg bg-muted/40 border border-border text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40"
               />
             </div>
             <div>
-              <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1">Status</label>
+              <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1">
+                Status
+              </label>
               <select
                 value={form.status}
-                onChange={e => setForm(f => ({ ...f, status: e.target.value as "DRAFT" | "PUBLISHED" }))}
+                onChange={(e) =>
+                  setForm((f) => ({
+                    ...f,
+                    status: e.target.value as "DRAFT" | "PUBLISHED",
+                  }))
+                }
                 className="w-full px-3 py-2 rounded-lg bg-muted/40 border border-border text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40"
               >
                 <option value="DRAFT">Draft</option>
@@ -3191,65 +4533,91 @@ function BlogAdminSection() {
               </select>
             </div>
             <div>
-              <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1">Cover Image URL</label>
+              <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1">
+                Cover Image URL
+              </label>
               <input
                 value={form.coverImage}
-                onChange={e => setForm(f => ({ ...f, coverImage: e.target.value }))}
+                onChange={(e) =>
+                  setForm((f) => ({ ...f, coverImage: e.target.value }))
+                }
                 placeholder="https://example.com/image.jpg"
                 className="w-full px-3 py-2 rounded-lg bg-muted/40 border border-border text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40"
               />
             </div>
             <div>
-              <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1">Tags</label>
+              <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1">
+                Tags
+              </label>
               <input
                 value={form.tags}
-                onChange={e => setForm(f => ({ ...f, tags: e.target.value }))}
+                onChange={(e) =>
+                  setForm((f) => ({ ...f, tags: e.target.value }))
+                }
                 placeholder="email marketing, lead generation, guides (comma-separated)"
                 className="w-full px-3 py-2 rounded-lg bg-muted/40 border border-border text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40"
               />
             </div>
             <div className="md:col-span-2">
-              <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1">Excerpt</label>
+              <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1">
+                Excerpt
+              </label>
               <textarea
                 value={form.excerpt}
-                onChange={e => setForm(f => ({ ...f, excerpt: e.target.value }))}
+                onChange={(e) =>
+                  setForm((f) => ({ ...f, excerpt: e.target.value }))
+                }
                 placeholder="Short description shown on the blog list…"
                 rows={2}
                 className="w-full px-3 py-2 rounded-lg bg-muted/40 border border-border text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 resize-none"
               />
             </div>
             <div className="md:col-span-2">
-              <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1">Content</label>
+              <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1">
+                Content
+              </label>
               <MarkdownEditor
                 value={form.content}
-                onChange={content => setForm(f => ({ ...f, content }))}
+                onChange={(content) => setForm((f) => ({ ...f, content }))}
                 placeholder="## Your article content in Markdown..."
                 minHeight={440}
               />
             </div>
             <div>
-              <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1">SEO Title</label>
+              <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1">
+                SEO Title
+              </label>
               <input
                 value={form.seoTitle}
-                onChange={e => setForm(f => ({ ...f, seoTitle: e.target.value }))}
+                onChange={(e) =>
+                  setForm((f) => ({ ...f, seoTitle: e.target.value }))
+                }
                 placeholder="SEO title override (optional)"
                 className="w-full px-3 py-2 rounded-lg bg-muted/40 border border-border text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40"
               />
             </div>
             <div>
-              <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1">SEO Description</label>
+              <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1">
+                SEO Description
+              </label>
               <input
                 value={form.seoDescription}
-                onChange={e => setForm(f => ({ ...f, seoDescription: e.target.value }))}
+                onChange={(e) =>
+                  setForm((f) => ({ ...f, seoDescription: e.target.value }))
+                }
                 placeholder="SEO meta description (optional)"
                 className="w-full px-3 py-2 rounded-lg bg-muted/40 border border-border text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40"
               />
             </div>
             <div className="md:col-span-2">
-              <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1">OG Image URL</label>
+              <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1">
+                OG Image URL
+              </label>
               <input
                 value={form.ogImage}
-                onChange={e => setForm(f => ({ ...f, ogImage: e.target.value }))}
+                onChange={(e) =>
+                  setForm((f) => ({ ...f, ogImage: e.target.value }))
+                }
                 placeholder="https://example.com/og-image.jpg (optional)"
                 className="w-full px-3 py-2 rounded-lg bg-muted/40 border border-border text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40"
               />
@@ -3261,10 +4629,17 @@ function BlogAdminSection() {
               disabled={saving || !form.title || !form.slug}
               className="inline-flex items-center gap-2 rounded-lg bg-primary px-5 py-2 text-sm font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-50 transition-colors"
             >
-              {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
+              {saving ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <Check className="w-4 h-4" />
+              )}
               {editing ? "Save Changes" : "Create Post"}
             </button>
-            <button onClick={handleClose} className="px-5 py-2 rounded-lg text-sm text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">
+            <button
+              onClick={handleClose}
+              className="px-5 py-2 rounded-lg text-sm text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+            >
               Cancel
             </button>
           </div>
@@ -3274,52 +4649,101 @@ function BlogAdminSection() {
       {/* Posts list */}
       <div className="glass-card rounded-xl overflow-hidden">
         {postsQuery.isLoading ? (
-          <div className="flex justify-center py-12"><Loader2 className="w-5 h-5 animate-spin text-primary" /></div>
+          <div className="flex justify-center py-12">
+            <Loader2 className="w-5 h-5 animate-spin text-primary" />
+          </div>
         ) : posts.length === 0 ? (
-          <div className="text-center py-12 text-muted-foreground text-sm">No blog posts yet. Create your first one!</div>
+          <div className="text-center py-12 text-muted-foreground text-sm">
+            No blog posts yet. Create your first one!
+          </div>
         ) : (
           <table className="w-full text-sm text-left">
             <thead className="border-b border-border">
               <tr>
-                {["Title", "Status", "Author", "Published", "Actions"].map(h => (
-                  <th key={h} className="px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide">{h}</th>
-                ))}
+                {["Title", "Status", "Author", "Published", "Actions"].map(
+                  (h) => (
+                    <th
+                      key={h}
+                      className="px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide"
+                    >
+                      {h}
+                    </th>
+                  ),
+                )}
               </tr>
             </thead>
             <tbody>
-              {posts.map(post => (
-                <tr key={post.id} className="border-b border-border/50 last:border-0 hover:bg-muted/20 transition-colors">
+              {posts.map((post) => (
+                <tr
+                  key={post.id}
+                  className="border-b border-border/50 last:border-0 hover:bg-muted/20 transition-colors"
+                >
                   <td className="px-4 py-3">
-                    <div className="font-medium text-foreground line-clamp-1">{post.title}</div>
-                    <div className="text-xs text-muted-foreground font-mono">/blog/{post.slug}</div>
+                    <div className="font-medium text-foreground line-clamp-1">
+                      {post.title}
+                    </div>
+                    <div className="text-xs text-muted-foreground font-mono">
+                      /blog/{post.slug}
+                    </div>
                   </td>
                   <td className="px-4 py-3">
-                    <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${post.status === "PUBLISHED" ? "bg-green-500/15 text-green-400" : "bg-muted text-muted-foreground"}`}>
+                    <span
+                      className={`text-xs font-semibold px-2 py-0.5 rounded-full ${post.status === "PUBLISHED" ? "bg-green-500/15 text-green-400" : "bg-muted text-muted-foreground"}`}
+                    >
                       {post.status === "PUBLISHED" ? "Published" : "Draft"}
                     </span>
                   </td>
-                  <td className="px-4 py-3 text-sm text-muted-foreground">{post.author}</td>
+                  <td className="px-4 py-3 text-sm text-muted-foreground">
+                    {post.author}
+                  </td>
                   <td className="px-4 py-3 text-xs text-muted-foreground">
-                    {post.publishedAt ? format(parseISO(post.publishedAt), "MMM d, yyyy") : "—"}
+                    {post.publishedAt
+                      ? format(parseISO(post.publishedAt), "MMM d, yyyy")
+                      : "—"}
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-1">
-                      <button onClick={() => handlePublishToggle(post.id)} disabled={publishing === post.id}
-                        title={post.status === "PUBLISHED" ? "Unpublish" : "Publish"}
-                        className={`p-1.5 rounded-lg transition-colors ${post.status === "PUBLISHED" ? "text-green-400 hover:text-muted-foreground hover:bg-muted" : "text-muted-foreground hover:text-green-400 hover:bg-green-500/10"}`}>
-                        {publishing === post.id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <CheckCircle className="w-3.5 h-3.5" />}
+                      <button
+                        onClick={() => handlePublishToggle(post.id)}
+                        disabled={publishing === post.id}
+                        title={
+                          post.status === "PUBLISHED" ? "Unpublish" : "Publish"
+                        }
+                        className={`p-1.5 rounded-lg transition-colors ${post.status === "PUBLISHED" ? "text-green-400 hover:text-muted-foreground hover:bg-muted" : "text-muted-foreground hover:text-green-400 hover:bg-green-500/10"}`}
+                      >
+                        {publishing === post.id ? (
+                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                        ) : (
+                          <CheckCircle className="w-3.5 h-3.5" />
+                        )}
                       </button>
-                      <button onClick={() => openEdit(post)} title="Edit"
-                        className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">
+                      <button
+                        onClick={() => openEdit(post)}
+                        title="Edit"
+                        className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+                      >
                         <FileText className="w-3.5 h-3.5" />
                       </button>
-                      <a href={`/blog/${post.slug}`} target="_blank" rel="noopener noreferrer" title="View"
-                        className="p-1.5 rounded-lg text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors">
+                      <a
+                        href={`/blog/${post.slug}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        title="View"
+                        className="p-1.5 rounded-lg text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"
+                      >
                         <ExternalLink className="w-3.5 h-3.5" />
                       </a>
-                      <button onClick={() => handleDelete(post.id)} disabled={deleting === post.id} title="Delete"
-                        className="p-1.5 rounded-lg text-muted-foreground hover:text-red-400 hover:bg-red-500/10 transition-colors">
-                        {deleting === post.id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Trash2 className="w-3.5 h-3.5" />}
+                      <button
+                        onClick={() => handleDelete(post.id)}
+                        disabled={deleting === post.id}
+                        title="Delete"
+                        className="p-1.5 rounded-lg text-muted-foreground hover:text-red-400 hover:bg-red-500/10 transition-colors"
+                      >
+                        {deleting === post.id ? (
+                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                        ) : (
+                          <Trash2 className="w-3.5 h-3.5" />
+                        )}
                       </button>
                     </div>
                   </td>
@@ -3365,10 +4789,16 @@ function NewsletterAdminSection() {
   const [tab, setTab] = useState<"subscribers" | "campaigns">("subscribers");
 
   // Subscribers
-  const subsQuery = useQuery<{ subscribers: NLSubscriber[]; total: number; activeCount: number }>({
+  const subsQuery = useQuery<{
+    subscribers: NLSubscriber[];
+    total: number;
+    activeCount: number;
+  }>({
     queryKey: ["/api/admin/newsletter/subscribers"],
     queryFn: async () => {
-      const res = await fetch("/api/admin/newsletter/subscribers", { credentials: "include" });
+      const res = await fetch("/api/admin/newsletter/subscribers", {
+        credentials: "include",
+      });
       if (!res.ok) throw new Error("Failed");
       return res.json();
     },
@@ -3378,21 +4808,30 @@ function NewsletterAdminSection() {
     if (!confirm(`Remove ${email} from subscribers?`)) return;
     setDeletingSub(id);
     try {
-      await fetch(`/api/admin/newsletter/subscribers/${id}`, { method: "DELETE", credentials: "include" });
+      await fetch(`/api/admin/newsletter/subscribers/${id}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
       qc.invalidateQueries({ queryKey: ["/api/admin/newsletter/subscribers"] });
-    } finally { setDeletingSub(null); }
+    } finally {
+      setDeletingSub(null);
+    }
   };
 
   // Campaigns
   const campaignsQuery = useQuery<{ campaigns: NLCampaign[] }>({
     queryKey: ["/api/admin/newsletter/campaigns"],
     queryFn: async () => {
-      const res = await fetch("/api/admin/newsletter/campaigns", { credentials: "include" });
+      const res = await fetch("/api/admin/newsletter/campaigns", {
+        credentials: "include",
+      });
       if (!res.ok) throw new Error("Failed");
       return res.json();
     },
   });
-  const [editingCampaign, setEditingCampaign] = useState<NLCampaign | null>(null);
+  const [editingCampaign, setEditingCampaign] = useState<NLCampaign | null>(
+    null,
+  );
   const [creatingCampaign, setCreatingCampaign] = useState(false);
   const [campaignForm, setCampaignForm] = useState(EMPTY_CAMPAIGN);
   const [savingCampaign, setSavingCampaign] = useState(false);
@@ -3408,68 +4847,114 @@ function NewsletterAdminSection() {
     setCreatingCampaign(true);
   };
   const openEditCampaign = (c: NLCampaign) => {
-    setCampaignForm({ subject: c.subject, previewText: c.previewText ?? "", htmlContent: c.htmlContent });
+    setCampaignForm({
+      subject: c.subject,
+      previewText: c.previewText ?? "",
+      htmlContent: c.htmlContent,
+    });
     setEditingCampaign(c);
     setCreatingCampaign(false);
   };
-  const closeCampaignForm = () => { setCreatingCampaign(false); setEditingCampaign(null); };
+  const closeCampaignForm = () => {
+    setCreatingCampaign(false);
+    setEditingCampaign(null);
+  };
 
   const handleSaveCampaign = async () => {
     setSavingCampaign(true);
     try {
-      const body = { ...campaignForm, previewText: campaignForm.previewText || null };
-      const url = editingCampaign ? `/api/admin/newsletter/campaigns/${editingCampaign.id}` : "/api/admin/newsletter/campaigns";
+      const body = {
+        ...campaignForm,
+        previewText: campaignForm.previewText || null,
+      };
+      const url = editingCampaign
+        ? `/api/admin/newsletter/campaigns/${editingCampaign.id}`
+        : "/api/admin/newsletter/campaigns";
       const method = editingCampaign ? "PATCH" : "POST";
       const res = await fetch(url, {
-        method, headers: { "Content-Type": "application/json" },
-        credentials: "include", body: JSON.stringify(body),
+        method,
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify(body),
       });
-      if (!res.ok) { const d = await res.json(); alert(d.error || "Failed to save"); return; }
+      if (!res.ok) {
+        const d = await res.json();
+        alert(d.error || "Failed to save");
+        return;
+      }
       qc.invalidateQueries({ queryKey: ["/api/admin/newsletter/campaigns"] });
       closeCampaignForm();
-    } finally { setSavingCampaign(false); }
+    } finally {
+      setSavingCampaign(false);
+    }
   };
 
   const handleSend = async (id: number, subject: string) => {
-    if (!confirm(`Send "${subject}" to all active subscribers? This cannot be undone.`)) return;
+    if (
+      !confirm(
+        `Send "${subject}" to all active subscribers? This cannot be undone.`,
+      )
+    )
+      return;
     setSendingId(id);
     try {
-      const res = await fetch(`/api/admin/newsletter/campaigns/${id}/send`, { method: "POST", credentials: "include" });
+      const res = await fetch(`/api/admin/newsletter/campaigns/${id}/send`, {
+        method: "POST",
+        credentials: "include",
+      });
       const d = await res.json();
-      if (!res.ok) { alert(d.error || "Failed to send"); return; }
+      if (!res.ok) {
+        alert(d.error || "Failed to send");
+        return;
+      }
       alert(d.message);
       qc.invalidateQueries({ queryKey: ["/api/admin/newsletter/campaigns"] });
-    } finally { setSendingId(null); }
+    } finally {
+      setSendingId(null);
+    }
   };
 
   const handleDeleteCampaign = async (id: number) => {
     if (!confirm("Delete this campaign?")) return;
     setDeletingCampaign(id);
     try {
-      await fetch(`/api/admin/newsletter/campaigns/${id}`, { method: "DELETE", credentials: "include" });
+      await fetch(`/api/admin/newsletter/campaigns/${id}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
       qc.invalidateQueries({ queryKey: ["/api/admin/newsletter/campaigns"] });
-    } finally { setDeletingCampaign(null); }
+    } finally {
+      setDeletingCampaign(null);
+    }
   };
 
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h2 className="font-heading text-2xl font-bold text-foreground">Newsletter</h2>
-          <p className="text-sm text-muted-foreground mt-1">Manage subscribers and send campaigns</p>
+          <h2 className="font-heading text-2xl font-bold text-foreground">
+            Newsletter
+          </h2>
+          <p className="text-sm text-muted-foreground mt-1">
+            Manage subscribers and send campaigns
+          </p>
         </div>
         <div className="flex gap-2">
           <span className="inline-flex items-center gap-1.5 rounded-full bg-green-500/10 border border-green-500/20 text-green-400 text-xs font-semibold px-3 py-1.5">
-            <Users className="w-3 h-3" /> {subsQuery.data?.activeCount ?? 0} active
+            <Users className="w-3 h-3" /> {subsQuery.data?.activeCount ?? 0}{" "}
+            active
           </span>
         </div>
       </div>
 
       {/* Tabs */}
       <div className="flex gap-1 mb-6 bg-muted/30 rounded-xl p-1 w-fit">
-        {(["subscribers", "campaigns"] as const).map(t => (
-          <button key={t} onClick={() => setTab(t)}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all capitalize ${tab === t ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}>
+        {(["subscribers", "campaigns"] as const).map((t) => (
+          <button
+            key={t}
+            onClick={() => setTab(t)}
+            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all capitalize ${tab === t ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
+          >
             {t}
           </button>
         ))}
@@ -3478,25 +4963,45 @@ function NewsletterAdminSection() {
       {tab === "subscribers" ? (
         <div className="glass-card rounded-xl overflow-hidden">
           {subsQuery.isLoading ? (
-            <div className="flex justify-center py-12"><Loader2 className="w-5 h-5 animate-spin text-primary" /></div>
+            <div className="flex justify-center py-12">
+              <Loader2 className="w-5 h-5 animate-spin text-primary" />
+            </div>
           ) : subscribers.length === 0 ? (
-            <div className="text-center py-12 text-muted-foreground text-sm">No subscribers yet.</div>
+            <div className="text-center py-12 text-muted-foreground text-sm">
+              No subscribers yet.
+            </div>
           ) : (
             <table className="w-full text-sm text-left">
               <thead className="border-b border-border">
                 <tr>
-                  {["Email", "Name", "Status", "Subscribed", "Actions"].map(h => (
-                    <th key={h} className="px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide">{h}</th>
-                  ))}
+                  {["Email", "Name", "Status", "Subscribed", "Actions"].map(
+                    (h) => (
+                      <th
+                        key={h}
+                        className="px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide"
+                      >
+                        {h}
+                      </th>
+                    ),
+                  )}
                 </tr>
               </thead>
               <tbody>
-                {subscribers.map(sub => (
-                  <tr key={sub.id} className="border-b border-border/50 last:border-0 hover:bg-muted/20 transition-colors">
-                    <td className="px-4 py-3 font-medium text-foreground">{sub.email}</td>
-                    <td className="px-4 py-3 text-sm text-muted-foreground">{sub.name || "—"}</td>
+                {subscribers.map((sub) => (
+                  <tr
+                    key={sub.id}
+                    className="border-b border-border/50 last:border-0 hover:bg-muted/20 transition-colors"
+                  >
+                    <td className="px-4 py-3 font-medium text-foreground">
+                      {sub.email}
+                    </td>
+                    <td className="px-4 py-3 text-sm text-muted-foreground">
+                      {sub.name || "—"}
+                    </td>
                     <td className="px-4 py-3">
-                      <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${sub.status === "ACTIVE" ? "bg-green-500/15 text-green-400" : "bg-muted text-muted-foreground"}`}>
+                      <span
+                        className={`text-xs font-semibold px-2 py-0.5 rounded-full ${sub.status === "ACTIVE" ? "bg-green-500/15 text-green-400" : "bg-muted text-muted-foreground"}`}
+                      >
                         {sub.status === "ACTIVE" ? "Active" : "Unsubscribed"}
                       </span>
                     </td>
@@ -3504,10 +5009,17 @@ function NewsletterAdminSection() {
                       {format(parseISO(sub.subscribedAt), "MMM d, yyyy")}
                     </td>
                     <td className="px-4 py-3">
-                      <button onClick={() => handleDeleteSub(sub.id, sub.email)} disabled={deletingSub === sub.id}
+                      <button
+                        onClick={() => handleDeleteSub(sub.id, sub.email)}
+                        disabled={deletingSub === sub.id}
                         title="Remove subscriber"
-                        className="p-1.5 rounded-lg text-muted-foreground hover:text-red-400 hover:bg-red-500/10 transition-colors">
-                        {deletingSub === sub.id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Trash2 className="w-3.5 h-3.5" />}
+                        className="p-1.5 rounded-lg text-muted-foreground hover:text-red-400 hover:bg-red-500/10 transition-colors"
+                      >
+                        {deletingSub === sub.id ? (
+                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                        ) : (
+                          <Trash2 className="w-3.5 h-3.5" />
+                        )}
                       </button>
                     </td>
                   </tr>
@@ -3519,46 +5031,95 @@ function NewsletterAdminSection() {
       ) : (
         <div>
           <div className="flex justify-end mb-4">
-            <button onClick={openCreateCampaign}
-              className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:bg-primary/90 transition-colors">
+            <button
+              onClick={openCreateCampaign}
+              className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:bg-primary/90 transition-colors"
+            >
               <Plus className="w-4 h-4" /> New Campaign
             </button>
           </div>
 
           {(creatingCampaign || !!editingCampaign) && (
-            <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }}
-              className="glass-card rounded-2xl p-6 mb-6 border border-primary/20">
+            <motion.div
+              initial={{ opacity: 0, y: -8 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="glass-card rounded-2xl p-6 mb-6 border border-primary/20"
+            >
               <h3 className="font-heading text-lg font-semibold text-foreground mb-4">
                 {editingCampaign ? "Edit Campaign" : "New Campaign"}
               </h3>
               <div className="space-y-4">
                 <div>
-                  <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1">Subject</label>
-                  <input value={campaignForm.subject} onChange={e => setCampaignForm(f => ({ ...f, subject: e.target.value }))}
+                  <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1">
+                    Subject
+                  </label>
+                  <input
+                    value={campaignForm.subject}
+                    onChange={(e) =>
+                      setCampaignForm((f) => ({
+                        ...f,
+                        subject: e.target.value,
+                      }))
+                    }
                     placeholder="Email subject line"
-                    className="w-full px-3 py-2 rounded-lg bg-muted/40 border border-border text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40" />
+                    className="w-full px-3 py-2 rounded-lg bg-muted/40 border border-border text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40"
+                  />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1">Preview Text</label>
-                  <input value={campaignForm.previewText} onChange={e => setCampaignForm(f => ({ ...f, previewText: e.target.value }))}
+                  <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1">
+                    Preview Text
+                  </label>
+                  <input
+                    value={campaignForm.previewText}
+                    onChange={(e) =>
+                      setCampaignForm((f) => ({
+                        ...f,
+                        previewText: e.target.value,
+                      }))
+                    }
                     placeholder="Short preview shown in inboxes (optional)"
-                    className="w-full px-3 py-2 rounded-lg bg-muted/40 border border-border text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40" />
+                    className="w-full px-3 py-2 rounded-lg bg-muted/40 border border-border text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40"
+                  />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1">HTML Content</label>
-                  <textarea value={campaignForm.htmlContent} onChange={e => setCampaignForm(f => ({ ...f, htmlContent: e.target.value }))}
+                  <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1">
+                    HTML Content
+                  </label>
+                  <textarea
+                    value={campaignForm.htmlContent}
+                    onChange={(e) =>
+                      setCampaignForm((f) => ({
+                        ...f,
+                        htmlContent: e.target.value,
+                      }))
+                    }
                     placeholder="<p>Your email content in HTML…</p>"
                     rows={10}
-                    className="w-full px-3 py-2 rounded-lg bg-muted/40 border border-border text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 font-mono resize-y" />
+                    className="w-full px-3 py-2 rounded-lg bg-muted/40 border border-border text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 font-mono resize-y"
+                  />
                 </div>
               </div>
               <div className="flex gap-3 mt-5">
-                <button onClick={handleSaveCampaign} disabled={savingCampaign || !campaignForm.subject || !campaignForm.htmlContent}
-                  className="inline-flex items-center gap-2 rounded-lg bg-primary px-5 py-2 text-sm font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-50 transition-colors">
-                  {savingCampaign ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
+                <button
+                  onClick={handleSaveCampaign}
+                  disabled={
+                    savingCampaign ||
+                    !campaignForm.subject ||
+                    !campaignForm.htmlContent
+                  }
+                  className="inline-flex items-center gap-2 rounded-lg bg-primary px-5 py-2 text-sm font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-50 transition-colors"
+                >
+                  {savingCampaign ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <Check className="w-4 h-4" />
+                  )}
                   {editingCampaign ? "Save Changes" : "Create Campaign"}
                 </button>
-                <button onClick={closeCampaignForm} className="px-5 py-2 rounded-lg text-sm text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">
+                <button
+                  onClick={closeCampaignForm}
+                  className="px-5 py-2 rounded-lg text-sm text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+                >
                   Cancel
                 </button>
               </div>
@@ -3567,53 +5128,108 @@ function NewsletterAdminSection() {
 
           <div className="glass-card rounded-xl overflow-hidden">
             {campaignsQuery.isLoading ? (
-              <div className="flex justify-center py-12"><Loader2 className="w-5 h-5 animate-spin text-primary" /></div>
+              <div className="flex justify-center py-12">
+                <Loader2 className="w-5 h-5 animate-spin text-primary" />
+              </div>
             ) : campaigns.length === 0 ? (
-              <div className="text-center py-12 text-muted-foreground text-sm">No campaigns yet. Create your first one!</div>
+              <div className="text-center py-12 text-muted-foreground text-sm">
+                No campaigns yet. Create your first one!
+              </div>
             ) : (
               <table className="w-full text-sm text-left">
                 <thead className="border-b border-border">
                   <tr>
-                    {["Subject", "Status", "Recipients", "Sent At", "Actions"].map(h => (
-                      <th key={h} className="px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide">{h}</th>
+                    {[
+                      "Subject",
+                      "Status",
+                      "Recipients",
+                      "Sent At",
+                      "Actions",
+                    ].map((h) => (
+                      <th
+                        key={h}
+                        className="px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide"
+                      >
+                        {h}
+                      </th>
                     ))}
                   </tr>
                 </thead>
                 <tbody>
-                  {campaigns.map(c => (
-                    <tr key={c.id} className="border-b border-border/50 last:border-0 hover:bg-muted/20 transition-colors">
+                  {campaigns.map((c) => (
+                    <tr
+                      key={c.id}
+                      className="border-b border-border/50 last:border-0 hover:bg-muted/20 transition-colors"
+                    >
                       <td className="px-4 py-3">
-                        <div className="font-medium text-foreground line-clamp-1">{c.subject}</div>
-                        {c.previewText && <div className="text-xs text-muted-foreground line-clamp-1">{c.previewText}</div>}
+                        <div className="font-medium text-foreground line-clamp-1">
+                          {c.subject}
+                        </div>
+                        {c.previewText && (
+                          <div className="text-xs text-muted-foreground line-clamp-1">
+                            {c.previewText}
+                          </div>
+                        )}
                       </td>
                       <td className="px-4 py-3">
-                        <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
-                          c.status === "SENT" ? "bg-green-500/15 text-green-400"
-                          : c.status === "SENDING" ? "bg-yellow-500/15 text-yellow-400"
-                          : "bg-muted text-muted-foreground"
-                        }`}>
-                          {c.status === "SENT" ? "Sent" : c.status === "SENDING" ? "Sending…" : "Draft"}
+                        <span
+                          className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
+                            c.status === "SENT"
+                              ? "bg-green-500/15 text-green-400"
+                              : c.status === "SENDING"
+                                ? "bg-yellow-500/15 text-yellow-400"
+                                : "bg-muted text-muted-foreground"
+                          }`}
+                        >
+                          {c.status === "SENT"
+                            ? "Sent"
+                            : c.status === "SENDING"
+                              ? "Sending…"
+                              : "Draft"}
                         </span>
                       </td>
-                      <td className="px-4 py-3 text-sm text-muted-foreground">{c.recipientCount > 0 ? c.recipientCount : "—"}</td>
+                      <td className="px-4 py-3 text-sm text-muted-foreground">
+                        {c.recipientCount > 0 ? c.recipientCount : "—"}
+                      </td>
                       <td className="px-4 py-3 text-xs text-muted-foreground">
-                        {c.sentAt ? format(parseISO(c.sentAt), "MMM d, yyyy HH:mm") : "—"}
+                        {c.sentAt
+                          ? format(parseISO(c.sentAt), "MMM d, yyyy HH:mm")
+                          : "—"}
                       </td>
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-1">
                           {c.status !== "SENT" && (
                             <>
-                              <button onClick={() => openEditCampaign(c)} title="Edit"
-                                className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">
+                              <button
+                                onClick={() => openEditCampaign(c)}
+                                title="Edit"
+                                className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+                              >
                                 <FileText className="w-3.5 h-3.5" />
                               </button>
-                              <button onClick={() => handleSend(c.id, c.subject)} disabled={sendingId === c.id} title="Send"
-                                className="p-1.5 rounded-lg text-muted-foreground hover:text-green-400 hover:bg-green-500/10 transition-colors">
-                                {sendingId === c.id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Send className="w-3.5 h-3.5" />}
+                              <button
+                                onClick={() => handleSend(c.id, c.subject)}
+                                disabled={sendingId === c.id}
+                                title="Send"
+                                className="p-1.5 rounded-lg text-muted-foreground hover:text-green-400 hover:bg-green-500/10 transition-colors"
+                              >
+                                {sendingId === c.id ? (
+                                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                ) : (
+                                  <Send className="w-3.5 h-3.5" />
+                                )}
                               </button>
-                              <button onClick={() => handleDeleteCampaign(c.id)} disabled={deletingCampaign === c.id} title="Delete"
-                                className="p-1.5 rounded-lg text-muted-foreground hover:text-red-400 hover:bg-red-500/10 transition-colors">
-                                {deletingCampaign === c.id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Trash2 className="w-3.5 h-3.5" />}
+                              <button
+                                onClick={() => handleDeleteCampaign(c.id)}
+                                disabled={deletingCampaign === c.id}
+                                title="Delete"
+                                className="p-1.5 rounded-lg text-muted-foreground hover:text-red-400 hover:bg-red-500/10 transition-colors"
+                              >
+                                {deletingCampaign === c.id ? (
+                                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                ) : (
+                                  <Trash2 className="w-3.5 h-3.5" />
+                                )}
                               </button>
                             </>
                           )}
@@ -3639,8 +5255,8 @@ export default function AdminPage() {
 
   if (!user || user.role !== "ADMIN") return null;
 
-  const allNavItems = NAV_GROUPS.flatMap(g => g.items);
-  const currentItem = allNavItems.find(i => i.id === section);
+  const allNavItems = NAV_GROUPS.flatMap((g) => g.items);
+  const currentItem = allNavItems.find((i) => i.id === section);
   const CurrentIcon = currentItem?.icon ?? LayoutDashboard;
   const currentLabel = currentItem?.label ?? "Admin";
 
@@ -3667,7 +5283,7 @@ export default function AdminPage() {
         active={section}
         onNav={setSection}
         collapsed={collapsed}
-        onToggle={() => setCollapsed(p => !p)}
+        onToggle={() => setCollapsed((p) => !p)}
         mobileOpen={mobileOpen}
         onMobileClose={() => setMobileOpen(false)}
       />
@@ -3682,7 +5298,9 @@ export default function AdminPage() {
           </button>
           <div className="flex items-center gap-2 flex-1 min-w-0">
             <CurrentIcon className="w-4 h-4 text-primary flex-shrink-0" />
-            <span className="font-heading text-base font-semibold text-foreground truncate">{currentLabel}</span>
+            <span className="font-heading text-base font-semibold text-foreground truncate">
+              {currentLabel}
+            </span>
           </div>
           <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-violet-500 to-purple-700 flex items-center justify-center shadow-sm flex-shrink-0">
             <Shield className="w-3.5 h-3.5 text-white" />

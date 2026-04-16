@@ -38,13 +38,16 @@ export default function LoginPage() {
         className="relative flex flex-col justify-center w-full lg:w-[480px] xl:w-[520px] flex-shrink-0 bg-white px-10 sm:px-16 py-12 z-10"
       >
         {/* Logo — links home */}
-        <div className="mb-10">
-          <Link href="/" className="inline-block hover:opacity-80 transition-opacity">
+        <div>
+          <Link
+            href="/"
+            className="inline-block hover:opacity-80 transition-opacity"
+          >
             {siteSettings.logoUrl && !logoError ? (
               <img
                 src={siteSettings.logoUrl}
                 alt={siteSettings.siteTitle}
-                className="h-10 w-auto max-w-[180px] object-contain invert"
+                className="h-56 w-auto max-w-[180px] object-contain invert"
                 onError={() => setLogoError(true)}
               />
             ) : (
@@ -55,8 +58,12 @@ export default function LoginPage() {
           </Link>
         </div>
 
-        <h1 className="font-heading text-3xl font-bold text-gray-900 mb-1">Welcome back</h1>
-        <p className="text-sm text-gray-500 mb-8">Enter your details to access your dashboard.</p>
+        <h1 className="font-heading text-3xl font-bold text-gray-900 mb-1">
+          Welcome back
+        </h1>
+        <p className="text-sm text-gray-500 mb-8">
+          Enter your details to access your dashboard.
+        </p>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <input
@@ -84,13 +91,20 @@ export default function LoginPage() {
               className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
               tabIndex={-1}
             >
-              {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              {showPassword ? (
+                <EyeOff className="w-4 h-4" />
+              ) : (
+                <Eye className="w-4 h-4" />
+              )}
             </button>
           </div>
 
           {/* Forgot password link */}
           <div className="text-right -mt-1">
-            <Link href="/forgot-password" className="text-xs text-purple-600 hover:text-purple-700 transition-colors font-medium">
+            <Link
+              href="/forgot-password"
+              className="text-xs text-purple-600 hover:text-purple-700 transition-colors font-medium"
+            >
               Forgot password?
             </Link>
           </div>
@@ -109,14 +123,19 @@ export default function LoginPage() {
             {loading ? (
               <Loader2 className="w-4 h-4 animate-spin" />
             ) : (
-              <>Sign in <ArrowRight className="w-4 h-4" /></>
+              <>
+                Sign in <ArrowRight className="w-4 h-4" />
+              </>
             )}
           </button>
         </form>
 
         <p className="mt-6 text-center text-sm text-gray-500">
           Don't have an account?{" "}
-          <Link href="/signup" className="font-semibold text-purple-600 hover:text-purple-700 transition-colors">
+          <Link
+            href="/signup"
+            className="font-semibold text-purple-600 hover:text-purple-700 transition-colors"
+          >
             Sign up
           </Link>
         </p>

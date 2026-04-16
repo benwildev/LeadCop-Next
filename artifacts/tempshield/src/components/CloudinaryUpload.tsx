@@ -59,7 +59,7 @@ export default function CloudinaryUpload({ value, onChange, label, hint, accept 
           <div className="flex items-center gap-3 p-3">
             <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-lg border border-border bg-muted overflow-hidden">
               {isImage ? (
-                <img src={value} alt="preview" className="h-full w-full object-contain" />
+                <img src={value ?? undefined} alt="preview" className="h-full w-full object-contain" />
               ) : (
                 <ImageIcon className="h-6 w-6 text-muted-foreground" />
               )}
