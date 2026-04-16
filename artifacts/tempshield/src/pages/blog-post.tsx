@@ -7,6 +7,7 @@ import { Calendar, User, ArrowLeft, Loader2, BookOpen, Tag } from "lucide-react"
 import { format, parseISO } from "date-fns";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import { marked } from "marked";
 
 interface BlogPost {
   id: number;
@@ -164,10 +165,15 @@ export default function BlogPostPage() {
             prose-blockquote:border-l-primary prose-blockquote:text-muted-foreground
             prose-li:text-muted-foreground
             prose-hr:border-border
-            prose-img:rounded-xl prose-img:mx-auto">
-            <ReactMarkdown remarkPlugins={[remarkGfm]}>
-              {post.content}
-            </ReactMarkdown>
+            prose-img:rounded-xl prose-img:mx-auto
+            prose-table:border-collapse prose-th:border prose-th:border-border prose-th:px-3 prose-th:py-2 prose-td:border prose-td:border-border prose-td:px-3 prose-td:py-2">
+            {/<[a-z][\s\S]*>/i.test(post.content.trim()) ? (
+              <div dangerouslySetInnerHTML={{ __html: post.content }} />
+            ) : (
+              <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                {post.content}
+              </ReactMarkdown>
+            )}
           </div>
         </motion.div>
       </main>
