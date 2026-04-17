@@ -5,7 +5,7 @@ import { eq, and, desc } from "drizzle-orm";
 import { z } from "zod";
 import { requireAuth, requireAdmin } from "../middlewares/session.js";
 import { uploadBuffer } from "../lib/cloudinary.js";
-import { sendSupportTicketAdminNotification, sendSupportTicketUserConfirmation, sendSupportTicketAdminReplyNotification } from "../lib/email.js";
+import { sendSupportTicketAdminNotification, sendSupportTicketUserConfirmation, sendSupportTicketAdminReplyNotification, sendSupportTicketStatusChangeNotification } from "../lib/email.js";
 
 const router = Router();
 
@@ -366,8 +366,15 @@ router.put("/admin/tickets/:id/status", requireAdmin, async (req: Request, res: 
   }
 
   const [existing] = await db
-    .select({ id: supportTicketsTable.id })
+    .select({
+      id: supportTicketsTable.id,
+      subject: supportTicketsTable.subject,
+      status: supportTicketsTable.status,
+      userName: usersTable.name,
+      userEmail: usersTable.email,
+    })
     .from(supportTicketsTable)
+    .leftJoin(usersTable, eq(supportTicketsTable.userId, usersTable.id))
     .where(eq(supportTicketsTable.id, id))
     .limit(1);
 
@@ -381,6 +388,16 @@ router.put("/admin/tickets/:id/status", requireAdmin, async (req: Request, res: 
     .where(eq(supportTicketsTable.id, id));
 
   res.json({ ok: true });
+
+  if (existing.userEmail && existing.status !== result.data.status) {
+    sendSupportTicketStatusChangeNotification({
+      ticketId: id,
+      subject: existing.subject,
+      newStatus: result.data.status,
+      userEmail: existing.userEmail,
+      userName: existing.userName ?? "there",
+    }).catch(() => {});
+  }
 });
 
 router.post("/admin/tickets/:id/reply", requireAdmin, upload.single("attachment"), async (req: Request, res: Response) => {

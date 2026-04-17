@@ -332,6 +332,55 @@ export async function sendSupportTicketAdminReplyNotification(opts: {
   }).catch((err) => logger.error({ err }, "Failed to send admin reply notification to user"));
 }
 
+export async function sendSupportTicketStatusChangeNotification(opts: {
+  ticketId: number;
+  subject: string;
+  newStatus: string;
+  userEmail: string;
+  userName: string;
+}) {
+  const settings = await getEmailSettings();
+  if (!settings?.enabled) return;
+  if (!settings.smtpHost || !settings.smtpUser || !settings.smtpPass || !settings.fromEmail) return;
+
+  const transport = createTransport({
+    smtpHost: settings.smtpHost,
+    smtpPort: settings.smtpPort,
+    smtpUser: settings.smtpUser,
+    smtpPass: settings.smtpPass,
+    smtpSecure: settings.smtpSecure,
+  });
+
+  const siteUrl = (process.env.APP_URL || process.env.SITE_URL || "https://leadcop.io").replace(/\/$/, "");
+  const ticketUrl = `${siteUrl}/support/ticket/${opts.ticketId}`;
+
+  const statusLabel = opts.newStatus.replace(/_/g, " ");
+
+  await transport.sendMail({
+    from: `"${settings.fromName}" <${settings.fromEmail}>`,
+    to: opts.userEmail,
+    subject: `[Ticket #${opts.ticketId}] Status updated to ${statusLabel}`,
+    html: `
+      <div style="font-family:sans-serif;max-width:560px;margin:0 auto">
+        <h2 style="color:#8b5cf6">Support Ticket Status Updated</h2>
+        <p>Hi ${opts.userName},</p>
+        <p>The status of your support ticket has been updated.</p>
+        <table style="width:100%;border-collapse:collapse;margin:16px 0">
+          <tr><td style="padding:8px;font-weight:bold;color:#555">Ticket #</td><td style="padding:8px">#${opts.ticketId}</td></tr>
+          <tr style="background:#f9f9f9"><td style="padding:8px;font-weight:bold;color:#555">Subject</td><td style="padding:8px">${opts.subject}</td></tr>
+          <tr><td style="padding:8px;font-weight:bold;color:#555">New Status</td><td style="padding:8px;text-transform:capitalize">${statusLabel}</td></tr>
+        </table>
+        <p style="margin:24px 0">
+          <a href="${ticketUrl}" style="background:#8b5cf6;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:bold;display:inline-block">
+            View ticket
+          </a>
+        </p>
+        <p style="color:#888;font-size:13px">Log in to your dashboard to view the full conversation.</p>
+      </div>
+    `,
+  }).catch((err) => logger.error({ err }, "Failed to send support ticket status change notification"));
+}
+
 // ── Newsletter notifications ───────────────────────────────────────────────────
 
 export async function sendNewsletterNewSubscriberNotification(opts: {
