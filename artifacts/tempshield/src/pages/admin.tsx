@@ -2653,6 +2653,7 @@ interface EmailSettingsData {
   notifyAdminOnNewTicket: boolean;
   notifyUserOnTicketCreated: boolean;
   notifyAdminOnNewSubscriber: boolean;
+  notifyUserOnTicketStatusChange: boolean;
   adminEmail: string | null;
   updatedAt?: string;
   connectionStatus: "ready" | "configured" | "unconfigured";
@@ -3030,6 +3031,28 @@ function EmailSection() {
               </p>
               <p className="text-xs text-muted-foreground mt-0.5">
                 Sends the user a confirmation email when their support ticket is successfully created.
+              </p>
+            </div>
+          </div>
+          <div className="flex items-start gap-4">
+            <button
+              onClick={() => set("notifyUserOnTicketStatusChange", !form.notifyUserOnTicketStatusChange)}
+              className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors shrink-0 mt-0.5 ${
+                form.notifyUserOnTicketStatusChange ? "bg-primary" : "bg-muted"
+              }`}
+            >
+              <span
+                className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform ${
+                  form.notifyUserOnTicketStatusChange ? "translate-x-4" : "translate-x-1"
+                }`}
+              />
+            </button>
+            <div>
+              <p className="text-sm font-medium text-foreground">
+                Notify user on ticket status change
+              </p>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Sends the user an email when an admin changes the status of their support ticket.
               </p>
             </div>
           </div>

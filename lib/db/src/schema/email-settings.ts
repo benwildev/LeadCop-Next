@@ -15,6 +15,7 @@ export const emailSettingsTable = pgTable("email_settings", {
   notifyAdminOnNewTicket: boolean("notify_admin_on_new_ticket").notNull().default(true),
   notifyUserOnTicketCreated: boolean("notify_user_on_ticket_created").notNull().default(true),
   notifyAdminOnNewSubscriber: boolean("notify_admin_on_new_subscriber").notNull().default(true),
+  notifyUserOnTicketStatusChange: boolean("notify_user_on_ticket_status_change").notNull().default(true),
   adminEmail: text("admin_email"),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });

@@ -33,6 +33,7 @@ router.get("/", requireAdmin, async (_req, res) => {
     notifyAdminOnNewTicket: true,
     notifyUserOnTicketCreated: true,
     notifyAdminOnNewSubscriber: true,
+    notifyUserOnTicketStatusChange: true,
     adminEmail: null,
   };
 
@@ -57,6 +58,7 @@ router.get("/", requireAdmin, async (_req, res) => {
     notifyAdminOnNewTicket: settings.notifyAdminOnNewTicket,
     notifyUserOnTicketCreated: settings.notifyUserOnTicketCreated,
     notifyAdminOnNewSubscriber: settings.notifyAdminOnNewSubscriber,
+    notifyUserOnTicketStatusChange: settings.notifyUserOnTicketStatusChange,
     adminEmail: settings.adminEmail || null,
     updatedAt: settings.updatedAt.toISOString(),
     connectionStatus: settings.enabled && isConfigured
@@ -81,6 +83,7 @@ const updateSchema = z.object({
   notifyAdminOnNewTicket: z.boolean().optional(),
   notifyUserOnTicketCreated: z.boolean().optional(),
   notifyAdminOnNewSubscriber: z.boolean().optional(),
+  notifyUserOnTicketStatusChange: z.boolean().optional(),
   adminEmail: z.string().email().optional().nullable(),
 });
 
@@ -112,6 +115,7 @@ router.put("/", requireAdmin, async (req, res) => {
   if (data.notifyAdminOnNewTicket !== undefined) updates.notifyAdminOnNewTicket = data.notifyAdminOnNewTicket;
   if (data.notifyUserOnTicketCreated !== undefined) updates.notifyUserOnTicketCreated = data.notifyUserOnTicketCreated;
   if (data.notifyAdminOnNewSubscriber !== undefined) updates.notifyAdminOnNewSubscriber = data.notifyAdminOnNewSubscriber;
+  if (data.notifyUserOnTicketStatusChange !== undefined) updates.notifyUserOnTicketStatusChange = data.notifyUserOnTicketStatusChange;
   if (data.adminEmail !== undefined) updates.adminEmail = data.adminEmail;
 
   // Don't overwrite the real password if the masked placeholder is sent back
@@ -136,6 +140,7 @@ router.put("/", requireAdmin, async (req, res) => {
       notifyAdminOnNewTicket: (updates.notifyAdminOnNewTicket as boolean) ?? true,
       notifyUserOnTicketCreated: (updates.notifyUserOnTicketCreated as boolean) ?? true,
       notifyAdminOnNewSubscriber: (updates.notifyAdminOnNewSubscriber as boolean) ?? true,
+      notifyUserOnTicketStatusChange: (updates.notifyUserOnTicketStatusChange as boolean) ?? true,
       adminEmail: (updates.adminEmail as string | null) ?? null,
     });
   } else {

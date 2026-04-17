@@ -340,7 +340,7 @@ export async function sendSupportTicketStatusChangeNotification(opts: {
   userName: string;
 }) {
   const settings = await getEmailSettings();
-  if (!settings?.enabled) return;
+  if (!settings?.enabled || !settings.notifyUserOnTicketStatusChange) return;
   if (!settings.smtpHost || !settings.smtpUser || !settings.smtpPass || !settings.fromEmail) return;
 
   const transport = createTransport({
@@ -351,15 +351,22 @@ export async function sendSupportTicketStatusChangeNotification(opts: {
     smtpSecure: settings.smtpSecure,
   });
 
+  const statusLabel: Record<string, string> = {
+    open: "Open",
+    in_progress: "In Progress",
+    resolved: "Resolved",
+    closed: "Closed",
+  };
+
+  const label = statusLabel[opts.newStatus] ?? opts.newStatus;
+
   const siteUrl = (process.env.APP_URL || process.env.SITE_URL || "https://leadcop.io").replace(/\/$/, "");
   const ticketUrl = `${siteUrl}/support/ticket/${opts.ticketId}`;
-
-  const statusLabel = opts.newStatus.replace(/_/g, " ");
 
   await transport.sendMail({
     from: `"${settings.fromName}" <${settings.fromEmail}>`,
     to: opts.userEmail,
-    subject: `[Ticket #${opts.ticketId}] Status updated to ${statusLabel}`,
+    subject: `Your support ticket #${opts.ticketId} status updated — ${label}`,
     html: `
       <div style="font-family:sans-serif;max-width:560px;margin:0 auto">
         <h2 style="color:#8b5cf6">Support Ticket Status Updated</h2>
@@ -368,14 +375,14 @@ export async function sendSupportTicketStatusChangeNotification(opts: {
         <table style="width:100%;border-collapse:collapse;margin:16px 0">
           <tr><td style="padding:8px;font-weight:bold;color:#555">Ticket #</td><td style="padding:8px">#${opts.ticketId}</td></tr>
           <tr style="background:#f9f9f9"><td style="padding:8px;font-weight:bold;color:#555">Subject</td><td style="padding:8px">${opts.subject}</td></tr>
-          <tr><td style="padding:8px;font-weight:bold;color:#555">New Status</td><td style="padding:8px;text-transform:capitalize">${statusLabel}</td></tr>
+          <tr><td style="padding:8px;font-weight:bold;color:#555">New Status</td><td style="padding:8px"><strong>${label}</strong></td></tr>
         </table>
         <p style="margin:24px 0">
           <a href="${ticketUrl}" style="background:#8b5cf6;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:bold;display:inline-block">
             View ticket
           </a>
         </p>
-        <p style="color:#888;font-size:13px">Log in to your dashboard to view the full conversation.</p>
+        <p style="color:#888;font-size:13px">Log in to your dashboard to view the full ticket and conversation.</p>
       </div>
     `,
   }).catch((err) => logger.error({ err }, "Failed to send support ticket status change notification"));
