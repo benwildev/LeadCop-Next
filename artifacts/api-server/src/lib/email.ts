@@ -205,3 +205,120 @@ export async function sendTestEmail(to: string) {
     `,
   });
 }
+
+// ── Support ticket notifications ──────────────────────────────────────────────
+
+export async function sendSupportTicketAdminNotification(opts: {
+  ticketId: number;
+  subject: string;
+  category: string;
+  userName: string;
+  userEmail: string;
+}) {
+  const settings = await getEmailSettings();
+  if (!settings?.enabled) return;
+  if (!settings.smtpHost || !settings.smtpUser || !settings.smtpPass || !settings.fromEmail) return;
+  if (!settings.adminEmail) return;
+
+  const transport = createTransport({
+    smtpHost: settings.smtpHost,
+    smtpPort: settings.smtpPort,
+    smtpUser: settings.smtpUser,
+    smtpPass: settings.smtpPass,
+    smtpSecure: settings.smtpSecure,
+  });
+
+  await transport.sendMail({
+    from: `"${settings.fromName}" <${settings.fromEmail}>`,
+    to: settings.adminEmail,
+    subject: `New Support Ticket #${opts.ticketId} — ${opts.subject}`,
+    html: `
+      <div style="font-family:sans-serif;max-width:560px;margin:0 auto">
+        <h2 style="color:#8b5cf6">New Support Ticket</h2>
+        <p>A user has opened a new support ticket.</p>
+        <table style="width:100%;border-collapse:collapse;margin:16px 0">
+          <tr><td style="padding:8px;font-weight:bold;color:#555">Ticket #</td><td style="padding:8px">#${opts.ticketId}</td></tr>
+          <tr style="background:#f9f9f9"><td style="padding:8px;font-weight:bold;color:#555">Subject</td><td style="padding:8px">${opts.subject}</td></tr>
+          <tr><td style="padding:8px;font-weight:bold;color:#555">Category</td><td style="padding:8px;text-transform:capitalize">${opts.category}</td></tr>
+          <tr style="background:#f9f9f9"><td style="padding:8px;font-weight:bold;color:#555">User</td><td style="padding:8px">${opts.userName} (${opts.userEmail})</td></tr>
+        </table>
+        <p style="color:#888;font-size:13px">Log in to the admin dashboard to view and respond to this ticket.</p>
+      </div>
+    `,
+  }).catch((err) => logger.error({ err }, "Failed to send support ticket admin notification"));
+}
+
+export async function sendSupportTicketUserConfirmation(opts: {
+  ticketId: number;
+  subject: string;
+  userEmail: string;
+  userName: string;
+}) {
+  const settings = await getEmailSettings();
+  if (!settings?.enabled) return;
+  if (!settings.smtpHost || !settings.smtpUser || !settings.smtpPass || !settings.fromEmail) return;
+
+  const transport = createTransport({
+    smtpHost: settings.smtpHost,
+    smtpPort: settings.smtpPort,
+    smtpUser: settings.smtpUser,
+    smtpPass: settings.smtpPass,
+    smtpSecure: settings.smtpSecure,
+  });
+
+  await transport.sendMail({
+    from: `"${settings.fromName}" <${settings.fromEmail}>`,
+    to: opts.userEmail,
+    subject: `Support ticket received — ${opts.subject}`,
+    html: `
+      <div style="font-family:sans-serif;max-width:560px;margin:0 auto">
+        <h2 style="color:#8b5cf6">We've received your ticket</h2>
+        <p>Hi ${opts.userName},</p>
+        <p>Your support ticket has been created and our team will get back to you as soon as possible.</p>
+        <table style="width:100%;border-collapse:collapse;margin:16px 0">
+          <tr><td style="padding:8px;font-weight:bold;color:#555">Ticket #</td><td style="padding:8px">#${opts.ticketId}</td></tr>
+          <tr style="background:#f9f9f9"><td style="padding:8px;font-weight:bold;color:#555">Subject</td><td style="padding:8px">${opts.subject}</td></tr>
+        </table>
+        <p>You can track the status of your ticket by logging in to your dashboard.</p>
+        <p style="color:#888;font-size:13px">Thank you for reaching out to us.</p>
+      </div>
+    `,
+  }).catch((err) => logger.error({ err }, "Failed to send support ticket user confirmation"));
+}
+
+// ── Newsletter notifications ───────────────────────────────────────────────────
+
+export async function sendNewsletterNewSubscriberNotification(opts: {
+  subscriberEmail: string;
+  subscriberName?: string | null;
+}) {
+  const settings = await getEmailSettings();
+  if (!settings?.enabled) return;
+  if (!settings.smtpHost || !settings.smtpUser || !settings.smtpPass || !settings.fromEmail) return;
+  if (!settings.adminEmail) return;
+
+  const transport = createTransport({
+    smtpHost: settings.smtpHost,
+    smtpPort: settings.smtpPort,
+    smtpUser: settings.smtpUser,
+    smtpPass: settings.smtpPass,
+    smtpSecure: settings.smtpSecure,
+  });
+
+  await transport.sendMail({
+    from: `"${settings.fromName}" <${settings.fromEmail}>`,
+    to: settings.adminEmail,
+    subject: `New newsletter subscriber — ${opts.subscriberEmail}`,
+    html: `
+      <div style="font-family:sans-serif;max-width:560px;margin:0 auto">
+        <h2 style="color:#8b5cf6">New Newsletter Subscriber</h2>
+        <p>Someone just subscribed to your newsletter.</p>
+        <table style="width:100%;border-collapse:collapse;margin:16px 0">
+          <tr><td style="padding:8px;font-weight:bold;color:#555">Email</td><td style="padding:8px">${opts.subscriberEmail}</td></tr>
+          ${opts.subscriberName ? `<tr style="background:#f9f9f9"><td style="padding:8px;font-weight:bold;color:#555">Name</td><td style="padding:8px">${opts.subscriberName}</td></tr>` : ""}
+        </table>
+        <p style="color:#888;font-size:13px">Manage subscribers in the admin newsletter section.</p>
+      </div>
+    `,
+  }).catch((err) => logger.error({ err }, "Failed to send newsletter subscriber admin notification"));
+}

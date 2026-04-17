@@ -5,6 +5,7 @@ import { eq, and, desc } from "drizzle-orm";
 import { z } from "zod";
 import { requireAuth, requireAdmin } from "../middlewares/session.js";
 import { uploadBuffer } from "../lib/cloudinary.js";
+import { sendSupportTicketAdminNotification, sendSupportTicketUserConfirmation } from "../lib/email.js";
 
 const router = Router();
 
@@ -135,6 +136,12 @@ router.post("/tickets", requireAuth, upload.single("attachment"), async (req: Re
     }
   }
 
+  const [user] = await db
+    .select({ name: usersTable.name, email: usersTable.email })
+    .from(usersTable)
+    .where(eq(usersTable.id, req.userId!))
+    .limit(1);
+
   const [ticket] = await db
     .insert(supportTicketsTable)
     .values({ userId: req.userId!, subject, category })
@@ -155,6 +162,24 @@ router.post("/tickets", requireAuth, upload.single("attachment"), async (req: Re
       updatedAt: ticket.updatedAt.toISOString(),
     },
   });
+
+  if (user) {
+    Promise.allSettled([
+      sendSupportTicketAdminNotification({
+        ticketId: ticket.id,
+        subject,
+        category,
+        userName: user.name,
+        userEmail: user.email,
+      }),
+      sendSupportTicketUserConfirmation({
+        ticketId: ticket.id,
+        subject,
+        userEmail: user.email,
+        userName: user.name,
+      }),
+    ]).catch(() => {});
+  }
 });
 
 router.get("/tickets/:id", requireAuth, async (req: Request, res: Response) => {

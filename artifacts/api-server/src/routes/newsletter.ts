@@ -6,6 +6,7 @@ import { requireAdmin } from "../middlewares/session.js";
 import { logger } from "../lib/logger.js";
 import nodemailer from "nodemailer";
 import crypto from "crypto";
+import { sendNewsletterNewSubscriberNotification } from "../lib/email.js";
 
 const router = Router();
 
@@ -69,6 +70,7 @@ router.post("/newsletter/subscribe", async (req: any, res: any) => {
       .set({ status: "ACTIVE", unsubscribedAt: null, subscribedAt: new Date() })
       .where(eq(newsletterSubscribersTable.id, existing.id));
     res.json({ message: "Welcome back! You've been resubscribed." });
+    sendNewsletterNewSubscriberNotification({ subscriberEmail: email.toLowerCase(), subscriberName: name }).catch(() => {});
     return;
   }
 
@@ -80,6 +82,7 @@ router.post("/newsletter/subscribe", async (req: any, res: any) => {
   });
 
   res.json({ message: "Thanks for subscribing!" });
+  sendNewsletterNewSubscriberNotification({ subscriberEmail: email.toLowerCase(), subscriberName: name }).catch(() => {});
 });
 
 // ── Public: unsubscribe ───────────────────────────────────────────────────────
