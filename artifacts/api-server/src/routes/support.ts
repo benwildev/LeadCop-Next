@@ -439,10 +439,12 @@ router.post("/admin/tickets/:id/reply", requireAdmin, upload.single("attachment"
     }
   }
 
+  const replyMessage = result.data.message.trim();
+
   const [msg] = await db.insert(supportMessagesTable).values({
     ticketId: id,
     senderRole: "admin",
-    message: result.data.message.trim(),
+    message: replyMessage,
     attachmentUrl,
     attachmentName,
   }).returning();
@@ -453,11 +455,11 @@ router.post("/admin/tickets/:id/reply", requireAdmin, upload.single("attachment"
 
   res.status(201).json({ message: { ...msg, createdAt: msg.createdAt.toISOString() } });
 
-  if (ticket.userEmail && result.data.message.trim()) {
+  if (ticket.userEmail && replyMessage) {
     sendSupportTicketAdminReplyNotification({
       ticketId: id,
       subject: ticket.subject,
-      replyMessage: result.data.message.trim(),
+      replyMessage,
       userEmail: ticket.userEmail,
       userName: ticket.userName ?? "there",
     }).catch(() => {});

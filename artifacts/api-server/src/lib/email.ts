@@ -305,6 +305,9 @@ export async function sendSupportTicketAdminReplyNotification(opts: {
     smtpSecure: settings.smtpSecure,
   });
 
+  const siteUrl = (process.env.APP_URL || process.env.SITE_URL || "https://leadcop.io").replace(/\/$/, "");
+  const ticketUrl = `${siteUrl}/support/ticket/${opts.ticketId}`;
+
   await transport.sendMail({
     from: `"${settings.fromName}" <${settings.fromEmail}>`,
     to: opts.userEmail,
@@ -314,11 +317,16 @@ export async function sendSupportTicketAdminReplyNotification(opts: {
         <h2 style="color:#8b5cf6">New reply on your support ticket</h2>
         <p>Hi ${opts.userName},</p>
         <p>Our support team has replied to your ticket <strong>#${opts.ticketId} — ${opts.subject}</strong>.</p>
+        ${opts.replyMessage ? `
         <div style="background:#f9f9f9;border-left:4px solid #8b5cf6;padding:16px;margin:16px 0;border-radius:4px">
           <p style="margin:0;white-space:pre-wrap">${opts.replyMessage}</p>
-        </div>
-        <p>Log in to your dashboard to view the full conversation and reply.</p>
-        <p style="color:#888;font-size:13px">Thank you for your patience.</p>
+        </div>` : ""}
+        <p style="margin:24px 0">
+          <a href="${ticketUrl}" style="background:#8b5cf6;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:bold;display:inline-block">
+            View ticket
+          </a>
+        </p>
+        <p style="color:#888;font-size:13px">Log in to your dashboard to view the full conversation and reply.</p>
       </div>
     `,
   }).catch((err) => logger.error({ err }, "Failed to send admin reply notification to user"));
