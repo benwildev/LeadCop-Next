@@ -175,27 +175,27 @@ function SidebarContent({
   return (
     <div className="flex flex-col h-full bg-card border-r border-border">
       {/* Header */}
-      <div className="flex items-center gap-3 px-4 py-4 border-b border-border">
+      <div className="flex items-center justify-between px-4 py-4 border-b border-border">
         {collapsed ? (
-          /* Collapsed: show favicon */
+          /* Collapsed: favicon centred */
           siteSettings.faviconUrl && !faviconError ? (
             <img
-              src={siteSettings.faviconUrl}
+              src={siteSettings.faviconUrl ?? undefined}
               alt={siteSettings.siteTitle}
               className="h-8 w-8 object-contain rounded-md mx-auto flex-shrink-0"
               onError={() => setFaviconError(true)}
             />
           ) : (
-            <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-violet-500 to-purple-700 flex items-center justify-center flex-shrink-0 shadow-sm mx-auto">
+            <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-violet-500 to-purple-700 flex items-center justify-center mx-auto flex-shrink-0 shadow-sm">
               <Shield className="w-4 h-4 text-white" />
             </div>
           )
         ) : (
-          /* Expanded: logo + title + collapse button */
+          /* Expanded: logo on left, collapse button on right */
           <>
             {siteSettings.logoUrl && !logoError ? (
               <img
-                src={siteSettings.logoUrl}
+                src={siteSettings.logoUrl ?? undefined}
                 alt={siteSettings.siteTitle}
                 className="h-8 w-auto max-w-[140px] object-contain flex-shrink-0"
                 onError={() => setLogoError(true)}
@@ -205,12 +205,6 @@ function SidebarContent({
                 <Shield className="w-4 h-4 text-white" />
               </div>
             )}
-            <div className="flex-1 min-w-0">
-              <div className="font-heading text-sm font-bold text-foreground leading-tight truncate">
-                {siteSettings.siteTitle}
-              </div>
-              <div className="text-[10px] text-muted-foreground">Admin Portal</div>
-            </div>
             <button
               onClick={onToggle}
               className="hidden lg:flex text-muted-foreground hover:text-foreground transition-colors p-1 rounded-lg hover:bg-muted/50 flex-shrink-0"
