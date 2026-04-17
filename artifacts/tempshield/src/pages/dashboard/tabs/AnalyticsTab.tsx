@@ -6,11 +6,15 @@ import { motion } from "framer-motion";
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 import { format, parseISO } from "date-fns";
 import { Link } from "wouter";
-import { useGetUserAnalytics, type DashboardDataWithPlanConfig } from "@workspace/api-client-react";
+import {
+  useGetUserAnalytics,
+  type DashboardDataWithPlanConfig,
+  type AnalyticsTopDomain,
+} from "@workspace/api-client-react";
 
 export default function AnalyticsTab({ data, usagePct }: { data: DashboardDataWithPlanConfig; usagePct: number }) {
   const plan = data.user.plan;
-  const { data: analytics, isLoading } = useGetUserAnalytics({ query: { enabled: plan !== "FREE" } as any });
+  const { data: analytics, isLoading } = useGetUserAnalytics({ query: { enabled: plan !== "FREE" } });
 
   const requestsRemaining = data.user.requestLimit - data.user.requestCount;
 
@@ -73,8 +77,8 @@ export default function AnalyticsTab({ data, usagePct }: { data: DashboardDataWi
   const isLimited = analytics?.limited === true;
   const dailyCalls = analytics?.dailyCalls ?? [];
   const disposableRate = analytics?.disposableRate ?? 0;
-  const topDomains = analytics?.topBlockedDomains ?? [];
-  const maxBarCount = topDomains.reduce((m: number, d: any) => Math.max(m, d.count), 0);
+  const topDomains: AnalyticsTopDomain[] = analytics?.topBlockedDomains ?? [];
+  const maxBarCount = topDomains.reduce((m, d) => Math.max(m, d.count), 0);
 
   return (
     <div className="space-y-6">
@@ -167,7 +171,7 @@ export default function AnalyticsTab({ data, usagePct }: { data: DashboardDataWi
             <p className="text-sm text-muted-foreground py-4 text-center">No disposable emails detected yet.</p>
           ) : (
             <div className="space-y-3">
-              {topDomains.map((d: any, i: number) => (
+              {topDomains.map((d, i) => (
                 <div key={d.domain} className="flex items-center gap-3">
                   <span className="text-xs text-muted-foreground w-5 shrink-0 text-right">#{i + 1}</span>
                   <span className="font-mono text-sm text-foreground flex-1 truncate">{d.domain}</span>

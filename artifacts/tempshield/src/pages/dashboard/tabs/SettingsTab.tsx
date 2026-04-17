@@ -7,6 +7,8 @@ import {
   useGetUserWebsites, useAddUserWebsite, useDeleteUserWebsite,
   useGetUserPages, useAddUserPage, useDeleteUserPage,
   type DashboardPlanConfig,
+  type UserWebsite,
+  type UserPage,
 } from "@workspace/api-client-react";
 import { errMsg } from "../utils";
 
@@ -85,7 +87,7 @@ function WebsitesPanel({ planConfig, plan }: { planConfig?: DashboardPlanConfig;
         </p>
       ) : (
         <ul className="space-y-2">
-          {websites.map((w: any) => (
+          {websites.map((w: UserWebsite) => (
             <li key={w.id} className="flex items-center justify-between px-3 py-2 rounded-lg bg-muted/30 border border-border/50">
               <span className="text-sm font-mono text-foreground">{w.domain}</span>
               <button onClick={() => handleDelete(w.id)} className="text-muted-foreground hover:text-red-400 transition-colors p-1 rounded">
@@ -168,7 +170,7 @@ function PagesPanel({ planConfig, plan }: { planConfig?: DashboardPlanConfig; pl
         </p>
       ) : (
         <ul className="space-y-2">
-          {pages.map((p: any) => (
+          {pages.map((p: UserPage) => (
             <li key={p.id} className="flex items-center justify-between px-3 py-2 rounded-lg bg-muted/30 border border-border/50">
               <span className="text-sm font-mono text-foreground">{p.path}</span>
               <button onClick={() => handleDelete(p.id)} className="text-muted-foreground hover:text-red-400 transition-colors p-1 rounded">

@@ -48,12 +48,12 @@ export function DomainsSection() {
       });
       setNewDomain("");
       qc.invalidateQueries({ queryKey: ["/api/admin/stats"] });
-    } catch (err: any) {
+    } catch (err) {
+      const errMessage = err instanceof Error ? err.message : "Failed to add domain";
       const msg =
-        err?.message?.includes("409") ||
-        err?.message?.toLowerCase().includes("already")
+        errMessage.includes("409") || errMessage.toLowerCase().includes("already")
           ? "Domain already exists in the blocklist"
-          : (err?.message ?? "Failed to add domain");
+          : errMessage;
       setAddResult({ ok: false, msg: `✗ ${msg}` });
     }
   };

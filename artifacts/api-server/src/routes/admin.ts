@@ -47,7 +47,7 @@ const updatePlanSchema = z.object({
   note: z.string().optional(),
 });
 
-router.patch("/users/:userId/plan", requireAdmin, async (req: any, res: any) => {
+router.patch("/users/:userId/plan", requireAdmin, async (req: Request, res: Response) => {
   const userId = parseInt(String(req.params.userId || "0"));
   if (isNaN(userId)) {
     res.status(400).json({ error: "Invalid user ID" });
@@ -83,7 +83,7 @@ router.patch("/users/:userId/plan", requireAdmin, async (req: any, res: any) => 
   res.json({ message: `User plan updated to ${plan}` });
 });
 
-router.delete("/users/:userId", requireAdmin, async (req: any, res: any) => {
+router.delete("/users/:userId", requireAdmin, async (req: Request, res: Response) => {
   const userId = parseInt(String(req.params.userId || "0"));
   if (isNaN(userId)) {
     res.status(400).json({ error: "Invalid user ID" });
@@ -99,7 +99,7 @@ router.delete("/users/:userId", requireAdmin, async (req: any, res: any) => {
   res.json({ message: "User deleted" });
 });
 
-router.post("/users/:userId/reset-usage", requireAdmin, async (req: any, res: any) => {
+router.post("/users/:userId/reset-usage", requireAdmin, async (req: Request, res: Response) => {
   const userId = parseInt(String(req.params.userId || "0"));
   if (isNaN(userId)) {
     res.status(400).json({ error: "Invalid user ID" });
@@ -111,7 +111,7 @@ router.post("/users/:userId/reset-usage", requireAdmin, async (req: any, res: an
   res.json({ message: "Usage reset to zero" });
 });
 
-router.post("/users/:userId/revoke-key", requireAdmin, async (req: any, res: any) => {
+router.post("/users/:userId/revoke-key", requireAdmin, async (req: Request, res: Response) => {
   const userId = parseInt(String(req.params.userId || "0"));
   if (isNaN(userId)) {
     res.status(400).json({ error: "Invalid user ID" });
@@ -156,7 +156,7 @@ router.get("/upgrade-requests", requireAdmin, async (req, res) => {
   });
 });
 
-router.post("/upgrade-requests/:requestId/invoice/upload-url", requireAdmin, async (req: any, res: any) => {
+router.post("/upgrade-requests/:requestId/invoice/upload-url", requireAdmin, async (req: Request, res: Response) => {
   const requestId = parseInt(String(req.params.requestId || "0"));
   if (isNaN(requestId) || requestId <= 0) {
     res.status(400).json({ error: "Invalid request ID" });
@@ -189,7 +189,7 @@ const invoiceSchema = z.object({
   fileName: z.string().min(1).max(255),
 });
 
-router.post("/upgrade-requests/:requestId/invoice", requireAdmin, async (req: any, res: any) => {
+router.post("/upgrade-requests/:requestId/invoice", requireAdmin, async (req: Request, res: Response) => {
   const requestId = parseInt(String(req.params.requestId || "0"));
   if (isNaN(requestId)) {
     res.status(400).json({ error: "Invalid request ID" });
@@ -262,7 +262,7 @@ router.post("/upgrade-requests/:requestId/invoice", requireAdmin, async (req: an
   res.json({ message: "Invoice attached successfully" });
 });
 
-router.get("/upgrade-requests/:requestId/invoice", requireAdmin, async (req: any, res: any) => {
+router.get("/upgrade-requests/:requestId/invoice", requireAdmin, async (req: Request, res: Response) => {
   const requestId = parseInt(String(req.params.requestId || "0"));
   if (isNaN(requestId)) {
     res.status(400).json({ error: "Invalid request ID" });
@@ -315,7 +315,7 @@ const updateUpgradeSchema = z.object({
   note: z.string().optional(),
 });
 
-router.patch("/upgrade-requests/:requestId", requireAdmin, async (req: any, res: any) => {
+router.patch("/upgrade-requests/:requestId", requireAdmin, async (req: Request, res: Response) => {
   const requestId = parseInt(String(req.params.requestId || "0"));
   if (isNaN(requestId)) {
     res.status(400).json({ error: "Invalid request ID" });
@@ -404,8 +404,8 @@ router.post("/domains", requireAdmin, async (req: Request, res: Response) => {
     await loadDomainCache();
     const [{ count: total }] = await db.select({ count: count() }).from(domainsTable);
     res.status(201).json({ domain: clean, totalDomains: Number(total) });
-  } catch (err: any) {
-    if (err?.code === "23505") {
+  } catch (err) {
+    if ((err as { code?: string })?.code === "23505") {
       res.status(409).json({ error: "Domain already exists in the blocklist" });
     } else {
       throw err;
@@ -559,7 +559,7 @@ const updatePlanConfigSchema = z.object({
   price: z.number().min(0).optional(),
 });
 
-router.patch("/plan-config/:plan", requireAdmin, async (req: any, res: any) => {
+router.patch("/plan-config/:plan", requireAdmin, async (req: Request, res: Response) => {
   const planName = String(req.params.plan || "").toUpperCase();
 
   const [existing] = await db
@@ -600,7 +600,7 @@ router.patch("/plan-config/:plan", requireAdmin, async (req: any, res: any) => {
 
 const PROTECTED_PLANS = ["FREE", "BASIC", "PRO"];
 
-router.delete("/plan-config/:plan", requireAdmin, async (req: any, res: any) => {
+router.delete("/plan-config/:plan", requireAdmin, async (req: Request, res: Response) => {
   const planName = String(req.params.plan || "").toUpperCase();
 
   if (PROTECTED_PLANS.includes(planName)) {
@@ -925,7 +925,7 @@ const upload = multer({
   },
 });
 
-router.post("/upload", requireAdmin, upload.single("file"), async (req: any, res: any) => {
+router.post("/upload", requireAdmin, upload.single("file"), async (req: Request, res: Response) => {
   if (!req.file) return res.status(400).json({ error: "No file provided" });
   try {
     const result = await new Promise<{ secure_url: string }>((resolve, reject) => {
@@ -939,9 +939,9 @@ router.post("/upload", requireAdmin, upload.single("file"), async (req: any, res
       Readable.from(req.file!.buffer).pipe(stream);
     });
     res.json({ url: result.secure_url });
-  } catch (err: any) {
+  } catch (err) {
     req.log?.error({ err }, "Cloudinary upload failed");
-    res.status(500).json({ error: err?.message ?? "Upload failed" });
+    res.status(500).json({ error: err instanceof Error ? err.message : "Upload failed" });
   }
 });
 

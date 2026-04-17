@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { Link } from "wouter";
 import { format, parseISO } from "date-fns";
 import { useQueryClient } from "@tanstack/react-query";
-import { useGetBlocklist, useAddBlocklistEntry, useDeleteBlocklistEntry } from "@workspace/api-client-react";
+import { useGetBlocklist, useAddBlocklistEntry, useDeleteBlocklistEntry, type BlocklistEntry } from "@workspace/api-client-react";
 import { errMsg } from "../utils";
 
 export default function BlocklistTab({ plan }: { plan: string }) {
@@ -87,7 +87,7 @@ export default function BlocklistTab({ plan }: { plan: string }) {
           <p className="text-center text-sm text-muted-foreground py-6">No domains blocked yet.</p>
         ) : (
           <ul className="space-y-2">
-            {entries.map((e: any) => (
+            {entries.map((e: BlocklistEntry) => (
               <li key={e.id} className="flex items-center justify-between px-4 py-3 rounded-xl bg-muted/30 border border-border/50">
                 <div className="flex items-center gap-2">
                   <ShieldBan className="h-3.5 w-3.5 text-red-400" />

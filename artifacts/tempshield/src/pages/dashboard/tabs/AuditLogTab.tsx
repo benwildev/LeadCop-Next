@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { ListFilter, Loader2, AlertTriangle, CheckCircle2, ChevronLeft, ChevronRight } from "lucide-react";
 import { motion } from "framer-motion";
 import { format, parseISO } from "date-fns";
-import { useGetUserAuditLog } from "@workspace/api-client-react";
+import { useGetUserAuditLog, type AuditLogEntry } from "@workspace/api-client-react";
 import ReputationBadge from "@/components/ReputationBadge";
 import { maskEmail } from "../utils";
 
@@ -52,7 +52,7 @@ export default function AuditLogTab() {
                       </td>
                     </tr>
                   ) : (
-                    entries.map((entry: any) => (
+                    entries.map((entry: AuditLogEntry) => (
                       <tr key={entry.id} className="border-b border-border/50 last:border-0 hover:bg-muted/20 transition-colors">
                         <td className="py-3 pr-4 text-foreground/70 text-xs whitespace-nowrap">
                           {format(parseISO(entry.timestamp), "PP pp")}

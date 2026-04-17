@@ -5,6 +5,7 @@ import { Link } from "wouter";
 import { useQueryClient } from "@tanstack/react-query";
 import {
   useGetUserWebhooks, useCreateUserWebhook, useUpdateUserWebhook, useDeleteUserWebhook,
+  type UserWebhook,
 } from "@workspace/api-client-react";
 import { errMsg } from "../utils";
 
@@ -124,7 +125,7 @@ export default function WebhooksTab({ plan }: { plan: string }) {
           <p className="text-center text-sm text-muted-foreground py-6">No webhooks configured.</p>
         ) : (
           <ul className="space-y-3">
-            {webhooks.map((wh: any) => (
+            {webhooks.map((wh: UserWebhook) => (
               <li key={wh.id} className="flex items-start gap-3 px-4 py-3 rounded-xl bg-muted/30 border border-border/50">
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-mono text-foreground truncate">{wh.url}</p>

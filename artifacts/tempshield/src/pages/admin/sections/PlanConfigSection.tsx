@@ -340,17 +340,11 @@ export function PlanConfigSection() {
                         type="number"
                         min={0}
                         step={0.01}
-                        value={
-                          getValue(
-                            cfg.plan,
-                            "price" as any,
-                            (cfg as any).price,
-                          ) as number
-                        }
+                        value={getValue(cfg.plan, "price", cfg.price) as number}
                         onChange={(e) =>
                           setValue(
                             cfg.plan,
-                            "price" as any,
+                            "price",
                             parseFloat(e.target.value) || 0,
                           )
                         }

@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { format, parseISO } from "date-fns";
 import { Loader2, Check, X, Lock, Shield } from "lucide-react";
-import { SectionHeader } from "@/components/shared";
+import { SectionHeader, StatusBadge } from "@/components/shared";
 
 type PaymentGateway = "MANUAL" | "STRIPE" | "PAYPAL";
 
@@ -61,31 +61,31 @@ function useAdminPaymentSettings() {
   return { data, loading, error, refetch };
 }
 
-function StatusBadge({
+type GatewayStatusKey = "ready" | "partial" | "unconfigured";
+
+const STATUS_VARIANT: Record<GatewayStatusKey, "success" | "warning" | "muted"> = {
+  ready: "success",
+  partial: "warning",
+  unconfigured: "muted",
+};
+
+const STATUS_LABEL: Record<GatewayStatusKey, string> = {
+  ready: "Ready",
+  partial: "Partial",
+  unconfigured: "Not configured",
+};
+
+function GatewayStatusBadge({
   status,
   message,
 }: {
-  status: "ready" | "partial" | "unconfigured";
+  status: GatewayStatusKey;
   message: string;
 }) {
-  const styles = {
-    ready: "bg-green-500/15 text-green-400 border-green-500/30",
-    partial: "bg-yellow-500/15 text-yellow-400 border-yellow-500/30",
-    unconfigured: "bg-muted/40 text-muted-foreground border-border",
-  };
-  const labels = {
-    ready: "Ready",
-    partial: "Partial",
-    unconfigured: "Not configured",
-  };
   return (
     <div className="flex items-center gap-2">
-      <span
-        className={`px-2 py-0.5 rounded-full text-xs font-semibold border ${styles[status]}`}
-      >
-        {labels[status]}
-      </span>
-      <span className="text-xs text-muted-foreground">{message}</span>
+      <StatusBadge label={STATUS_LABEL[status]} variant={STATUS_VARIANT[status]} />
+      {message && <span className="text-xs text-muted-foreground">{message}</span>}
     </div>
   );
 }
@@ -164,7 +164,7 @@ export function PaymentSection() {
               <span className="text-sm font-medium text-foreground">
                 Manual Approval
               </span>
-              <StatusBadge
+              <GatewayStatusBadge
                 status={cs.manual.status}
                 message={cs.manual.message}
               />
@@ -187,7 +187,7 @@ export function PaymentSection() {
                   />
                 </button>
               </div>
-              <StatusBadge
+              <GatewayStatusBadge
                 status={cs.stripe.status}
                 message={cs.stripe.message}
               />
@@ -210,7 +210,7 @@ export function PaymentSection() {
                   />
                 </button>
               </div>
-              <StatusBadge
+              <GatewayStatusBadge
                 status={cs.paypal.status}
                 message={cs.paypal.message}
               />
@@ -260,7 +260,7 @@ export function PaymentSection() {
           <h3 className="font-heading text-sm font-semibold text-foreground flex items-center gap-2">
             <Lock className="w-4 h-4 text-primary" /> Stripe Configuration
           </h3>
-          {cs && <StatusBadge status={cs.stripe.status} message="" />}
+          {cs && <GatewayStatusBadge status={cs.stripe.status} message="" />}
         </div>
         <div className="space-y-4">
           {[
@@ -312,7 +312,7 @@ export function PaymentSection() {
           <h3 className="font-heading text-sm font-semibold text-foreground flex items-center gap-2">
             <Lock className="w-4 h-4 text-primary" /> PayPal Configuration
           </h3>
-          {cs && <StatusBadge status={cs.paypal.status} message="" />}
+          {cs && <GatewayStatusBadge status={cs.paypal.status} message="" />}
         </div>
         <div className="space-y-4">
           <div>

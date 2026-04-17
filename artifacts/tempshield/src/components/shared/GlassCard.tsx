@@ -8,6 +8,6 @@ export default function GlassCard({
   className?: string;
 }) {
   return (
-    <div className={`glass-card rounded-xl p-6 ${className}`}>{children}</div>
+    <div className={`glass-card rounded-2xl p-6 ${className}`}>{children}</div>
   );
 }

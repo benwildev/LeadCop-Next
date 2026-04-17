@@ -3,7 +3,7 @@ import { Key, Copy, RefreshCw, CheckCircle2, Code, Plus, Trash2, Loader2, X } fr
 import { motion } from "framer-motion";
 import { Link } from "wouter";
 import { useQueryClient } from "@tanstack/react-query";
-import { useGetUserApiKeys, useCreateUserApiKey, useDeleteUserApiKey } from "@workspace/api-client-react";
+import { useGetUserApiKeys, useCreateUserApiKey, useDeleteUserApiKey, type UserApiKey } from "@workspace/api-client-react";
 import { errMsg } from "../utils";
 
 export default function ApiKeysTab({
@@ -180,7 +180,7 @@ export default function ApiKeysTab({
           <p className="text-center text-sm text-muted-foreground py-6">No named keys yet.</p>
         ) : (
           <ul className="space-y-2">
-            {keys.map((k: any) => (
+            {keys.map((k: UserApiKey) => (
               <li key={k.id} className="flex items-center gap-3 px-4 py-3 rounded-xl bg-muted/30 border border-border/50">
                 <Key className="h-3.5 w-3.5 text-primary shrink-0" />
                 <span className="text-sm font-medium text-foreground flex-1">{k.name}</span>

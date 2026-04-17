@@ -1,4 +1,4 @@
-import { Router } from "express";
+import { Router, type Request, type Response } from "express";
 import { db, blogPostsTable } from "@workspace/db";
 import { eq, desc, and } from "drizzle-orm";
 import { z } from "zod";
@@ -34,7 +34,7 @@ function serializePost(p: typeof blogPostsTable.$inferSelect) {
 
 // ── Public routes ─────────────────────────────────────────────────────────────
 
-router.get("/blog/posts", async (req: any, res: any) => {
+router.get("/blog/posts", async (req: Request, res: Response) => {
   const page = Math.max(1, parseInt(String(req.query.page || "1")));
   const limit = Math.min(50, Math.max(1, parseInt(String(req.query.limit || "12"))));
   const tag = String(req.query.tag || "").trim().toLowerCase();
@@ -84,7 +84,7 @@ router.get("/blog/posts", async (req: any, res: any) => {
   });
 });
 
-router.get("/blog/posts/:slug", async (req: any, res: any) => {
+router.get("/blog/posts/:slug", async (req: Request, res: Response) => {
   const slug = req.params.slug as string;
 
   const [post] = await db
@@ -103,7 +103,7 @@ router.get("/blog/posts/:slug", async (req: any, res: any) => {
 
 // ── Admin routes ──────────────────────────────────────────────────────────────
 
-router.get("/admin/blog/posts", requireAdmin, async (req: any, res: any) => {
+router.get("/admin/blog/posts", requireAdmin, async (req: Request, res: Response) => {
   const posts = await db
     .select()
     .from(blogPostsTable)
@@ -112,7 +112,7 @@ router.get("/admin/blog/posts", requireAdmin, async (req: any, res: any) => {
   res.json({ posts: posts.map(serializePost) });
 });
 
-router.post("/admin/blog/posts", requireAdmin, async (req: any, res: any) => {
+router.post("/admin/blog/posts", requireAdmin, async (req: Request, res: Response) => {
   const result = createBlogPostSchema.safeParse(req.body);
   if (!result.success) {
     res.status(400).json({ error: "Invalid input", details: result.error.issues });
@@ -137,8 +137,8 @@ router.post("/admin/blog/posts", requireAdmin, async (req: any, res: any) => {
       .returning();
 
     res.status(201).json(serializePost(post));
-  } catch (err: any) {
-    if (err?.code === "23505") {
+  } catch (err) {
+    if ((err as { code?: string })?.code === "23505") {
       res.status(409).json({ error: "A post with that slug already exists" });
     } else {
       throw err;
@@ -146,7 +146,7 @@ router.post("/admin/blog/posts", requireAdmin, async (req: any, res: any) => {
   }
 });
 
-router.patch("/admin/blog/posts/:id", requireAdmin, async (req: any, res: any) => {
+router.patch("/admin/blog/posts/:id", requireAdmin, async (req: Request, res: Response) => {
   const id = parseInt(String(req.params.id || "0"));
   if (isNaN(id) || id <= 0) {
     res.status(400).json({ error: "Invalid post ID" });
@@ -196,8 +196,8 @@ router.patch("/admin/blog/posts/:id", requireAdmin, async (req: any, res: any) =
       .returning();
 
     res.json(serializePost(updated));
-  } catch (err: any) {
-    if (err?.code === "23505") {
+  } catch (err) {
+    if ((err as { code?: string })?.code === "23505") {
       res.status(409).json({ error: "A post with that slug already exists" });
     } else {
       throw err;
@@ -206,7 +206,7 @@ router.patch("/admin/blog/posts/:id", requireAdmin, async (req: any, res: any) =
 });
 
 // Dedicated publish/unpublish toggle
-router.post("/admin/blog/posts/:id/publish", requireAdmin, async (req: any, res: any) => {
+router.post("/admin/blog/posts/:id/publish", requireAdmin, async (req: Request, res: Response) => {
   const id = parseInt(String(req.params.id || "0"));
   if (isNaN(id) || id <= 0) {
     res.status(400).json({ error: "Invalid post ID" });
@@ -236,7 +236,7 @@ router.post("/admin/blog/posts/:id/publish", requireAdmin, async (req: any, res:
   res.json({ status: updated.status, publishedAt: updated.publishedAt?.toISOString() ?? null });
 });
 
-router.delete("/admin/blog/posts/:id", requireAdmin, async (req: any, res: any) => {
+router.delete("/admin/blog/posts/:id", requireAdmin, async (req: Request, res: Response) => {
   const id = parseInt(String(req.params.id || "0"));
   if (isNaN(id) || id <= 0) {
     res.status(400).json({ error: "Invalid post ID" });

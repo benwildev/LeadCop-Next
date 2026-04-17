@@ -1,4 +1,4 @@
-import { Router } from "express";
+import { Router, type Request, type Response } from "express";
 import { db, newsletterSubscribersTable, newsletterCampaignsTable, emailSettingsTable } from "@workspace/db";
 import { eq, desc, count, and } from "drizzle-orm";
 import { z } from "zod";
@@ -45,7 +45,7 @@ const subscribeSchema = z.object({
   name: z.string().max(100).optional(),
 });
 
-router.post("/newsletter/subscribe", async (req: any, res: any) => {
+router.post("/newsletter/subscribe", async (req: Request, res: Response) => {
   const result = subscribeSchema.safeParse(req.body);
   if (!result.success) {
     res.status(400).json({ error: "Valid email is required" });
@@ -87,7 +87,7 @@ router.post("/newsletter/subscribe", async (req: any, res: any) => {
 
 // ── Public: unsubscribe ───────────────────────────────────────────────────────
 
-router.get("/newsletter/unsubscribe", async (req: any, res: any) => {
+router.get("/newsletter/unsubscribe", async (req: Request, res: Response) => {
   const token = String(req.query.token || "");
   if (!token) {
     res.status(400).json({ error: "Invalid unsubscribe link" });
@@ -139,7 +139,7 @@ router.get("/newsletter/unsubscribe", async (req: any, res: any) => {
 
 // ── Admin: subscribers ────────────────────────────────────────────────────────
 
-router.get("/admin/newsletter/subscribers", requireAdmin, async (req: any, res: any) => {
+router.get("/admin/newsletter/subscribers", requireAdmin, async (req: Request, res: Response) => {
   const subscribers = await db
     .select()
     .from(newsletterSubscribersTable)
@@ -161,7 +161,7 @@ router.get("/admin/newsletter/subscribers", requireAdmin, async (req: any, res: 
   });
 });
 
-router.delete("/admin/newsletter/subscribers/:id", requireAdmin, async (req: any, res: any) => {
+router.delete("/admin/newsletter/subscribers/:id", requireAdmin, async (req: Request, res: Response) => {
   const id = parseInt(String(req.params.id || "0"));
   if (isNaN(id) || id <= 0) {
     res.status(400).json({ error: "Invalid ID" });
@@ -189,7 +189,7 @@ const createCampaignSchema = z.object({
   htmlContent: z.string().min(1),
 });
 
-router.get("/admin/newsletter/campaigns", requireAdmin, async (req: any, res: any) => {
+router.get("/admin/newsletter/campaigns", requireAdmin, async (req: Request, res: Response) => {
   const campaigns = await db
     .select()
     .from(newsletterCampaignsTable)
@@ -203,7 +203,7 @@ router.get("/admin/newsletter/campaigns", requireAdmin, async (req: any, res: an
   })) });
 });
 
-router.post("/admin/newsletter/campaigns", requireAdmin, async (req: any, res: any) => {
+router.post("/admin/newsletter/campaigns", requireAdmin, async (req: Request, res: Response) => {
   const result = createCampaignSchema.safeParse(req.body);
   if (!result.success) {
     res.status(400).json({ error: "Invalid input", details: result.error.issues });
@@ -223,7 +223,7 @@ router.post("/admin/newsletter/campaigns", requireAdmin, async (req: any, res: a
   });
 });
 
-router.patch("/admin/newsletter/campaigns/:id", requireAdmin, async (req: any, res: any) => {
+router.patch("/admin/newsletter/campaigns/:id", requireAdmin, async (req: Request, res: Response) => {
   const id = parseInt(String(req.params.id || "0"));
   if (isNaN(id) || id <= 0) {
     res.status(400).json({ error: "Invalid campaign ID" });
@@ -266,7 +266,7 @@ router.patch("/admin/newsletter/campaigns/:id", requireAdmin, async (req: any, r
   });
 });
 
-router.delete("/admin/newsletter/campaigns/:id", requireAdmin, async (req: any, res: any) => {
+router.delete("/admin/newsletter/campaigns/:id", requireAdmin, async (req: Request, res: Response) => {
   const id = parseInt(String(req.params.id || "0"));
   if (isNaN(id) || id <= 0) {
     res.status(400).json({ error: "Invalid campaign ID" });
@@ -295,7 +295,7 @@ router.delete("/admin/newsletter/campaigns/:id", requireAdmin, async (req: any, 
 
 // ── Admin: send campaign ──────────────────────────────────────────────────────
 
-router.post("/admin/newsletter/campaigns/:id/send", requireAdmin, async (req: any, res: any) => {
+router.post("/admin/newsletter/campaigns/:id/send", requireAdmin, async (req: Request, res: Response) => {
   const id = parseInt(String(req.params.id || "0"));
   if (isNaN(id) || id <= 0) {
     res.status(400).json({ error: "Invalid campaign ID" });
