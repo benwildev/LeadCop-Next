@@ -30,6 +30,9 @@ router.get("/", requireAdmin, async (_req, res) => {
     fromEmail: null,
     notifyOnSubmit: true,
     notifyOnDecision: true,
+    notifyAdminOnNewTicket: true,
+    notifyUserOnTicketCreated: true,
+    notifyAdminOnNewSubscriber: true,
     adminEmail: null,
   };
 
@@ -51,6 +54,9 @@ router.get("/", requireAdmin, async (_req, res) => {
     fromEmail: settings.fromEmail || null,
     notifyOnSubmit: settings.notifyOnSubmit,
     notifyOnDecision: settings.notifyOnDecision,
+    notifyAdminOnNewTicket: settings.notifyAdminOnNewTicket,
+    notifyUserOnTicketCreated: settings.notifyUserOnTicketCreated,
+    notifyAdminOnNewSubscriber: settings.notifyAdminOnNewSubscriber,
     adminEmail: settings.adminEmail || null,
     updatedAt: settings.updatedAt.toISOString(),
     connectionStatus: settings.enabled && isConfigured
@@ -72,6 +78,9 @@ const updateSchema = z.object({
   fromEmail: z.string().email().optional().nullable(),
   notifyOnSubmit: z.boolean().optional(),
   notifyOnDecision: z.boolean().optional(),
+  notifyAdminOnNewTicket: z.boolean().optional(),
+  notifyUserOnTicketCreated: z.boolean().optional(),
+  notifyAdminOnNewSubscriber: z.boolean().optional(),
   adminEmail: z.string().email().optional().nullable(),
 });
 
@@ -100,6 +109,9 @@ router.put("/", requireAdmin, async (req, res) => {
   if (data.fromEmail !== undefined) updates.fromEmail = data.fromEmail;
   if (data.notifyOnSubmit !== undefined) updates.notifyOnSubmit = data.notifyOnSubmit;
   if (data.notifyOnDecision !== undefined) updates.notifyOnDecision = data.notifyOnDecision;
+  if (data.notifyAdminOnNewTicket !== undefined) updates.notifyAdminOnNewTicket = data.notifyAdminOnNewTicket;
+  if (data.notifyUserOnTicketCreated !== undefined) updates.notifyUserOnTicketCreated = data.notifyUserOnTicketCreated;
+  if (data.notifyAdminOnNewSubscriber !== undefined) updates.notifyAdminOnNewSubscriber = data.notifyAdminOnNewSubscriber;
   if (data.adminEmail !== undefined) updates.adminEmail = data.adminEmail;
 
   // Don't overwrite the real password if the masked placeholder is sent back
@@ -121,6 +133,9 @@ router.put("/", requireAdmin, async (req, res) => {
       fromEmail: (updates.fromEmail as string | null) ?? null,
       notifyOnSubmit: (updates.notifyOnSubmit as boolean) ?? true,
       notifyOnDecision: (updates.notifyOnDecision as boolean) ?? true,
+      notifyAdminOnNewTicket: (updates.notifyAdminOnNewTicket as boolean) ?? true,
+      notifyUserOnTicketCreated: (updates.notifyUserOnTicketCreated as boolean) ?? true,
+      notifyAdminOnNewSubscriber: (updates.notifyAdminOnNewSubscriber as boolean) ?? true,
       adminEmail: (updates.adminEmail as string | null) ?? null,
     });
   } else {

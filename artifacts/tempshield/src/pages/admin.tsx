@@ -2650,6 +2650,9 @@ interface EmailSettingsData {
   fromEmail: string | null;
   notifyOnSubmit: boolean;
   notifyOnDecision: boolean;
+  notifyAdminOnNewTicket: boolean;
+  notifyUserOnTicketCreated: boolean;
+  notifyAdminOnNewSubscriber: boolean;
   adminEmail: string | null;
   updatedAt?: string;
   connectionStatus: "ready" | "configured" | "unconfigured";
@@ -2980,6 +2983,78 @@ function EmailSection() {
               <p className="text-xs text-muted-foreground mt-0.5">
                 Sends the user an email when their request is approved or
                 rejected.
+              </p>
+            </div>
+          </div>
+          <div className="border-t border-border/50 pt-4 mt-2">
+            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">Support Tickets</p>
+          </div>
+          <div className="flex items-start gap-4">
+            <button
+              onClick={() => set("notifyAdminOnNewTicket", !form.notifyAdminOnNewTicket)}
+              className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors shrink-0 mt-0.5 ${
+                form.notifyAdminOnNewTicket ? "bg-primary" : "bg-muted"
+              }`}
+            >
+              <span
+                className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform ${
+                  form.notifyAdminOnNewTicket ? "translate-x-4" : "translate-x-1"
+                }`}
+              />
+            </button>
+            <div>
+              <p className="text-sm font-medium text-foreground">
+                Notify admin on new support ticket
+              </p>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Sends the admin email an alert whenever a user opens a new support ticket.
+              </p>
+            </div>
+          </div>
+          <div className="flex items-start gap-4">
+            <button
+              onClick={() => set("notifyUserOnTicketCreated", !form.notifyUserOnTicketCreated)}
+              className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors shrink-0 mt-0.5 ${
+                form.notifyUserOnTicketCreated ? "bg-primary" : "bg-muted"
+              }`}
+            >
+              <span
+                className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform ${
+                  form.notifyUserOnTicketCreated ? "translate-x-4" : "translate-x-1"
+                }`}
+              />
+            </button>
+            <div>
+              <p className="text-sm font-medium text-foreground">
+                Notify user on ticket created
+              </p>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Sends the user a confirmation email when their support ticket is successfully created.
+              </p>
+            </div>
+          </div>
+          <div className="border-t border-border/50 pt-4 mt-2">
+            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">Newsletter</p>
+          </div>
+          <div className="flex items-start gap-4">
+            <button
+              onClick={() => set("notifyAdminOnNewSubscriber", !form.notifyAdminOnNewSubscriber)}
+              className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors shrink-0 mt-0.5 ${
+                form.notifyAdminOnNewSubscriber ? "bg-primary" : "bg-muted"
+              }`}
+            >
+              <span
+                className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform ${
+                  form.notifyAdminOnNewSubscriber ? "translate-x-4" : "translate-x-1"
+                }`}
+              />
+            </button>
+            <div>
+              <p className="text-sm font-medium text-foreground">
+                Notify admin on new newsletter subscriber
+              </p>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Sends the admin email an alert whenever someone subscribes to the newsletter.
               </p>
             </div>
           </div>

@@ -12,7 +12,8 @@
     "push-force": "drizzle-kit push --force --config ./drizzle.config.ts",
     "migrate:backfill-usage-period": "tsx src/migrations/backfill-usage-period-start.ts",
     "migrate:seed-site-settings": "tsx src/migrations/seed-site-settings.ts",
-    "migrate:add-max-bulk-emails": "tsx src/migrations/add-max-bulk-emails.ts"
+    "migrate:add-max-bulk-emails": "tsx src/migrations/add-max-bulk-emails.ts",
+    "migrate:add-notification-toggles": "tsx src/migrations/add-notification-toggles.ts"
   },
   "dependencies": {
     "drizzle-orm": "catalog:",

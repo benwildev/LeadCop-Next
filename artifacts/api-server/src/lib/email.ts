@@ -216,7 +216,7 @@ export async function sendSupportTicketAdminNotification(opts: {
   userEmail: string;
 }) {
   const settings = await getEmailSettings();
-  if (!settings?.enabled) return;
+  if (!settings?.enabled || !settings.notifyAdminOnNewTicket) return;
   if (!settings.smtpHost || !settings.smtpUser || !settings.smtpPass || !settings.fromEmail) return;
   if (!settings.adminEmail) return;
 
@@ -255,7 +255,7 @@ export async function sendSupportTicketUserConfirmation(opts: {
   userName: string;
 }) {
   const settings = await getEmailSettings();
-  if (!settings?.enabled) return;
+  if (!settings?.enabled || !settings.notifyUserOnTicketCreated) return;
   if (!settings.smtpHost || !settings.smtpUser || !settings.smtpPass || !settings.fromEmail) return;
 
   const transport = createTransport({
@@ -339,7 +339,7 @@ export async function sendNewsletterNewSubscriberNotification(opts: {
   subscriberName?: string | null;
 }) {
   const settings = await getEmailSettings();
-  if (!settings?.enabled) return;
+  if (!settings?.enabled || !settings.notifyAdminOnNewSubscriber) return;
   if (!settings.smtpHost || !settings.smtpUser || !settings.smtpPass || !settings.fromEmail) return;
   if (!settings.adminEmail) return;
 
