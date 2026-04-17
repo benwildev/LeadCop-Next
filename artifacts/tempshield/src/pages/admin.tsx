@@ -182,7 +182,7 @@ function SidebarContent({
             <img
               src={siteSettings.faviconUrl ?? undefined}
               alt={siteSettings.siteTitle}
-              className="h-8 w-8 object-contain rounded-md mx-auto flex-shrink-0"
+              className="h-8 w-8 object-contain rounded-md mx-auto flex-shrink-0 invert dark:invert-0"
               onError={() => setFaviconError(true)}
             />
           ) : (
