@@ -5,7 +5,7 @@ import { eq, and, desc } from "drizzle-orm";
 import { z } from "zod";
 import { requireAuth, requireAdmin } from "../middlewares/session.js";
 import { uploadBuffer } from "../lib/cloudinary.js";
-import { sendSupportTicketAdminNotification, sendSupportTicketUserConfirmation } from "../lib/email.js";
+import { sendSupportTicketAdminNotification, sendSupportTicketUserConfirmation, sendSupportTicketAdminReplyNotification } from "../lib/email.js";
 
 const router = Router();
 
@@ -409,8 +409,14 @@ router.post("/admin/tickets/:id/reply", requireAdmin, upload.single("attachment"
   }
 
   const [ticket] = await db
-    .select({ id: supportTicketsTable.id })
+    .select({
+      id: supportTicketsTable.id,
+      subject: supportTicketsTable.subject,
+      userName: usersTable.name,
+      userEmail: usersTable.email,
+    })
     .from(supportTicketsTable)
+    .leftJoin(usersTable, eq(supportTicketsTable.userId, usersTable.id))
     .where(eq(supportTicketsTable.id, id))
     .limit(1);
 
@@ -446,6 +452,16 @@ router.post("/admin/tickets/:id/reply", requireAdmin, upload.single("attachment"
     .where(eq(supportTicketsTable.id, id));
 
   res.status(201).json({ message: { ...msg, createdAt: msg.createdAt.toISOString() } });
+
+  if (ticket.userEmail && result.data.message.trim()) {
+    sendSupportTicketAdminReplyNotification({
+      ticketId: id,
+      subject: ticket.subject,
+      replyMessage: result.data.message.trim(),
+      userEmail: ticket.userEmail,
+      userName: ticket.userName ?? "there",
+    }).catch(() => {});
+  }
 });
 
 export default router;

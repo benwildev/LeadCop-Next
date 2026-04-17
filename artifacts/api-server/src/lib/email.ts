@@ -286,6 +286,44 @@ export async function sendSupportTicketUserConfirmation(opts: {
   }).catch((err) => logger.error({ err }, "Failed to send support ticket user confirmation"));
 }
 
+export async function sendSupportTicketAdminReplyNotification(opts: {
+  ticketId: number;
+  subject: string;
+  replyMessage: string;
+  userEmail: string;
+  userName: string;
+}) {
+  const settings = await getEmailSettings();
+  if (!settings?.enabled) return;
+  if (!settings.smtpHost || !settings.smtpUser || !settings.smtpPass || !settings.fromEmail) return;
+
+  const transport = createTransport({
+    smtpHost: settings.smtpHost,
+    smtpPort: settings.smtpPort,
+    smtpUser: settings.smtpUser,
+    smtpPass: settings.smtpPass,
+    smtpSecure: settings.smtpSecure,
+  });
+
+  await transport.sendMail({
+    from: `"${settings.fromName}" <${settings.fromEmail}>`,
+    to: opts.userEmail,
+    subject: `Re: [Ticket #${opts.ticketId}] ${opts.subject}`,
+    html: `
+      <div style="font-family:sans-serif;max-width:560px;margin:0 auto">
+        <h2 style="color:#8b5cf6">New reply on your support ticket</h2>
+        <p>Hi ${opts.userName},</p>
+        <p>Our support team has replied to your ticket <strong>#${opts.ticketId} — ${opts.subject}</strong>.</p>
+        <div style="background:#f9f9f9;border-left:4px solid #8b5cf6;padding:16px;margin:16px 0;border-radius:4px">
+          <p style="margin:0;white-space:pre-wrap">${opts.replyMessage}</p>
+        </div>
+        <p>Log in to your dashboard to view the full conversation and reply.</p>
+        <p style="color:#888;font-size:13px">Thank you for your patience.</p>
+      </div>
+    `,
+  }).catch((err) => logger.error({ err }, "Failed to send admin reply notification to user"));
+}
+
 // ── Newsletter notifications ───────────────────────────────────────────────────
 
 export async function sendNewsletterNewSubscriberNotification(opts: {
