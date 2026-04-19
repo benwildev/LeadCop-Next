@@ -62,6 +62,15 @@ const auditColumns: Column<AuditLogEntry>[] = [
       ),
   },
   {
+    key: "source" as any,
+    label: "Source",
+    render: (e: any) => (
+      <span className="inline-flex items-center px-1.5 py-0.5 rounded-md bg-muted text-[10px] font-medium text-muted-foreground uppercase tracking-tight">
+        {e.source || "custom"}
+      </span>
+    ),
+  },
+  {
     key: "endpoint",
     label: "Endpoint",
     render: (e) => (

@@ -148,7 +148,7 @@ export function PlanConfigSection() {
         action={
           <ActionButton
             icon={Plus}
-            variant="secondary"
+            variant="outline"
             onClick={() => { setShowAddForm((p) => !p); setCreateError(""); }}
           >
             Add Plan

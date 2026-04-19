@@ -367,7 +367,7 @@ export default function OverviewTab({
           <table className="w-full text-sm text-left">
             <thead>
               <tr className="border-b border-border">
-                {["Timestamp", "Email", "Domain", "Disposable", "Score", "Endpoint"].map(h => (
+                {["Timestamp", "Email", "Domain", "Disposable", "Score", "Source", "Endpoint"].map(h => (
                   <th key={h} className="pb-3 pr-4 text-xs font-medium text-muted-foreground uppercase tracking-wide whitespace-nowrap">{h}</th>
                 ))}
               </tr>
@@ -375,12 +375,12 @@ export default function OverviewTab({
             <tbody>
               {!data.recentUsage || data.recentUsage.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="py-8 text-center text-sm text-muted-foreground">
+                  <td colSpan={7} className="py-8 text-center text-sm text-muted-foreground">
                     No requests yet. Make your first API call!
                   </td>
                 </tr>
               ) : (
-                (data.recentUsage as Array<{ id: number; endpoint: string; email?: string | null; domain?: string | null; isDisposable?: boolean | null; reputationScore?: number | null; timestamp: string }>).map(entry => (
+                (data.recentUsage as Array<{ id: number; endpoint: string; email?: string | null; domain?: string | null; isDisposable?: boolean | null; reputationScore?: number | null; source?: string | null; timestamp: string }>).map(entry => (
                   <tr key={entry.id} className="border-b border-border/50 last:border-0 hover:bg-muted/20 transition-colors">
                     <td className="py-3 pr-4 text-foreground/70 text-xs whitespace-nowrap">{format(parseISO(entry.timestamp), "PP pp")}</td>
                     <td className="py-3 pr-4 font-mono text-xs text-foreground/80 max-w-[160px] truncate">{entry.email ? maskEmail(entry.email) : <span className="text-muted-foreground">—</span>}</td>
@@ -404,6 +404,11 @@ export default function OverviewTab({
                       ) : (
                         <ReputationBadge score={entry.reputationScore} />
                       )}
+                    </td>
+                    <td className="py-3 pr-4">
+                      <span className="inline-flex items-center px-1.5 py-0.5 rounded-md bg-muted text-[10px] font-medium text-muted-foreground uppercase tracking-tight">
+                        {entry.source || "custom"}
+                      </span>
                     </td>
                     <td className="py-3 font-mono text-xs text-muted-foreground">{entry.endpoint}</td>
                   </tr>

@@ -287,7 +287,7 @@ function buildLandingFeatures(
   data: LandingPlanData,
 ): string[] {
   const features: string[] = [];
-  const isFree = planKey === "FREE";
+  const isFree = data.price === 0;
   if (data.requestLimit > 0) {
     features.push(
       isFree
@@ -649,7 +649,7 @@ function LiveDemo({
 }
 
 function formatPlanPrice(planKey: string, price: number): string {
-  if (planKey === "FREE") return "$0";
+  if (price === 0) return "$0";
   return `$${price % 1 === 0 ? price : price.toFixed(2)}`;
 }
 
@@ -1222,8 +1222,20 @@ export default function LandingPage() {
           </motion.div>
 
           <div className="grid gap-6 md:grid-cols-3">
-            {(["FREE", "BASIC", "PRO"] as const).map((planKey, i) => {
-              const plan = { planKey, ...PLAN_STATIC[planKey] };
+            {Object.values(fullPlanData)
+              .sort((a, b) => a.price - b.price)
+              .map((data, i) => {
+              const planKey = data.plan;
+              const meta = PLAN_STATIC[planKey] || {
+                name: planKey.charAt(0) + planKey.slice(1).toLowerCase(),
+                period: data.price === 0 ? "forever" : "/month",
+                desc: "Advanced protection for your business",
+                staticFeatures: ["Priority support"],
+                cta: data.price === 0 ? "Start for Free" : "Get Started",
+                href: data.price === 0 ? "/signup" : "/upgrade",
+                highlighted: false,
+              };
+              const plan = { planKey, ...meta };
               return (
                 <motion.div
                   key={plan.name}
@@ -1368,7 +1380,7 @@ export default function LandingPage() {
                 className="mt-10 flex flex-wrap gap-3"
               >
                 <a
-                  href="/downloads/leadcop-email-validator.zip"
+                  href="/downloads/leadcop-email-validator.zip?v=1.1"
                   download
                   className="inline-flex items-center gap-2 rounded-lg bg-[#2271b1] px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-[#2271b1]/20 transition-all hover:bg-[#1d5e9a] hover:-translate-y-0.5"
                 >

@@ -23,38 +23,54 @@ const PLAN_META: Record<string, {
 }> = {
   FREE: {
     period: "forever",
-    desc: "Perfect for testing and small projects",
-    staticFeatures: ["Basic email detection", "Standard response time", "Community support"],
-    cta: "Get Started Free",
+    desc: "Perfect for testing and small personal projects",
+    staticFeatures: ["Standard response time", "Basic email detection", "Community support"],
+    cta: "Start for Free",
     href: "/signup",
     highlighted: false,
   },
   BASIC: {
     period: "/month",
-    desc: "For growing applications and startups",
-    staticFeatures: ["Priority response time", "Usage analytics dashboard", "Email support", "Monthly reset"],
-    cta: "Upgrade to Basic",
+    desc: "Essential tools for startups and independent developers",
+    staticFeatures: ["Priority response time", "Usage dashboard", "Priority email support", "Monthly credit reset"],
+    cta: "Get Started",
     href: "/upgrade",
     highlighted: false,
   },
   PRO: {
     period: "/month",
-    desc: "For production workloads at scale",
-    staticFeatures: ["Fastest response time", "Advanced analytics", "Priority support", "Monthly reset", "Custom integrations"],
-    cta: "Upgrade to Pro",
+    desc: "The most popular choice for growing platforms",
+    staticFeatures: ["Fastest response time", "Advanced API access", "Basic analytics dashboard", "Priority email & chat support"],
+    cta: "Get Started",
     href: "/upgrade",
     highlighted: true,
+  },
+  ADVANCED: {
+    period: "/month",
+    desc: "Built for scaling businesses with complex needs",
+    staticFeatures: ["Bulk verification engine", "Advanced usage analytics", "Custom reporting tools", "Dedicated support manager"],
+    cta: "Go Advanced",
+    href: "/upgrade",
+    highlighted: false,
+  },
+  MAX: {
+    period: "/month",
+    desc: "Enterprise-grade volume and performance for agencies",
+    staticFeatures: ["Unlimited API endpoints", "Lowest latency verification", "Custom webhook integrations", "24/7 Phone & Email support"],
+    cta: "Go Unlimited",
+    href: "/upgrade",
+    highlighted: false,
   },
 };
 
 function formatPrice(plan: string, price: number): string {
-  if (plan === "FREE") return "$0";
+  if (price === 0) return "$0";
   return `$${price % 1 === 0 ? price : price.toFixed(2)}`;
 }
 
 function buildFeatures(planKey: string, data: PlanData): string[] {
   const features: string[] = [];
-  const isFree = planKey === "FREE";
+  const isFree = data.price === 0;
 
   if (data.requestLimit > 0) {
     features.push(
@@ -102,33 +118,40 @@ export default function PricingPage() {
     highlighted: boolean;
   }
 
-  const plans = (["FREE", "BASIC", "PRO"] as const)
-    .map(key => {
-      const meta = PLAN_META[key];
-      if (!meta) return null;
-      const data = planData.find(p => p.plan === key);
-      const defaults: PlanData = {
-        plan: key,
-        price: key === "FREE" ? 0 : key === "BASIC" ? 9 : 29,
-        requestLimit: key === "FREE" ? 10 : key === "BASIC" ? 1000 : 10000,
-        websiteLimit: 0,
-        mxDetectionEnabled: false,
-        inboxCheckEnabled: false,
+  let plansDataToUse = planData;
+  if (planData.length === 0) {
+    plansDataToUse = [
+      { plan: "FREE", price: 0, requestLimit: 10, websiteLimit: 0, mxDetectionEnabled: false, inboxCheckEnabled: false },
+      { plan: "BASIC", price: 9, requestLimit: 1000, websiteLimit: 0, mxDetectionEnabled: false, inboxCheckEnabled: false },
+      { plan: "PRO", price: 29, requestLimit: 10000, websiteLimit: 0, mxDetectionEnabled: false, inboxCheckEnabled: false },
+    ];
+  }
+
+  const plans = plansDataToUse
+    .sort((a, b) => a.price - b.price)
+    .map(data => {
+      const key = data.plan;
+      const meta = PLAN_META[key] || {
+        period: data.price === 0 ? "forever" : "/month",
+        desc: "Advanced protection for your business",
+        staticFeatures: ["Priority support"],
+        cta: data.price === 0 ? "Start for Free" : "Get Started",
+        href: data.price === 0 ? "/signup" : "/upgrade",
+        highlighted: false,
       };
-      const resolved = data ?? defaults;
+
       return {
         key,
         name: key.charAt(0) + key.slice(1).toLowerCase(),
-        price: formatPrice(key, resolved.price),
+        price: formatPrice(key, data.price),
         period: meta.period,
         desc: meta.desc,
-        features: buildFeatures(key, resolved),
+        features: buildFeatures(key, data),
         cta: meta.cta,
         href: meta.href,
         highlighted: meta.highlighted,
       } as ResolvedPlan;
-    })
-    .filter(Boolean) as ResolvedPlan[];
+    });
 
   return (
     <>
@@ -149,7 +172,7 @@ export default function PricingPage() {
             </p>
           </motion.div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 w-full max-w-7xl mx-auto">
             {plans.map((plan, i) => (
               <motion.div
                 key={plan.key}

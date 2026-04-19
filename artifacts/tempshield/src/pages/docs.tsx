@@ -139,14 +139,14 @@ function SignupForm() {
     label: "Laravel / PHP",
     icon: "🐘",
     steps: [
-      { title: "Add to config", desc: "Store your API key in your .env file as TEMPSHIELD_KEY." },
+      { title: "Add to config", desc: "Store your API key in your .env file as LEADCOP_KEY." },
       { title: "Create a validation rule", desc: "Register a custom validation rule or use the closure shown below." },
       { title: "Apply to any form", desc: "Use the rule in any FormRequest or controller." },
     ],
     code: `<?php
 
 // .env
-// TEMPSHIELD_KEY=your_api_key_here
+// LEADCOP_KEY=your_api_key_here
 
 // app/Rules/NoDisposableEmail.php
 namespace App\\Rules;
@@ -161,9 +161,9 @@ class NoDisposableEmail implements Rule
         try {
             $response = Http::timeout(3)
                 ->withHeaders([
-                    'Authorization' => 'Bearer ' . config('services.tempshield.key'),
+                    'Authorization' => 'Bearer ' . config('services.leadcop.key'),
                 ])
-                ->post(config('services.tempshield.url') . '/api/check-email', [
+                ->post(config('services.leadcop.url') . '/api/check-email', [
                     'email' => $value,
                 ]);
 
@@ -201,17 +201,17 @@ public function rules(): array
     code: `import requests
 from functools import lru_cache
 
-TEMPSHIELD_KEY = "YOUR_API_KEY"
-TEMPSHIELD_URL = "https://yourdomain.com/api/check-email"
+LEADCOP_KEY = "YOUR_API_KEY"
+LEADCOP_URL = "https://yourdomain.com/api/check-email"
 
 @lru_cache(maxsize=512)
 def is_disposable_email(email: str) -> bool:
     try:
         response = requests.post(
-            TEMPSHIELD_URL,
+            LEADCOP_URL,
             json={"email": email},
             headers={
-                "Authorization": f"Bearer {TEMPSHIELD_KEY}",
+                "Authorization": f"Bearer {LEADCOP_KEY}",
                 "Content-Type": "application/json",
             },
             timeout=3,
@@ -245,19 +245,19 @@ class SignupForm(forms.Form):
       { title: "Handle the error", desc: "Return a 400 response with a clear error message." },
     ],
     code: `// middleware/checkEmail.js
-const TEMPSHIELD_KEY = process.env.TEMPSHIELD_KEY;
-const TEMPSHIELD_URL = process.env.TEMPSHIELD_URL || "https://yourdomain.com";
+const LEADCOP_KEY = process.env.LEADCOP_KEY;
+const LEADCOP_URL = process.env.LEADCOP_URL || "https://yourdomain.com";
 
 async function noDisposableEmail(req, res, next) {
   const email = req.body?.email;
   if (!email) return next();
 
   try {
-    const response = await fetch(\`\${TEMPSHIELD_URL}/api/check-email\`, {
+    const response = await fetch(\`\${LEADCOP_URL}/api/check-email\`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": \`Bearer \${TEMPSHIELD_KEY}\`,
+        "Authorization": \`Bearer \${LEADCOP_KEY}\`,
       },
       body: JSON.stringify({ email }),
     });

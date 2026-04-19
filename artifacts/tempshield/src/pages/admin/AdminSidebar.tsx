@@ -93,7 +93,7 @@ function SidebarContent({
               <img
                 src={siteSettings.logoUrl ?? undefined}
                 alt={siteSettings.siteTitle}
-                className="h-8 w-auto max-w-[140px] object-contain invert dark:invert-0 flex-shrink-0"
+                className="h-auto w-full max-w-[160px] object-contain invert dark:invert-0 flex-shrink-0"
                 onError={() => setLogoError(true)}
               />
             ) : (

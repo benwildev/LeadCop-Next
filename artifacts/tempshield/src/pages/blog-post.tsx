@@ -17,6 +17,7 @@ interface BlogPost {
   content: string;
   author: string;
   coverImage: string | null;
+  coverImageAlt: string | null;
   tags: string[];
   status: string;
   seoTitle: string | null;
@@ -117,7 +118,12 @@ export default function BlogPostPage() {
 
           {post.coverImage && (
             <div className="w-full h-64 md:h-80 rounded-2xl overflow-hidden bg-muted mb-8">
-              <img src={post.coverImage} alt={post.title} className="w-full h-full object-cover" />
+              <img
+                src={post.coverImage}
+                alt={post.coverImageAlt || post.title}
+                title={post.coverImageAlt || post.title}
+                className="w-full h-full object-cover"
+              />
             </div>
           )}
 

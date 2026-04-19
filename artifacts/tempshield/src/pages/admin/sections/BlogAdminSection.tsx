@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useQueryClient } from "@tanstack/react-query";
 import { format, parseISO } from "date-fns";
@@ -10,6 +10,8 @@ import {
   FileText,
   ExternalLink,
   CheckCircle,
+  Upload,
+  X,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import MarkdownEditor from "@/components/MarkdownEditor";
@@ -23,6 +25,7 @@ interface BlogPost {
   content: string;
   author: string;
   coverImage: string | null;
+  coverImageAlt: string | null;
   tags: string[];
   status: "DRAFT" | "PUBLISHED";
   seoTitle: string | null;
@@ -40,6 +43,7 @@ const EMPTY_POST = {
   content: "",
   author: "LeadCop Team",
   coverImage: "",
+  coverImageAlt: "",
   tags: "",
   status: "DRAFT" as "DRAFT" | "PUBLISHED",
   seoTitle: "",
@@ -62,6 +66,8 @@ export function BlogAdminSection() {
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState<number | null>(null);
   const [publishing, setPublishing] = useState<number | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const postsQuery = useQuery<{ posts: BlogPost[] }>({
     queryKey: ["/api/admin/blog/posts"],
@@ -90,6 +96,7 @@ export function BlogAdminSection() {
       content: post.content,
       author: post.author,
       coverImage: post.coverImage ?? "",
+      coverImageAlt: post.coverImageAlt ?? "",
       tags: Array.isArray(post.tags) ? post.tags.join(", ") : "",
       status: post.status,
       seoTitle: post.seoTitle ?? "",
@@ -105,12 +112,38 @@ export function BlogAdminSection() {
     setCreating(false);
   };
 
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      const res = await fetch("/api/admin/upload", {
+        method: "POST",
+        credentials: "include",
+        body: formData,
+      });
+      if (!res.ok) {
+        const d = await res.json();
+        alert(d.error || "Upload failed");
+        return;
+      }
+      const { url } = await res.json();
+      setForm((f) => ({ ...f, coverImage: url }));
+    } finally {
+      setUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  };
+
   const handleSave = async () => {
     setSaving(true);
     try {
       const body = {
         ...form,
         coverImage: form.coverImage || null,
+        coverImageAlt: form.coverImageAlt || null,
         seoTitle: form.seoTitle || null,
         seoDescription: form.seoDescription || null,
         ogImage: form.ogImage || null,
@@ -253,14 +286,71 @@ export function BlogAdminSection() {
             </div>
             <div>
               <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1">
-                Cover Image URL
+                Cover Image
+              </label>
+              {/* Hidden file input */}
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={handleImageUpload}
+              />
+              {form.coverImage ? (
+                <div className="relative rounded-lg overflow-hidden border border-border h-36 bg-muted/30">
+                  <img
+                    src={form.coverImage}
+                    alt={form.coverImageAlt || "Cover preview"}
+                    className="w-full h-full object-cover"
+                  />
+                  <div className="absolute inset-0 flex items-center justify-center gap-2 bg-black/40 opacity-0 hover:opacity-100 transition-opacity">
+                    <button
+                      type="button"
+                      onClick={() => fileInputRef.current?.click()}
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/20 backdrop-blur text-white text-xs font-medium hover:bg-white/30 transition-colors"
+                    >
+                      <Upload className="w-3.5 h-3.5" />
+                      Replace
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setForm((f) => ({ ...f, coverImage: "", coverImageAlt: "" }))}
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-red-500/30 backdrop-blur text-white text-xs font-medium hover:bg-red-500/50 transition-colors"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                      Remove
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={uploading}
+                  className="w-full h-36 flex flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-border hover:border-primary/50 hover:bg-primary/5 transition-all text-muted-foreground hover:text-primary"
+                >
+                  {uploading ? (
+                    <Loader2 className="w-6 h-6 animate-spin" />
+                  ) : (
+                    <Upload className="w-6 h-6" />
+                  )}
+                  <span className="text-xs font-medium">
+                    {uploading ? "Uploading to Cloudinary…" : "Click to upload cover image"}
+                  </span>
+                  <span className="text-xs opacity-60">JPG, PNG, WebP — max 5 MB</span>
+                </button>
+              )}
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1">
+                Image Alt Text / Title
               </label>
               <input
-                value={form.coverImage}
+                value={form.coverImageAlt}
                 onChange={(e) =>
-                  setForm((f) => ({ ...f, coverImage: e.target.value }))
+                  setForm((f) => ({ ...f, coverImageAlt: e.target.value }))
                 }
-                placeholder="https://example.com/image.jpg"
+                placeholder="Describe the image for SEO and accessibility…"
                 className="w-full px-3 py-2 rounded-lg bg-muted/40 border border-border text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40"
               />
             </div>

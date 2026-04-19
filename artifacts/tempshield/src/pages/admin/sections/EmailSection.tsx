@@ -468,7 +468,7 @@ export function EmailSection() {
           />
           <ActionButton
             icon={testing ? undefined : Send}
-            variant="secondary"
+            variant="outline"
             loading={testing}
             onClick={handleTestEmail}
           >

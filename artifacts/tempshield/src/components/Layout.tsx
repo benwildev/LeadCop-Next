@@ -2,6 +2,16 @@ import React, { type ReactNode } from "react";
 import { Link, useLocation } from "wouter";
 import { useAuth } from "@/hooks/use-auth";
 import { useSiteSettings } from "@/hooks/use-site-settings";
+
+/** Inject Cloudinary resize transforms into a Cloudinary URL */
+function cloudinaryResize(url: string, width: number, height: number): string {
+  if (!url?.includes("res.cloudinary.com")) return url;
+  // Insert transform params after "/upload/"
+  return url.replace(
+    /\/upload\//,
+    `/upload/w_${width},h_${height},c_fit,f_webp,q_auto/`
+  );
+}
 import {
   Shield,
   Menu,
@@ -26,10 +36,10 @@ function useTheme() {
     setIsDark(next);
     if (next) {
       document.documentElement.classList.add("dark");
-      localStorage.setItem("tempshield-theme", "dark");
+      localStorage.setItem("leadcop-theme", "dark");
     } else {
       document.documentElement.classList.remove("dark");
-      localStorage.setItem("tempshield-theme", "light");
+      localStorage.setItem("leadcop-theme", "light");
     }
   };
 
@@ -67,10 +77,14 @@ export function Navbar() {
         >
           {siteSettings.logoUrl && !logoError ? (
             <img
-              src={siteSettings.logoUrl}
+              src={cloudinaryResize(siteSettings.logoUrl, 160, 32)}
               alt={siteSettings.siteTitle}
-              className="h-36 w-auto max-w-[160px] object-contain invert dark:invert-0"
+              width={160}
+              height={32}
+              className="h-8 w-auto max-w-[160px] object-contain invert dark:invert-0"
               onError={() => setLogoError(true)}
+              loading="eager"
+              decoding="async"
             />
           ) : (
             <Shield className="h-6 w-6 text-primary" />
@@ -147,6 +161,7 @@ export function Navbar() {
             <button
               onClick={logout}
               className="flex h-9 w-9 items-center justify-center rounded-lg border border-border/50 text-muted-foreground transition-colors hover:text-destructive hover:bg-muted"
+              aria-label="Log out"
               title="Log out"
             >
               <LogOut className="h-4 w-4" />
@@ -171,6 +186,9 @@ export function Navbar() {
           <button
             className="md:hidden flex h-9 w-9 items-center justify-center rounded-lg border border-border/50 text-muted-foreground"
             onClick={() => setMobileOpen(!mobileOpen)}
+            aria-label={mobileOpen ? "Close navigation menu" : "Open navigation menu"}
+            aria-expanded={mobileOpen}
+            aria-controls="mobile-nav"
           >
             {mobileOpen ? (
               <X className="h-4 w-4" />
@@ -185,6 +203,7 @@ export function Navbar() {
       <AnimatePresence>
         {mobileOpen && (
           <motion.div
+            id="mobile-nav"
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
@@ -290,9 +309,13 @@ export function Footer() {
           <div className="flex items-center gap-2">
             {siteSettings.logoUrl ? (
               <img
-                src={siteSettings.logoUrl}
+                src={cloudinaryResize(siteSettings.logoUrl, 100, 20)}
                 alt={siteSettings.siteTitle}
+                width={100}
+                height={20}
                 className="h-5 w-auto invert dark:invert-0"
+                loading="lazy"
+                decoding="async"
               />
             ) : (
               <Shield className="h-5 w-5 text-primary" />

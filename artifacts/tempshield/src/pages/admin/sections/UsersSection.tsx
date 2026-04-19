@@ -10,8 +10,9 @@ import {
 } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { format, parseISO } from "date-fns";
-import { Loader2, Search, Key, Trash2, RotateCcw, Users } from "lucide-react";
+import { Loader2, Search, Key, Trash2, RotateCcw, Users, Eye } from "lucide-react";
 import { SectionHeader, GlassCard, ActionButton, DataTable, EmptyState, type Column } from "@/components/shared";
+import { UserDetailsModal } from "../components/UserDetailsModal";
 import { PLAN_COLORS } from "../constants";
 
 export function UsersSection() {
@@ -23,6 +24,7 @@ export function UsersSection() {
   const revokeKeyMutation = useAdminRevokeKey();
   const [search, setSearch] = useState("");
   const [loadingIds, setLoadingIds] = useState<Record<string, boolean>>({});
+  const [viewUser, setViewUser] = useState<{ id: number; name: string } | null>(null);
 
   const users = (usersQuery.data?.users || []).filter(
     (u) =>
@@ -136,6 +138,13 @@ export function UsersSection() {
       render: (u) => (
         <div className="flex items-center gap-1">
           <ActionButton
+            icon={Eye}
+            variant="outline"
+            onClick={() => setViewUser({ id: u.id, name: u.name })}
+            title="View details"
+            className="hover:text-primary hover:bg-primary/10"
+          />
+          <ActionButton
             icon={RotateCcw}
             variant="outline"
             loading={loadingIds[`reset-${u.id}`]}
@@ -189,6 +198,13 @@ export function UsersSection() {
           />
         )}
       </GlassCard>
+
+      <UserDetailsModal
+        isOpen={!!viewUser}
+        userId={viewUser?.id || 0}
+        userName={viewUser?.name || ""}
+        onClose={() => setViewUser(null)}
+      />
     </div>
   );
 }

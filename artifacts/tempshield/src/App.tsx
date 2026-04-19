@@ -1,3 +1,4 @@
+import React, { Suspense } from "react";
 import { Switch, Route, Router as WouterRouter, Redirect } from "wouter";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
@@ -5,22 +6,24 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider, useAuth } from "@/hooks/use-auth";
 import { useApplyHeadMeta } from "@/hooks/use-site-settings";
 import NotFound from "@/pages/not-found";
-import LandingPage from "./pages/landing";
-import PricingPage from "./pages/pricing";
-import LoginPage from "./pages/login";
-import RegisterPage from "./pages/register";
-import DashboardPage from "./pages/dashboard";
-import DocsPage from "./pages/docs";
-import UpgradePage from "./pages/upgrade";
-import AdminPage from "./pages/admin";
-import VerifyPage from "./pages/verify";
-import SupportPage from "./pages/support";
-import SupportNewPage from "./pages/support-new";
-import SupportTicketPage from "./pages/support-ticket";
-import ForgotPasswordPage from "./pages/forgot-password";
-import ResetPasswordPage from "./pages/reset-password";
-import BlogPage from "./pages/blog";
-import BlogPostPage from "./pages/blog-post";
+import LandingPage from "./pages/landing"; // Eager loaded for LCP
+
+// Lazy load non-critical routes to fix "Reduce unused JavaScript"
+const PricingPage = React.lazy(() => import("./pages/pricing"));
+const LoginPage = React.lazy(() => import("./pages/login"));
+const RegisterPage = React.lazy(() => import("./pages/register"));
+const DashboardPage = React.lazy(() => import("./pages/dashboard"));
+const DocsPage = React.lazy(() => import("./pages/docs"));
+const UpgradePage = React.lazy(() => import("./pages/upgrade"));
+const AdminPage = React.lazy(() => import("./pages/admin"));
+const VerifyPage = React.lazy(() => import("./pages/verify"));
+const SupportPage = React.lazy(() => import("./pages/support"));
+const SupportNewPage = React.lazy(() => import("./pages/support-new"));
+const SupportTicketPage = React.lazy(() => import("./pages/support-ticket"));
+const ForgotPasswordPage = React.lazy(() => import("./pages/forgot-password"));
+const ResetPasswordPage = React.lazy(() => import("./pages/reset-password"));
+const BlogPage = React.lazy(() => import("./pages/blog"));
+const BlogPostPage = React.lazy(() => import("./pages/blog-post"));
 
 const queryClient = new QueryClient();
 
@@ -50,43 +53,45 @@ function GlobalHeadManager() {
 
 function Router() {
   return (
-    <Switch>
-      <Route path="/" component={LandingPage} />
-      <Route path="/pricing" component={PricingPage} />
-      <Route path="/docs" component={DocsPage} />
-      <Route path="/verify" component={VerifyPage} />
-      <Route path="/login" component={LoginPage} />
-      <Route path="/signup" component={RegisterPage} />
-      <Route path="/forgot-password" component={ForgotPasswordPage} />
-      <Route path="/reset-password" component={ResetPasswordPage} />
-      <Route path="/blog" component={BlogPage} />
-      <Route path="/blog/:slug" component={BlogPostPage} />
-      
-      {/* Protected Routes */}
-      <Route path="/dashboard">
-        {() => <ProtectedRoute component={DashboardPage} />}
-      </Route>
-      <Route path="/upgrade">
-        {() => <ProtectedRoute component={UpgradePage} />}
-      </Route>
-      <Route path="/upgrade/success">
-        {() => <ProtectedRoute component={UpgradePage} />}
-      </Route>
-      <Route path="/admin">
-        {() => <ProtectedRoute component={AdminPage} adminOnly={true} />}
-      </Route>
-      <Route path="/support">
-        {() => <ProtectedRoute component={SupportPage} />}
-      </Route>
-      <Route path="/support/new">
-        {() => <ProtectedRoute component={SupportNewPage} />}
-      </Route>
-      <Route path="/support/ticket/:id">
-        {() => <ProtectedRoute component={SupportTicketPage} />}
-      </Route>
-      
-      <Route component={NotFound} />
-    </Switch>
+    <Suspense fallback={<div className="min-h-screen bg-background flex flex-col items-center justify-center"><div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div><p className="mt-4 text-sm text-muted-foreground animate-pulse">Loading app modules...</p></div>}>
+      <Switch>
+        <Route path="/" component={LandingPage} />
+        <Route path="/pricing" component={PricingPage} />
+        <Route path="/docs" component={DocsPage} />
+        <Route path="/verify" component={VerifyPage} />
+        <Route path="/login" component={LoginPage} />
+        <Route path="/signup" component={RegisterPage} />
+        <Route path="/forgot-password" component={ForgotPasswordPage} />
+        <Route path="/reset-password" component={ResetPasswordPage} />
+        <Route path="/blog" component={BlogPage} />
+        <Route path="/blog/:slug" component={BlogPostPage} />
+        
+        {/* Protected Routes */}
+        <Route path="/dashboard">
+          {() => <ProtectedRoute component={DashboardPage} />}
+        </Route>
+        <Route path="/upgrade">
+          {() => <ProtectedRoute component={UpgradePage} />}
+        </Route>
+        <Route path="/upgrade/success">
+          {() => <ProtectedRoute component={UpgradePage} />}
+        </Route>
+        <Route path="/admin">
+          {() => <ProtectedRoute component={AdminPage} adminOnly={true} />}
+        </Route>
+        <Route path="/support">
+          {() => <ProtectedRoute component={SupportPage} />}
+        </Route>
+        <Route path="/support/new">
+          {() => <ProtectedRoute component={SupportNewPage} />}
+        </Route>
+        <Route path="/support/ticket/:id">
+          {() => <ProtectedRoute component={SupportTicketPage} />}
+        </Route>
+        
+        <Route component={NotFound} />
+      </Switch>
+    </Suspense>
   );
 }
 

@@ -2,14 +2,29 @@
 <html lang="en" class="dark">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1" />
-    <title>TempShield — Disposable Email Detection API</title>
-    <meta name="description" content="Block fake emails and protect your platform with TempShield's disposable email detection API. Real-time verification with 99.9% accuracy." />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- Preconnect to external origins to cut TLS handshake time -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="preconnect" href="https://res.cloudinary.com" />
+    <link rel="dns-prefetch" href="https://js.stripe.com" />
+    <title>LeadCop — Disposable Email Detection API</title>
+    <meta name="description" content="Block fake emails and protect your platform with LeadCop's disposable email detection API. Real-time verification with 99.9% accuracy." />
     <meta name="cloudinary-cloud-name" content="leadcop" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <!-- Load Google Fonts asynchronously — does NOT block initial render -->
+    <link
+      rel="preload"
+      href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"
+      as="style"
+      onload="this.onload=null;this.rel='stylesheet'"
+    />
+    <noscript>
+      <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" />
+    </noscript>
     <script>
       (function() {
-        var theme = localStorage.getItem('tempshield-theme');
+        var theme = localStorage.getItem('leadcop-theme');
         if (theme === 'light') {
           document.documentElement.classList.remove('dark');
         } else {

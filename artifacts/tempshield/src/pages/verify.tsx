@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
+import ReCAPTCHA from "react-google-recaptcha";
 import { Link } from "wouter";
 import { Navbar, Footer } from "@/components/Layout";
 import {
@@ -249,6 +250,8 @@ export default function VerifyPage() {
   const [result, setResult] = useState<FreeVerifyResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [hasChecked, setHasChecked] = useState(false);
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+  const [prewarmedEmail, setPrewarmedEmail] = useState("");
 
   const [used, setUsed] = useState(0);
   const [limit, setLimit] = useState(5);
@@ -272,6 +275,28 @@ export default function VerifyPage() {
 
   useEffect(() => { fetchStatus(); }, [fetchStatus]);
 
+  useEffect(() => {
+    const trimmed = email.trim();
+    if (!trimmed.includes("@") || !trimmed.includes(".") || hasChecked || trimmed === prewarmedEmail || limitReached) {
+      return;
+    }
+
+    const timeoutId = setTimeout(() => {
+      setPrewarmedEmail(trimmed);
+      fetch("/api/verify/prewarm", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: trimmed }),
+      }).catch(() => {});
+    }, 800); // Start pre-warming 800ms after they stop typing (usually when they go to click the captcha)
+
+    return () => clearTimeout(timeoutId);
+  }, [email, hasChecked, prewarmedEmail, limitReached]);
+
+  const handleCaptchaChange = (token: string | null) => {
+    setCaptchaToken(token);
+  };
+
   const handleVerify = async () => {
     if (!email.trim() || loading) return;
     setError(null);
@@ -282,7 +307,7 @@ export default function VerifyPage() {
         method: "POST",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: email.trim() }),
+        body: JSON.stringify({ email: email.trim(), captchaToken }),
       });
       const data = await r.json();
       if (!r.ok) {
@@ -374,27 +399,37 @@ export default function VerifyPage() {
                 </div>
               </div>
             ) : (
-              <div className="flex gap-2">
-                <div className="relative flex-1">
-                  <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <input
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    onKeyDown={(e) => e.key === "Enter" && handleVerify()}
-                    placeholder="Enter an email address…"
-                    className="w-full bg-card border border-border rounded-xl pl-10 pr-4 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 transition-all shadow-sm"
-                    disabled={loading}
-                    autoFocus
+              <div className="flex flex-col gap-4">
+                <div className="flex gap-2">
+                  <div className="relative flex-1">
+                    <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <input
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      onKeyDown={(e) => e.key === "Enter" && handleVerify()}
+                      placeholder="Enter an email address…"
+                      className="w-full bg-card border border-border rounded-xl pl-10 pr-4 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 transition-all shadow-sm"
+                      disabled={loading}
+                      autoFocus
+                    />
+                  </div>
+                  <button
+                    onClick={handleVerify}
+                    disabled={loading || !email.trim() || !captchaToken}
+                    className="px-6 py-3 bg-primary text-primary-foreground rounded-xl text-sm font-semibold hover:bg-primary/90 transition-all disabled:opacity-50 flex items-center gap-2 shadow-sm shadow-primary/20"
+                  >
+                    {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Analyze"}
+                  </button>
+                </div>
+                
+                <div className="flex justify-center sm:justify-start">
+                  <ReCAPTCHA
+                    sitekey="6LdlQb8sAAAAAHT_sU80INx7dXcZAAgFjFDWyhef"
+                    onChange={handleCaptchaChange}
+                    theme="light"
                   />
                 </div>
-                <button
-                  onClick={handleVerify}
-                  disabled={loading || !email.trim()}
-                  className="px-6 py-3 bg-primary text-primary-foreground rounded-xl text-sm font-semibold hover:bg-primary/90 transition-all disabled:opacity-50 flex items-center gap-2 shadow-sm shadow-primary/20"
-                >
-                  {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Analyze"}
-                </button>
               </div>
             )}
             {error && <p className="text-xs text-red-400 mt-3">{error}</p>}
