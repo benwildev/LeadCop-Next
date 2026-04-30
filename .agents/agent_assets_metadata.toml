@@ -1,8 +1,0 @@
-uploads = []
-generated = []
-
-[[outputs]]
-id = "3D7y4ZxjJmXA6c7e30QxO"
-uri = "file://artifacts/wordpress-plugin/leadcop-email-validator.zip"
-type = "unspecified"
-title = "LeadCop Email Validator — WordPress Plugin"
