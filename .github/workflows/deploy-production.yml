@@ -48,6 +48,9 @@ jobs:
             echo "=== Building project ==="
             /root/.local/share/pnpm/pnpm run build
 
+            echo "=== Syncing database schema ==="
+            npx drizzle-kit push --config=src/lib/db/drizzle.config.ts
+
             echo "=== Restarting PM2 process (fresh start to clear port cache) ==="
             /usr/bin/pm2 restart leadcop-next || true
             sleep 3
