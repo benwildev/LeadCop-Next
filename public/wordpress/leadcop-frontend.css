@@ -1,0 +1,99 @@
+.leadcop-subscribe-wrap {
+  max-width: 480px;
+  width: 100%;
+  box-sizing: border-box;
+  font-family: inherit;
+}
+
+.leadcop-subscribe-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.leadcop-field {
+  display: flex;
+  width: 100%;
+}
+
+.leadcop-email-row {
+  flex-direction: row;
+  gap: 8px;
+}
+
+.leadcop-subscribe-wrap input[type="email"],
+.leadcop-subscribe-wrap input[type="text"] {
+  flex: 1;
+  padding: 10px 14px;
+  font-size: 15px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  outline: none;
+  box-sizing: border-box;
+  transition: border-color 0.2s;
+  background: #fff;
+  color: #111;
+}
+
+.leadcop-subscribe-wrap input:focus {
+  border-color: #8b5cf6;
+  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.15);
+}
+
+.leadcop-btn {
+  padding: 10px 20px;
+  background: #8b5cf6;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.2s, opacity 0.2s;
+}
+
+.leadcop-btn:hover {
+  background: #7c3aed;
+}
+
+.leadcop-btn:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.leadcop-msg {
+  font-size: 13px;
+  padding: 8px 12px;
+  border-radius: 6px;
+  margin-top: 4px;
+}
+
+.leadcop-msg.leadcop-error {
+  background: #fef2f2;
+  color: #b91c1c;
+  border: 1px solid #fecaca;
+}
+
+.leadcop-msg.leadcop-info {
+  background: #eff6ff;
+  color: #1d4ed8;
+  border: 1px solid #bfdbfe;
+}
+
+.leadcop-success {
+  font-size: 15px;
+  color: #15803d;
+  font-weight: 600;
+  margin: 0;
+  padding: 10px 0;
+}
+
+@media (max-width: 420px) {
+  .leadcop-email-row {
+    flex-direction: column;
+  }
+  .leadcop-btn {
+    width: 100%;
+  }
+}
