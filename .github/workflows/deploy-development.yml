@@ -52,10 +52,10 @@ jobs:
             /root/.local/share/pnpm/pnpm run build
 
             echo "=== Restarting PM2 process (fresh start to clear port cache) ==="
-            /usr/bin/pm2 restart email-verifier || true
+            /usr/bin/pm2 restart temp-email-sdk || true
             /usr/bin/pm2 start ecosystem.config.cjs
             sleep 3
 
             echo "✅ Development deployment complete!"
-            /usr/bin/pm2 status email-verifier
+            /usr/bin/pm2 status temp-email-sdk
             /usr/bin/pm2 save
