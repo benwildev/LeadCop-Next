@@ -104,7 +104,9 @@ async function resolveAuth(req: NextRequest) {
         .from(usersTable)
         .where(eq(usersTable.id, user.parentId))
         .limit(1);
-      if (parent) targetUser = parent as any; // Cast for simplicity here
+      if (parent) {
+        targetUser = parent as any;
+      }
     }
 
     const requestCount = await maybeResetMonthlyUsage(targetUser.id, targetUser.usagePeriodStart, targetUser.requestCount);
@@ -139,14 +141,23 @@ async function resolveAuth(req: NextRequest) {
   }
 
   // Fallback for same-origin demo (allows landing page widget to work without login)
+  // NOTE: Origin/Referer headers can be spoofed by scripts/bots, so we add
+  // a strict IP-based rate limit here to prevent free-quota abuse.
   const origin = req.headers.get("origin");
   const referer = req.headers.get("referer");
   const host = req.headers.get("host");
-  
+  const ip = req.headers.get("x-forwarded-for")?.split(",")[0].trim() || "unknown";
+
   const isSameOrigin = (origin && host && origin.includes(host)) || 
                        (referer && host && referer.includes(host));
 
   if (isSameOrigin) {
+    // Rate limit unauthenticated demo requests: max 10 per IP per minute
+    const demoAllowed = await checkRateLimit(`demo:${ip}`, 10);
+    if (!demoAllowed) {
+      return null; // Will result in 401; prevents quota drain by bots
+    }
+
     // Use the demo user (ID 2) as a fallback for the landing page demo
     const demoUser = await getEffectiveUser(2);
     if (demoUser) {

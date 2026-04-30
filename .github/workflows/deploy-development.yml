@@ -51,11 +51,13 @@ jobs:
             echo "=== Building project ==="
             /root/.local/share/pnpm/pnpm run build
 
-            echo "=== Restarting PM2 process (fresh start to clear port cache) ==="
-            /usr/bin/pm2 delete email-verifier || true
-            /usr/bin/pm2 start ecosystem.config.cjs
+            echo "=== Syncing database schema ==="
+            npx drizzle-kit push --config=src/lib/db/drizzle.config.ts
+
+            echo "=== Restarting PM2 process ==="
+            /usr/bin/pm2 restart temp-email-sdk || /usr/bin/pm2 start ecosystem.config.cjs
             sleep 3
 
             echo "✅ Development deployment complete!"
-            /usr/bin/pm2 status email-verifier
+            /usr/bin/pm2 status temp-email-sdk
             /usr/bin/pm2 save
