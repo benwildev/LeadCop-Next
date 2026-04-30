@@ -22,7 +22,7 @@ jobs:
           echo "Branch   : main"
           echo "Target   : leadcop.io"
           echo "Directory: /var/www/leadcop.io"
-          echo "PM2 App  : leadcop-live (port 5002)"
+          echo "PM2 App  : leadcop-next (port 5002)"
           echo "Database : leadcop_prod (isolated from dev)"
 
       - name: 🚀 SSH & Deploy to Production Server
@@ -49,9 +49,7 @@ jobs:
             /root/.local/share/pnpm/pnpm run build
 
             echo "=== Restarting PM2 process (fresh start to clear port cache) ==="
-            /usr/bin/pm2 delete leadcop-next || true
-            /usr/bin/pm2 delete leadcop-live || true
-            /usr/bin/pm2 start npm --name "leadcop-next" -- start -- -p 8080
+            /usr/bin/pm2 restart leadcop-next || true
             sleep 3
 
             echo "✅ Production deployment complete!"

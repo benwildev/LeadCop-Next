@@ -52,7 +52,7 @@ jobs:
             /root/.local/share/pnpm/pnpm run build
 
             echo "=== Restarting PM2 process (fresh start to clear port cache) ==="
-            /usr/bin/pm2 delete email-verifier || true
+            /usr/bin/pm2 restart email-verifier || true
             /usr/bin/pm2 start ecosystem.config.cjs
             sleep 3
 
