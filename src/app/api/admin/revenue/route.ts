@@ -96,6 +96,10 @@ export async function GET() {
 
     return NextResponse.json({ mrr, totalPaidUsers, revenueByPlan, monthlySubs, recent });
   } catch (err) {
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    console.error("[Revenue API Error]", err);
+    return NextResponse.json({ 
+      error: "Internal server error", 
+      details: err instanceof Error ? err.message : String(err) 
+    }, { status: 500 });
   }
 }

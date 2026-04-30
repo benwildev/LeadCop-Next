@@ -17,14 +17,14 @@ if (fs.existsSync(envPath)) {
 module.exports = {
   apps: [
     {
-      name: "leadcop-next",
-      cwd: "/var/www/leadcop.io",
+      name: "temp-email-sdk",
+      cwd: "/var/www/Temp-Email-SDK",
       script: "npm",
       args: "start",
       env: {
         ...envVars,
         NODE_ENV: "production",
-        PORT: 8080
+        PORT: 5001
       },
       max_memory_restart: "1G",
       instances: 1,

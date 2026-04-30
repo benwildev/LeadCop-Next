@@ -26,14 +26,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = async (data: LoginRequest) => {
     await loginMutation.mutateAsync({ data });
-    await refetch();
-    router.push("/dashboard");
+    // Force full reload to dashboard to ensure all states/cookies are fresh
+    window.location.href = "/dashboard";
   };
 
   const register = async (data: RegisterRequest) => {
     await registerMutation.mutateAsync({ data });
-    await refetch();
-    router.push("/dashboard");
+    window.location.href = "/dashboard";
   };
 
   const logout = async () => {

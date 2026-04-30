@@ -4,38 +4,16 @@ import { eq } from "drizzle-orm";
 import { z } from "zod";
 import { requireAdmin } from "@/lib/backend/session";
 
-function computeGatewayStatuses(settings: {
-  stripeEnabled: boolean;
-  stripePublishableKey: string | null;
-  stripeSecretKey: string | null;
-  stripeWebhookSecret: string | null;
-  paypalEnabled: boolean;
-  paypalClientId: string | null;
-  paypalSecret: string | null;
-}) {
+function computeGatewayStatuses(settings: any) {
   const stripeHasKeys = !!(settings.stripePublishableKey && settings.stripeSecretKey);
-  const stripeHasWebhook = !!settings.stripeWebhookSecret;
   const paypalHasKeys = !!(settings.paypalClientId && settings.paypalSecret);
 
   return {
-    manual: { enabled: true, status: "ready" as const, message: "Always available" },
     stripe: {
-      enabled: settings.stripeEnabled,
-      status: (settings.stripeEnabled && stripeHasKeys && stripeHasWebhook
-        ? "ready"
-        : settings.stripeEnabled && stripeHasKeys
-          ? "partial"
-          : "unconfigured") as "ready" | "partial" | "unconfigured",
-      message: !stripeHasKeys
-        ? "Missing publishable and secret keys"
-        : !stripeHasWebhook
-          ? "Missing webhook secret (plan auto-upgrade will not work)"
-          : "Fully configured",
+      status: (settings.stripeEnabled && stripeHasKeys ? "ready" : settings.stripeEnabled ? "error" : "unconfigured") as "ready" | "error" | "unconfigured",
     },
     paypal: {
-      enabled: settings.paypalEnabled,
-      status: (settings.paypalEnabled && paypalHasKeys ? "ready" : "unconfigured") as "ready" | "unconfigured",
-      message: !paypalHasKeys ? "Missing client ID or secret" : "Fully configured",
+      status: (settings.paypalEnabled && paypalHasKeys ? "ready" : settings.paypalEnabled ? "error" : "unconfigured") as "ready" | "error" | "unconfigured",
     },
   };
 }
@@ -52,7 +30,8 @@ export async function GET() {
       .limit(1);
 
     const defaults = {
-      gateway: "MANUAL",
+      activeGateway: "stripe",
+      currency: "USD",
       stripeEnabled: false,
       stripePublishableKey: null,
       stripeSecretKey: null,
@@ -61,38 +40,36 @@ export async function GET() {
       paypalClientId: null,
       paypalSecret: null,
       paypalMode: "sandbox",
-      planPrices: { BASIC: 9, PRO: 29 },
+      freeVerifyLimit: 5,
     };
 
     if (!settings) {
-      return NextResponse.json({ 
-        ...defaults, 
-        connectionStatus: computeGatewayStatuses(defaults as any) 
-      });
+      return NextResponse.json(defaults);
     }
 
     return NextResponse.json({
-      gateway: settings.gateway,
+      activeGateway: settings.gateway || "stripe",
+      currency: settings.currency || "USD",
       stripeEnabled: settings.stripeEnabled,
       stripePublishableKey: settings.stripePublishableKey || null,
-      stripeSecretKey: settings.stripeSecretKey ? `${settings.stripeSecretKey.slice(0, 8)}••••••••` : null,
-      stripeWebhookSecret: settings.stripeWebhookSecret ? `${settings.stripeWebhookSecret.slice(0, 8)}••••••••` : null,
+      stripeSecretKey: settings.stripeSecretKey || null,
+      stripeWebhookSecret: settings.stripeWebhookSecret || null,
       paypalEnabled: settings.paypalEnabled,
       paypalClientId: settings.paypalClientId || null,
-      paypalSecret: settings.paypalSecret ? `${settings.paypalSecret.slice(0, 8)}••••••••` : null,
-      paypalMode: settings.paypalMode,
-      planPrices: settings.planPrices || { BASIC: 9, PRO: 29 },
+      paypalSecret: settings.paypalSecret || null,
+      paypalMode: settings.paypalMode || "sandbox",
       freeVerifyLimit: settings.freeVerifyLimit ?? 5,
-      updatedAt: settings.updatedAt.toISOString(),
-      connectionStatus: computeGatewayStatuses(settings),
+      updatedAt: settings.updatedAt ? settings.updatedAt.toISOString() : new Date().toISOString(),
     });
   } catch (err) {
+    console.error("[PaymentSettings GET Error]", err);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
 
-const updatePaymentSettingsSchema = z.object({
-  gateway: z.enum(["MANUAL", "STRIPE", "PAYPAL"]).optional(),
+const updateSchema = z.object({
+  activeGateway: z.string().optional(),
+  currency: z.string().optional(),
   stripeEnabled: z.boolean().optional(),
   stripePublishableKey: z.string().optional().nullable(),
   stripeSecretKey: z.string().optional().nullable(),
@@ -100,76 +77,48 @@ const updatePaymentSettingsSchema = z.object({
   paypalEnabled: z.boolean().optional(),
   paypalClientId: z.string().optional().nullable(),
   paypalSecret: z.string().optional().nullable(),
-  paypalMode: z.enum(["sandbox", "live"]).optional(),
-  planPrices: z.record(z.string(), z.number().positive()).optional(),
-  freeVerifyLimit: z.number().int().min(0).max(1000).optional(),
+  paypalMode: z.string().optional(),
+  freeVerifyLimit: z.number().optional().nullable(),
 });
 
-export async function PUT(req: NextRequest) {
+export async function POST(req: NextRequest) {
   const admin = await requireAdmin();
   if (!admin) return NextResponse.json({ error: "Access Denied" }, { status: 403 });
 
   try {
     const body = await req.json();
-    const result = updatePaymentSettingsSchema.safeParse(body);
+    const result = updateSchema.safeParse(body);
     if (!result.success) return NextResponse.json({ error: "Invalid input" }, { status: 400 });
 
     const data = result.data;
-
     const [existing] = await db
       .select({ id: paymentSettingsTable.id })
       .from(paymentSettingsTable)
       .where(eq(paymentSettingsTable.id, 1))
       .limit(1);
 
-    const updates: Record<string, any> = { updatedAt: new Date() };
-    if (data.gateway !== undefined) updates.gateway = data.gateway;
+    const updates: any = { updatedAt: new Date() };
+    if (data.activeGateway !== undefined) updates.gateway = data.activeGateway;
+    if (data.currency !== undefined) updates.currency = data.currency;
     if (data.stripeEnabled !== undefined) updates.stripeEnabled = data.stripeEnabled;
     if (data.stripePublishableKey !== undefined) updates.stripePublishableKey = data.stripePublishableKey;
+    if (data.stripeSecretKey !== undefined) updates.stripeSecretKey = data.stripeSecretKey;
+    if (data.stripeWebhookSecret !== undefined) updates.stripeWebhookSecret = data.stripeWebhookSecret;
     if (data.paypalEnabled !== undefined) updates.paypalEnabled = data.paypalEnabled;
     if (data.paypalClientId !== undefined) updates.paypalClientId = data.paypalClientId;
+    if (data.paypalSecret !== undefined) updates.paypalSecret = data.paypalSecret;
     if (data.paypalMode !== undefined) updates.paypalMode = data.paypalMode;
-    if (data.planPrices !== undefined) updates.planPrices = data.planPrices;
-    if (data.freeVerifyLimit !== undefined) updates.freeVerifyLimit = data.freeVerifyLimit;
-
-    if (data.stripeSecretKey !== undefined && data.stripeSecretKey !== null && !data.stripeSecretKey.includes("••••••••")) {
-      updates.stripeSecretKey = data.stripeSecretKey;
-    } else if (data.stripeSecretKey === null) {
-      updates.stripeSecretKey = null;
-    }
-
-    if (data.stripeWebhookSecret !== undefined && data.stripeWebhookSecret !== null && !data.stripeWebhookSecret.includes("••••••••")) {
-      updates.stripeWebhookSecret = data.stripeWebhookSecret;
-    } else if (data.stripeWebhookSecret === null) {
-      updates.stripeWebhookSecret = null;
-    }
-
-    if (data.paypalSecret !== undefined && data.paypalSecret !== null && !data.paypalSecret.includes("••••••••")) {
-      updates.paypalSecret = data.paypalSecret;
-    } else if (data.paypalSecret === null) {
-      updates.paypalSecret = null;
-    }
+    if (data.freeVerifyLimit !== undefined) updates.freeVerifyLimit = data.freeVerifyLimit ?? 5;
 
     if (!existing) {
-      await db.insert(paymentSettingsTable).values({
-        id: 1,
-        gateway: (updates.gateway as string) || "MANUAL",
-        stripeEnabled: (updates.stripeEnabled as boolean) ?? false,
-        stripePublishableKey: (updates.stripePublishableKey as string | null) ?? null,
-        stripeSecretKey: (updates.stripeSecretKey as string | null) ?? null,
-        stripeWebhookSecret: (updates.stripeWebhookSecret as string | null) ?? null,
-        paypalEnabled: (updates.paypalEnabled as boolean) ?? false,
-        paypalClientId: (updates.paypalClientId as string | null) ?? null,
-        paypalSecret: (updates.paypalSecret as string | null) ?? null,
-        paypalMode: (updates.paypalMode as string) || "sandbox",
-        planPrices: (updates.planPrices as Record<string, number>) || { BASIC: 9, PRO: 29 },
-      });
+      await db.insert(paymentSettingsTable).values({ id: 1, ...updates });
     } else {
-      await db.update(paymentSettingsTable).set(updates).where(eq(paymentSettingsTable.id, existing.id));
+      await db.update(paymentSettingsTable).set(updates).where(eq(paymentSettingsTable.id, 1));
     }
 
-    return NextResponse.json({ message: "Payment settings updated" });
+    return NextResponse.json({ message: "Settings updated" });
   } catch (err) {
+    console.error("[PaymentSettings POST Error]", err);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

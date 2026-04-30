@@ -7,8 +7,10 @@ import { getPlanConfig } from "@/lib/backend/auth";
 import { sendUpgradeDecisionNotification } from "@/lib/backend/email";
 
 const updateUpgradeSchema = z.object({
-  status: z.enum(["APPROVED", "REJECTED"]),
+  status: z.enum(["APPROVED", "REJECTED"]).optional(),
   note: z.string().optional(),
+  objectPath: z.string().optional(),
+  fileName: z.string().optional(),
 });
 
 export async function PATCH(
@@ -27,7 +29,7 @@ export async function PATCH(
     const result = updateUpgradeSchema.safeParse(body);
     if (!result.success) return NextResponse.json({ error: "Invalid input" }, { status: 400 });
 
-    const { status, note } = result.data;
+    const { status, note, objectPath, fileName } = result.data;
 
     const [upgradeReq] = await db
       .select()
@@ -37,13 +39,25 @@ export async function PATCH(
 
     if (!upgradeReq) return NextResponse.json({ error: "Request not found" }, { status: 404 });
 
+    const updateData: any = {};
+    if (status) {
+      updateData.status = status;
+      if (status === "APPROVED") {
+        updateData.approvedAt = new Date();
+      }
+    }
+    if (note !== undefined) updateData.note = note || upgradeReq.note;
+    if (objectPath) {
+      updateData.invoiceKey = objectPath;
+      updateData.invoiceUploadedAt = new Date();
+    }
+    if (fileName) {
+      updateData.invoiceFileName = fileName;
+    }
+
     await db
       .update(upgradeRequestsTable)
-      .set({
-        status,
-        note: note || upgradeReq.note,
-        ...(status === "APPROVED" ? { approvedAt: new Date() } : {}),
-      })
+      .set(updateData)
       .where(eq(upgradeRequestsTable.id, requestId));
 
     if (status === "APPROVED") {
@@ -64,7 +78,7 @@ export async function PATCH(
       .where(eq(usersTable.id, upgradeReq.userId))
       .limit(1);
 
-    if (user) {
+    if (user && status) {
       sendUpgradeDecisionNotification({
         userEmail: user.email,
         userName: user.name,
@@ -73,7 +87,7 @@ export async function PATCH(
       }).catch(() => {});
     }
 
-    return NextResponse.json({ message: `Upgrade request ${status.toLowerCase()}` });
+    return NextResponse.json({ message: "Upgrade request updated successfully" });
   } catch (err) {
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }

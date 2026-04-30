@@ -18,7 +18,7 @@ export function RootProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <HeadMetaInitializer />
+      {/* <HeadMetaInitializer /> */}
       <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
         <TooltipProvider>
           <AuthProvider>

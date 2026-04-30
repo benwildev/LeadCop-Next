@@ -115,7 +115,7 @@ export function BlogSlugContent() {
 
             <div className="mt-20 pt-12 border-t border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-8">
               <div className="flex flex-wrap gap-2">
-                {post.tags?.map(tag => (
+                {Array.isArray(post.tags) && post.tags.map(tag => (
                   <span key={tag} className="flex items-center gap-1.5 px-3 py-1 rounded-lg bg-slate-50 text-slate-500 text-xs font-medium border border-slate-100">
                     <Tag className="w-3 h-3" />
                     {tag}

@@ -30,8 +30,9 @@ export async function GET(
   if (!admin) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const { slug: slugParts } = await params;
-  let slug = "/" + (slugParts?.join("/") || "");
-  if (slug === "/home") slug = "/";
+  let decodedParts = (slugParts || []).map(p => decodeURIComponent(p));
+  let slug = "/" + decodedParts.join("/");
+  if (slug === "/home" || slug === "/%2F" || slug === "//") slug = "/";
 
   if (!ALLOWED_SLUGS.has(slug)) {
     return NextResponse.json({ error: "Unknown page slug" }, { status: 400 });
@@ -62,8 +63,9 @@ export async function PATCH(
   if (!admin) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const { slug: slugParts } = await params;
-  let slug = "/" + (slugParts?.join("/") || "");
-  if (slug === "/home") slug = "/";
+  let decodedParts = (slugParts || []).map(p => decodeURIComponent(p));
+  let slug = "/" + decodedParts.join("/");
+  if (slug === "/home" || slug === "/%2F" || slug === "//") slug = "/";
 
   if (!ALLOWED_SLUGS.has(slug)) {
     return NextResponse.json({ error: "Unknown page slug" }, { status: 400 });

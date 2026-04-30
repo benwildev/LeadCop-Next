@@ -24,6 +24,7 @@ type UpgradeRequest = {
   status: "PENDING" | "APPROVED" | "REJECTED";
   note: string | null;
   hasInvoice: boolean;
+  invoiceKey?: string | null;
   invoiceFileName?: string | null;
   invoiceUploadedAt?: string | null;
   createdAt: string;
@@ -39,13 +40,15 @@ const PLAN_COLORS: Record<string, string> = {
 export function SubscriptionsSection() {
   const qc = useQueryClient();
 
-  const { data: requests, isLoading } = useQuery<UpgradeRequest[]>({
+  const { data, isLoading } = useQuery<{ requests: UpgradeRequest[]; total: number }>({
     queryKey: ["/api/admin/upgrade-requests"],
     queryFn: async () => {
       const response = await axiosSecure.get("/api/admin/upgrade-requests");
       return response.data;
     },
   });
+
+  const requests = data?.requests || [];
 
   const updateMutation = useMutation({
     mutationFn: async ({
@@ -81,7 +84,7 @@ export function SubscriptionsSection() {
       objectPath: string;
       fileName: string;
     }) => {
-      const response = await axiosSecure.post(`/api/admin/upgrade-requests/${id}/invoice`, {
+      const response = await axiosSecure.patch(`/api/admin/upgrade-requests/${id}`, {
         objectPath,
         fileName,
       });
@@ -106,18 +109,13 @@ export function SubscriptionsSection() {
     }
     setApproveError("");
     try {
-      // 1. Get upload URL
-      const { uploadURL, objectPath } = (await axiosSecure.post(
-        `/api/admin/upgrade-requests/${id}/invoice/upload-url`
-      )).data;
-
-      // 2. Upload to GCS
-      const uploadResp = await fetch(uploadURL, {
-        method: "PUT",
-        headers: { "Content-Type": approveFile.type },
-        body: approveFile,
+      const formData = new FormData();
+      formData.append("file", approveFile);
+      
+      const { data } = await axiosSecure.post("/api/admin/upload", formData, {
+        headers: { "Content-Type": "multipart/form-data" }
       });
-      if (!uploadResp.ok) throw new Error("File upload failed");
+      const objectPath = data.url;
 
       // 3. Update status
       await updateMutation.mutateAsync({
@@ -139,18 +137,13 @@ export function SubscriptionsSection() {
     }
     setAttachError("");
     try {
-      // 1. Get upload URL
-      const { uploadURL, objectPath } = (await axiosSecure.post(
-        `/api/admin/upgrade-requests/${id}/invoice/upload-url`
-      )).data;
-
-      // 2. Upload to GCS
-      const uploadResp = await fetch(uploadURL, {
-        method: "PUT",
-        headers: { "Content-Type": attachFile.type },
-        body: attachFile,
+      const formData = new FormData();
+      formData.append("file", attachFile);
+      
+      const { data } = await axiosSecure.post("/api/admin/upload", formData, {
+        headers: { "Content-Type": "multipart/form-data" }
       });
-      if (!uploadResp.ok) throw new Error("File upload failed");
+      const objectPath = data.url;
 
       // 3. Attach
       await attachMutation.mutateAsync({
@@ -295,7 +288,7 @@ export function SubscriptionsSection() {
                       <div className="flex items-center gap-1">
                          {req.hasInvoice && (
                             <a
-                              href={`/api/admin/upgrade-requests/${req.id}/invoice`}
+                              href={req.invoiceKey || "#"}
                               target="_blank"
                               rel="noopener noreferrer"
                               className="p-1 rounded-lg bg-primary/10 text-primary hover:bg-primary/20 transition-colors"

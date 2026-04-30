@@ -667,7 +667,7 @@ export function DocsContent() {
                   ))}
                 </div>
 
-                <AnimatePresence mode="wait">
+                <AnimatePresence>
                   <motion.div
                     key={activeTab}
                     initial={{ opacity: 0, y: 10 }}

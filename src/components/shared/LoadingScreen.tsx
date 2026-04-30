@@ -10,7 +10,7 @@ interface LoadingScreenProps {
 
 export function LoadingScreen({ isLoading, message = "LeadCop is initializing..." }: LoadingScreenProps) {
   return (
-    <AnimatePresence>
+    <>
       {isLoading && (
         <motion.div
           initial={{ opacity: 0 }}
@@ -18,7 +18,7 @@ export function LoadingScreen({ isLoading, message = "LeadCop is initializing...
           exit={{ opacity: 0 }}
           className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-white dark:bg-slate-950 overflow-hidden"
         >
-          {/* Elegant background gradients */}
+          {/* ... (rest of the component) ... */}
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-[#877FA7]/10 blur-[120px] rounded-full pointer-events-none" />
           <div className="absolute -top-24 -left-24 w-96 h-96 bg-[#877FA7]/5 blur-[80px] rounded-full pointer-events-none" />
           <div className="absolute -bottom-24 -right-24 w-96 h-96 bg-[#877FA7]/5 blur-[80px] rounded-full pointer-events-none" />
@@ -57,7 +57,7 @@ export function LoadingScreen({ isLoading, message = "LeadCop is initializing...
                   <motion.div 
                     animate={{ 
                       x: ["-100%", "100%"] 
-                    }}
+                     }}
                     transition={{ 
                       repeat: Infinity, 
                       duration: 1.5, 
@@ -84,7 +84,7 @@ export function LoadingScreen({ isLoading, message = "LeadCop is initializing...
           </motion.div>
         </motion.div>
       )}
-    </AnimatePresence>
+    </>
   );
 }
 

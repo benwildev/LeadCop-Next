@@ -137,6 +137,23 @@ async function resolveAuth(req: NextRequest) {
   if (sessionUserId) {
     return await getEffectiveUser(sessionUserId);
   }
+
+  // Fallback for same-origin demo (allows landing page widget to work without login)
+  const origin = req.headers.get("origin");
+  const referer = req.headers.get("referer");
+  const host = req.headers.get("host");
+  
+  const isSameOrigin = (origin && host && origin.includes(host)) || 
+                       (referer && host && referer.includes(host));
+
+  if (isSameOrigin) {
+    // Use the demo user (ID 2) as a fallback for the landing page demo
+    const demoUser = await getEffectiveUser(2);
+    if (demoUser) {
+      return { ...demoUser, isApiKeyAuth: false };
+    }
+  }
+
   return null;
 }
 
@@ -166,7 +183,7 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const result = checkEmailSchema.safeParse(body);
     if (!result.success) {
-      return NextResponse.json({ error: "Invalid email" }, { status: 400 });
+      return NextResponse.json({ error: "Invalid request payload" }, { status: 400 });
     }
 
     const { email } = result.data;

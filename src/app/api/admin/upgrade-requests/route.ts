@@ -31,13 +31,17 @@ export async function GET() {
         ...r,
         userName: r.userName || "Unknown",
         userEmail: r.userEmail || "Unknown",
-        createdAt: r.createdAt.toISOString(),
-        invoiceUploadedAt: r.invoiceUploadedAt ? r.invoiceUploadedAt.toISOString() : null,
+        createdAt: r.createdAt instanceof Date ? r.createdAt.toISOString() : (r.createdAt ? new Date(r.createdAt).toISOString() : new Date().toISOString()),
+        invoiceUploadedAt: r.invoiceUploadedAt instanceof Date ? r.invoiceUploadedAt.toISOString() : (r.invoiceUploadedAt ? new Date(r.invoiceUploadedAt).toISOString() : null),
         hasInvoice: !!r.invoiceKey,
       })),
       total: requests.length,
     });
   } catch (err) {
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    console.error("[UpgradeRequests API Error]", err);
+    return NextResponse.json({ 
+      error: "Internal server error",
+      details: err instanceof Error ? err.message : String(err)
+    }, { status: 500 });
   }
 }

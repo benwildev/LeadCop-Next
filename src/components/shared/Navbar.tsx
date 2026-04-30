@@ -30,21 +30,11 @@ export function Navbar() {
 
         {/* Desktop Nav */}
         <div className="hidden items-center gap-10 text-[13px] font-bold uppercase tracking-widest text-slate-500 lg:flex">
-          {[
-            { name: "Features", href: "/#product" },
-            { name: "How it works", href: "/#how" },
-            { name: "Pricing", href: "/pricing" },
-            { name: "Docs", href: "/docs" },
-            { name: "Blog", href: "/blog" },
-          ].map((item) => (
-            <Link 
-              key={item.name} 
-              href={item.href} 
-              className="transition-colors hover:text-primary"
-            >
-              {item.name}
-            </Link>
-          ))}
+          <Link href="/#product" className="transition-colors hover:text-primary">Features</Link>
+          <Link href="/#how" className="transition-colors hover:text-primary">How it works</Link>
+          <Link href="/pricing" className="transition-colors hover:text-primary">Pricing</Link>
+          <Link href="/docs" className="transition-colors hover:text-primary">Docs</Link>
+          <Link href="/blog" className="transition-colors hover:text-primary">Blog</Link>
         </div>
 
         <div className="hidden items-center gap-6 lg:flex">

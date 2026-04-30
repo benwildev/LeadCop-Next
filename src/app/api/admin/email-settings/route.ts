@@ -61,7 +61,7 @@ export async function GET() {
       notifyAdminOnNewSubscriber: settings.notifyAdminOnNewSubscriber,
       notifyUserOnTicketStatusChange: settings.notifyUserOnTicketStatusChange,
       adminEmail: settings.adminEmail || null,
-      updatedAt: settings.updatedAt.toISOString(),
+      updatedAt: settings.updatedAt ? settings.updatedAt.toISOString() : new Date().toISOString(),
       connectionStatus: settings.enabled && isConfigured
         ? "ready"
         : isConfigured

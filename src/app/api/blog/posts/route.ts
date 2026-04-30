@@ -29,7 +29,7 @@ export async function GET(req: NextRequest) {
     .offset(offset);
 
   const filtered = tag
-    ? posts.filter((p: any) => p.tags?.split(",").map((t: any) => t.trim().toLowerCase()).includes(tag))
+    ? posts.filter((p: any) => p.tags?.split(",").some((t: any) => t.trim().toLowerCase() === tag))
     : posts;
 
   const hasMore = filtered.length > limit;
