@@ -104,7 +104,9 @@ async function resolveAuth(req: NextRequest) {
         .from(usersTable)
         .where(eq(usersTable.id, user.parentId))
         .limit(1);
-      if (parent) targetUser = parent as any; // Cast for simplicity here
+      if (parent) {
+        targetUser = parent as any;
+      }
     }
 
     const requestCount = await maybeResetMonthlyUsage(targetUser.id, targetUser.usagePeriodStart, targetUser.requestCount);
@@ -146,7 +148,7 @@ async function resolveAuth(req: NextRequest) {
   const host = req.headers.get("host");
   const ip = req.headers.get("x-forwarded-for")?.split(",")[0].trim() || "unknown";
 
-  const isSameOrigin = (origin && host && origin.includes(host)) ||
+  const isSameOrigin = (origin && host && origin.includes(host)) || 
                        (referer && host && referer.includes(host));
 
   if (isSameOrigin) {
