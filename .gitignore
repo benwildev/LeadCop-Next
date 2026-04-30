@@ -49,3 +49,4 @@ Thumbs.db
 
 # Agent
 .agent/
+artifacts/
