@@ -1,11 +1,10 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import Link from "next/link";
 import {
   ArrowRight,
   CheckCircle2,
-  ChevronDown,
   Globe,
   Mail,
   Download,
@@ -19,7 +18,6 @@ import {
   Zap,
 } from "lucide-react";
 import { PricingSection } from "@/components/landing/PricingSection";
-import { Logo } from "@/components/Logo";
 import { Navbar } from "@/components/shared/Navbar";
 import { Footer } from "@/components/shared/Footer";
 import { LiveDemoWidget } from "@/components/landing/LiveDemoWidget";
@@ -200,19 +198,20 @@ export default function LandingPage() {
 
       <main>
         {/* Hero Section */}
-        <section className="relative pt-20 pb-24 lg:pt-32 lg:pb-40 border-b border-slate-100">
+        <section className="relative overflow-hidden border-b border-primary/10 pt-20 pb-24 lg:pt-32 lg:pb-36 gradient-mesh">
+          <div className="pointer-events-none absolute inset-x-0 top-0 h-1 bg-brand-gradient" />
           <div className="mx-auto max-w-6xl px-6">
             <div className="grid gap-16 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
-              
+
               {/* Hero Content */}
               <div className="max-w-xl">
-                <div className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-1.5 text-[11px] font-bold uppercase tracking-[0.2em] text-primary mb-8">
-                  <span className="h-1.5 w-1.5 rounded-full bg-primary" />
+                <div className="mb-8 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-white/80 px-4 py-1.5 text-[11px] font-bold uppercase tracking-[0.2em] text-primary shadow-sm shadow-primary/10 backdrop-blur">
+                  <span className="h-1.5 w-1.5 rounded-full bg-primary shadow-[0_0_0_4px_hsl(var(--primary)/0.14)]" />
                   Real-time Disposable Email Guard
                 </div>
 
-                <h1 className="font-display text-4xl font-extrabold tracking-tight text-slate-950 sm:text-5xl md:text-6xl leading-[1.1]">
-                  Stop fake signups <span className="text-primary block mt-2">at the gate.</span>
+                <h1 className="font-display text-4xl font-bold tracking-tight text-slate-950 sm:text-5xl md:text-5xl leading-[1.1]">
+                  Stop fake signups <span className="mt-2 inline-block rounded-xl bg-primary px-3 py-1 text-white shadow-lg shadow-primary/25">at the gate.</span>
                 </h1>
 
                 <p className="mt-8 text-lg leading-relaxed text-slate-500">
@@ -222,13 +221,14 @@ export default function LandingPage() {
                 <div className="mt-10 flex flex-col sm:flex-row gap-4">
                   <Link
                     href="/signup"
-                    className="inline-flex h-12 items-center justify-center rounded-xl bg-primary px-8 text-[15px] font-bold text-white transition hover:bg-slate-900"
+                    className="brand-button h-12 px-8 text-[15px] font-bold"
                   >
                     Start free trial
+                    <ArrowRight className="h-4 w-4" />
                   </Link>
                   <a
                     href="#demo"
-                    className="inline-flex h-12 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-8 text-[15px] font-bold text-slate-600 transition hover:bg-slate-50"
+                    className="brand-button-secondary h-12 px-8 text-[15px] font-bold"
                   >
                     Run live demo
                     <ArrowRight className="h-4 w-4" />
@@ -253,11 +253,11 @@ export default function LandingPage() {
         </section>
 
         {/* Stats Section */}
-        <section className="bg-white py-12">
+        <section className="border-b border-primary/10 bg-white py-12">
           <div className="mx-auto max-w-6xl px-6">
             <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
               {stats.map((stat) => (
-                <div key={stat.label}>
+                <div key={stat.label} className="rounded-2xl border border-slate-100 bg-slate-50/70 p-5 transition-colors hover:border-primary/25 hover:bg-primary/5">
                   <p className="text-2xl font-bold text-slate-900">
                     {stat.value}
                   </p>
@@ -274,7 +274,7 @@ export default function LandingPage() {
         <section id="product" className="mx-auto max-w-6xl px-6 py-24">
           <div className="max-w-3xl text-center mx-auto mb-16">
             <p className="text-[12px] font-bold uppercase tracking-[0.2em] text-primary">Why teams use LeadCop</p>
-            <h2 className="mt-4 font-display text-4xl font-extrabold tracking-tight text-slate-950 sm:text-5xl leading-[1.1]">
+            <h2 className="mt-4 font-display text-3xl font-bold tracking-tight text-slate-950 sm:text-4xl leading-[1.1]">
               Built to remove friction, <br className="hidden sm:block" />not add it.
             </h2>
             <p className="mt-6 text-lg leading-relaxed text-slate-600">
@@ -295,12 +295,12 @@ export default function LandingPage() {
         </section>
 
         {/* How it Works Section */}
-        <section id="how" className="border-y border-slate-100 bg-white">
+        <section id="how" className="border-y border-primary/10 bg-orange-50/30">
           <div className="mx-auto max-w-6xl px-6 py-24">
             <div className="grid md:grid-cols-2 gap-12 lg:gap-24 mb-16 items-end">
               <div className="max-w-2xl">
                 <p className="text-[12px] font-bold uppercase tracking-[0.2em] text-primary">How it works</p>
-                <h2 className="mt-4 font-display text-4xl font-extrabold tracking-tight text-slate-950 sm:text-5xl leading-[1.1]">
+                <h2 className="mt-4 font-display text-3xl font-bold tracking-tight text-slate-950 sm:text-4xl leading-[1.1]">
                   Three steps to a cleaner funnel
                 </h2>
               </div>
@@ -310,8 +310,8 @@ export default function LandingPage() {
             </div>
             <div className="grid gap-6 md:grid-cols-3">
               {steps.map((step) => (
-                <div key={step.number} className="rounded-2xl border border-slate-200 bg-white p-8 transition-shadow hover:shadow-md">
-                  <p className="text-[13px] font-extrabold uppercase tracking-[0.2em] text-primary">{step.number}</p>
+                <div key={step.number} className="brand-card rounded-2xl p-8">
+                  <p className="text-[13px] font-bold uppercase tracking-[0.2em] text-primary">{step.number}</p>
                   <h3 className="mt-5 font-display text-[22px] font-bold text-slate-950">{step.title}</h3>
                   <p className="mt-4 text-[16px] leading-relaxed text-slate-600">{step.text}</p>
                 </div>
@@ -325,7 +325,7 @@ export default function LandingPage() {
           <div className="grid gap-12 lg:grid-cols-[0.85fr_1.15fr]">
             <div>
               <p className="text-xs uppercase tracking-[0.22em] font-semibold text-primary">Installation</p>
-              <h2 className="mt-3 text-4xl font-extrabold tracking-tight text-slate-950">
+              <h2 className="mt-3 text-4xl font-bold tracking-tight text-slate-950">
                 One line of code on any website.
               </h2>
               <p className="mt-4 text-lg leading-relaxed text-slate-600">
@@ -335,7 +335,7 @@ export default function LandingPage() {
 
               <div className="mt-8 grid gap-3 sm:grid-cols-2">
                 {["HTML forms", "React and Next.js", "WordPress", "WPForms and CF7"].map((item) => (
-                  <div key={item} className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-medium text-slate-700">
+                  <div key={item} className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-medium text-slate-700 transition-colors hover:border-primary/30 hover:bg-primary/5 hover:text-primary">
                     {item}
                   </div>
                 ))}
@@ -343,15 +343,15 @@ export default function LandingPage() {
             </div>
 
             <div>
-              <div className="inline-flex rounded-full border border-slate-200 bg-slate-50 p-1">
+              <div className="inline-flex rounded-full border border-primary/15 bg-primary/5 p-1">
                 {(["html", "wordpress"] as const).map((tab) => (
                   <button
                     key={tab}
                     onClick={() => setActiveTab(tab)}
-                    className={`rounded-full px-6 py-2 text-sm font-bold transition ${activeTab === tab
+                    className={`rounded-full px-6 py-2 text-sm font-bold ${activeTab === tab
                       ? "bg-primary text-white shadow-lg shadow-primary/20"
-                      : "text-slate-500 hover:text-slate-900"
-                    }`}
+                      : "text-slate-500 transition-colors hover:bg-white hover:text-primary"
+                      }`}
                   >
                     {tab === "html" ? "HTML snippet" : "WordPress plugin"}
                   </button>
@@ -367,14 +367,14 @@ export default function LandingPage() {
                     </p>
                     <Link
                       href="/docs"
-                      className="mt-4 inline-flex items-center gap-2 text-sm font-bold text-slate-900 hover:gap-3 transition-all"
+                    className="mt-4 inline-flex items-center gap-2 text-sm font-bold text-slate-900 transition-colors hover:text-primary"
                     >
                       View developer docs
                       <ArrowRight className="h-4 w-4" />
                     </Link>
                   </div>
                 ) : (
-                  <div className="rounded-[24px] border border-slate-200 bg-white p-6">
+                  <div className="rounded-[24px] border border-primary/15 bg-white p-6 shadow-sm shadow-primary/5">
                     <p className="text-xs uppercase tracking-[0.2em] text-slate-400 font-bold">WordPress setup</p>
                     <div className="mt-5 space-y-4">
                       {[
@@ -396,7 +396,7 @@ export default function LandingPage() {
                       <a
                         href="/downloads/leadcop-email-validator.zip"
                         download
-                        className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50 hover:text-slate-900"
+                        className="brand-button-secondary w-full px-4 py-3 text-sm font-bold"
                       >
                         <Download className="h-4 w-4" />
                         Download Plugin ZIP
@@ -410,11 +410,11 @@ export default function LandingPage() {
         </section>
 
         {/* Feature Grid Section */}
-        <section className="border-y border-slate-100 bg-slate-50/30">
+        <section className="border-y border-primary/10 bg-slate-100/50">
           <div className="mx-auto max-w-6xl px-6 py-24">
             <div className="text-center mb-16">
               <p className="text-xs uppercase tracking-[0.22em] font-bold text-primary">Coverage</p>
-              <h2 className="mt-4 text-4xl font-extrabold tracking-tight text-slate-950 sm:text-5xl">
+              <h2 className="mt-4 text-3xl font-bold tracking-tight text-slate-950 sm:text-4xl">
                 Everything you need to <br className="hidden sm:block" /> validate emails instantly
               </h2>
               <p className="mt-6 text-lg text-slate-600 max-w-2xl mx-auto leading-relaxed">
@@ -443,7 +443,7 @@ export default function LandingPage() {
         <section className="mx-auto max-w-6xl px-6 py-24">
           <div className="max-w-2xl">
             <p className="text-[12px] font-bold uppercase tracking-[0.2em] text-primary">Social Proof</p>
-            <h2 className="mt-3 font-display text-4xl font-extrabold tracking-tight text-slate-950 sm:text-5xl leading-[1.1]">
+            <h2 className="mt-3 font-display text-3xl font-bold tracking-tight text-slate-950 sm:text-4xl leading-[1.1]">
               Trusted by security ops <br className="hidden sm:block" /> & marketing teams.
             </h2>
           </div>
@@ -466,13 +466,13 @@ export default function LandingPage() {
                 role: "SaaS operator",
               },
             ].map((item) => (
-              <div key={item.name} className="rounded-2xl border border-slate-200 bg-white p-8 shadow-sm transition-shadow hover:shadow-md">
+              <div key={item.name} className="brand-card rounded-2xl p-8">
                 <div className="mb-6 flex gap-1">
                   {[1, 2, 3, 4, 5].map((star) => (
                     <Star key={star} className="h-4 w-4 fill-primary text-primary" />
                   ))}
                 </div>
-                <p className="text-[16px] leading-relaxed text-slate-600">"{item.quote}"</p>
+                <p className="text-[16px] leading-relaxed text-slate-600">&ldquo;{item.quote}&rdquo;</p>
                 <div className="mt-8 border-t border-slate-100 pt-6">
                   <p className="text-[14px] font-bold text-slate-900">{item.name}</p>
                   <p className="text-[12px] font-bold text-primary">{item.role}</p>
@@ -488,10 +488,10 @@ export default function LandingPage() {
         </section>
 
         {/* CTA / Newsletter Section */}
-        <section className="bg-slate-950 py-24 overflow-hidden relative">
+        <section className="bg-black py-24 overflow-hidden relative">
           <div className="mx-auto max-w-4xl px-6 text-center relative z-10">
             <p className="text-[12px] font-bold uppercase tracking-[0.2em] text-white/60 mb-6">Newsletter</p>
-            <h2 className="font-display text-4xl font-extrabold tracking-tight text-white sm:text-5xl mb-8">
+            <h2 className="font-display text-3xl font-bold tracking-tight text-white sm:text-4xl mb-8">
               Practical notes on <span className="text-primary">lead quality.</span>
             </h2>
             <p className="mx-auto max-w-xl text-lg leading-relaxed text-white/50 mb-12">

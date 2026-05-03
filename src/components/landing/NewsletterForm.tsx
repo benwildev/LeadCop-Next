@@ -55,7 +55,7 @@ async function checkEmailApi(email: string): Promise<ValResult> {
     if (data.isRoleAccount || data.roleAccount) return { status: "role", message: "Role-based inboxes often convert poorly." };
     
     return { status: "valid" };
-  } catch (error) {
+  } catch {
     return { status: "invalid", message: "Could not connect to the verification server." };
   }
 }
@@ -145,7 +145,7 @@ export function NewsletterForm() {
         <p className="text-sm font-medium text-slate-900">{message}</p>
         <button
           onClick={() => setStatus("idle")}
-          className="mt-3 text-xs text-slate-500 transition-colors hover:text-slate-900"
+          className="mt-3 rounded-lg px-2 py-1 text-xs text-slate-500 transition-colors hover:bg-primary/5 hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
         >
           Subscribe another email
         </button>
@@ -163,10 +163,10 @@ export function NewsletterForm() {
             onChange={(event) => handleEmailChange(event.target.value)}
             placeholder="Work email"
             required
-            className={`h-12 w-full rounded-xl border bg-white px-4 text-sm text-slate-900 outline-none transition ${
+            className={`h-12 w-full rounded-xl border bg-white px-4 text-sm text-slate-900 outline-none transition-all focus:ring-2 focus:ring-primary/20 ${
               status === "error" 
                 ? "border-red-500 focus:border-red-600" 
-                : "border-slate-200 focus:border-slate-900"
+                : "border-slate-200 focus:border-primary"
             }`}
           />
           {status === "validating" && (
@@ -178,7 +178,7 @@ export function NewsletterForm() {
         <button
           type="submit"
           disabled={status === "loading" || status === "error"}
-          className="inline-flex h-12 items-center justify-center rounded-xl bg-slate-950 px-8 text-sm font-medium text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-50"
+          className="brand-button h-12 px-8 text-sm font-bold disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0"
         >
           {status === "loading" ? <RefreshCw className="h-4 w-4 animate-spin" /> : "Join"}
         </button>

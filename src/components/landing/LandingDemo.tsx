@@ -4,7 +4,7 @@ import EmailCheckForm from "@/components/features/EmailCheckForm";
 export function LandingDemo() {
   return (
     <section id="demo" className="mx-auto max-w-4xl px-6 py-20">
-      <div className="rounded-[40px] bg-slate-900 p-8 shadow-2xl shadow-primary/10 md:p-12 relative overflow-hidden">
+      <div className="rounded-[40px] bg-black p-8 shadow-2xl shadow-primary/10 md:p-12 relative overflow-hidden">
         <div className="absolute top-0 right-0 p-8 opacity-10">
           <ShieldCheck className="w-64 h-64 text-white" />
         </div>

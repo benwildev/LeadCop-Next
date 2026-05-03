@@ -1,8 +1,8 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import { 
-  Shield, RefreshCw, X, AlertCircle, Sparkles, CheckCircle2, Mail 
+import {
+  Shield, RefreshCw, X, AlertCircle, Sparkles, CheckCircle2, Mail
 } from "lucide-react";
 
 type ValStatus =
@@ -225,51 +225,90 @@ export function LiveDemoWidget() {
   const tone = stateTone[result.status];
 
   return (
-    <div className="rounded-[24px] border border-slate-200 bg-white p-6 shadow-sm">
-      <div className="mb-5 flex items-center justify-between">
+    <div className="relative overflow-hidden rounded-3xl border border-primary/20 bg-white/90 p-6 shadow-2xl shadow-primary/10 backdrop-blur-xl">
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-1 bg-brand-gradient" />
+
+      {/* Header */}
+      <div className="mb-6 flex items-center justify-between">
         <div>
-          <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-primary">Live Demo</p>
-          <p className="mt-1 text-sm text-slate-500">Real-time Disposable Email Detection</p>
+          <p className="text-[11px] font-bold uppercase tracking-[0.25em] text-primary">
+            Live Validator
+          </p>
+          <p className="mt-1 text-sm text-slate-500">
+            Real-time email intelligence engine
+          </p>
         </div>
-        <div className="rounded-full border border-slate-200 px-3 py-1 text-xs font-medium text-slate-500">
+
+        <div className="rounded-full border border-primary/15 bg-primary/5 px-3 py-1 text-xs font-bold text-primary">
           Sandbox
         </div>
       </div>
 
-      <div className={`flex items-center gap-3 rounded-xl border bg-slate-50 px-4 py-3 ${tone.border}`}>
+      {/* Input */}
+      <div
+        className={`group relative flex items-center gap-3 rounded-2xl border bg-white px-4 py-3 transition-all duration-300 
+      ${tone.border} focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20`}
+      >
         <input
           type="email"
           value={email}
-          onChange={(event) => handleChange(event.target.value)}
+          onChange={(e) => handleChange(e.target.value)}
           placeholder="name@company.com"
-          className="min-w-0 flex-1 bg-transparent text-[14px] text-slate-900 outline-none placeholder:text-slate-400"
+          className="flex-1 bg-transparent text-[15px] text-slate-900 outline-none placeholder:text-slate-400"
         />
-        {tone.icon}
-      </div>
 
-      <div className={`mt-3 rounded-xl px-4 py-3 text-[13px] ${tone.panel || "bg-slate-50 text-slate-600 border border-slate-100"}`}>
-        <div className="flex items-center gap-2">
+        <div className="transition-transform duration-300 group-focus-within:scale-110">
           {tone.icon}
-          <span>{tone.text}</span>
         </div>
-        {result.status === "typo" && result.suggestion && (
-          <button
-            onClick={() => handleChange(result.suggestion!)}
-            className="mt-2 text-[12px] font-bold text-primary underline underline-offset-4"
-          >
-            Use suggested address
-          </button>
-        )}
       </div>
 
+      {/* Feedback Card */}
+      <div
+        className={`mt-4 rounded-2xl px-4 py-4 text-[14px] transition-all duration-300 
+      ${result.status === "valid"
+            ? "bg-emerald-50 text-emerald-700 border border-emerald-100 shadow-[0_0_0_1px_rgba(16,185,129,0.1)]"
+            : result.status === "blocked" || result.status === "invalid"
+              ? "bg-red-50 text-red-700 border border-red-100"
+              : result.status === "free"
+                ? "bg-sky-50 text-sky-700 border border-sky-100"
+                : "bg-slate-50 text-slate-600 border border-slate-100"
+          }`}
+      >
+        <div className="flex items-start gap-3">
+          <div className="mt-[2px]">{tone.icon}</div>
+          <div className="flex-1">
+            <p className="leading-relaxed">{tone.text}</p>
+
+            {result.reason && (
+              <p className="mt-1 text-[12px] opacity-70">
+                Reason: {result.reason}
+              </p>
+            )}
+
+            {result.status === "typo" && result.suggestion && (
+              <button
+                onClick={() => handleChange(result.suggestion!)}
+                className="mt-2 inline-flex items-center gap-1 rounded-lg text-[12px] font-semibold text-primary hover:text-[#e65f0b] hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+              >
+                Apply suggestion →
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Examples */}
       <div className="mt-6 border-t border-slate-100 pt-5">
-        <p className="mb-3 text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">Examples</p>
+        <p className="mb-3 text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">
+          Try Examples
+        </p>
+
         <div className="flex flex-wrap gap-2">
           {examples.map((example) => (
             <button
               key={example.value}
               onClick={() => handleChange(example.value)}
-              className="rounded-full border border-slate-200 px-3 py-1.5 text-[12px] text-slate-600 transition hover:border-primary hover:text-primary"
+              className="rounded-full border border-transparent bg-slate-100 px-3 py-1.5 text-[12px] font-medium text-slate-600 transition-all hover:-translate-y-0.5 hover:border-primary/20 hover:bg-primary/10 hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
             >
               {example.label}
             </button>
