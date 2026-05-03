@@ -21,13 +21,11 @@ export const EmailIntelligenceInput: React.FC<Props> = ({
   className,
 }) => {
   const { data, isChecking, error } = useEmailIntelligence(value);
-  const [isOverridden, setIsOverridden] = useState(false);
-
   // Determine if we should block or warn
   const isHighRisk = data && (data.riskLevel === "high" || data.riskLevel === "critical" || data.isDisposable);
   const isSuspicious = data && data.riskLevel === "medium";
   
-  const isValid = data ? (!isHighRisk || isOverridden) : true;
+  const isValid = data ? !isHighRisk : true;
 
   // Notify parent of validation state
   React.useEffect(() => {
@@ -42,13 +40,12 @@ export const EmailIntelligenceInput: React.FC<Props> = ({
           value={value}
           onChange={(e) => {
             onChange(e.target.value);
-            setIsOverridden(false);
           }}
           placeholder={placeholder}
           className={cn(
             "w-full px-4 py-3 bg-white border rounded-xl outline-none transition-all duration-200 pr-10",
             isChecking ? "border-slate-200" :
-            isHighRisk && !isOverridden ? "border-red-500 ring-4 ring-red-500/10" :
+            isHighRisk ? "border-red-500 ring-4 ring-red-500/10" :
             isSuspicious ? "border-orange-400 ring-4 ring-orange-400/10" :
             data && data.isValidSyntax ? "border-emerald-500 ring-4 ring-emerald-500/10" :
             "border-slate-200 focus:border-purple-500 focus:ring-4 focus:ring-purple-500/10"
@@ -57,7 +54,7 @@ export const EmailIntelligenceInput: React.FC<Props> = ({
         <div className="absolute right-3 top-1/2 -translate-y-1/2">
           {isChecking ? (
             <Loader2 className="w-5 h-5 text-slate-400 animate-spin" />
-          ) : isHighRisk && !isOverridden ? (
+          ) : isHighRisk ? (
             <ShieldAlert className="w-5 h-5 text-red-500" />
           ) : isSuspicious ? (
             <AlertCircle className="w-5 h-5 text-orange-500" />
@@ -70,7 +67,7 @@ export const EmailIntelligenceInput: React.FC<Props> = ({
       {/* Warnings & Feedback */}
       {data && !isChecking && (
         <div className="animate-in fade-in slide-in-from-top-1 duration-200">
-          {isHighRisk && !isOverridden && (
+          {isHighRisk && (
             <div className="p-3 bg-red-50 border border-red-100 rounded-lg space-y-2">
               <div className="flex gap-2 text-red-700 text-sm font-medium">
                 <ShieldAlert className="w-4 h-4 mt-0.5" />
@@ -81,13 +78,6 @@ export const EmailIntelligenceInput: React.FC<Props> = ({
                   <li key={i}>{r}</li>
                 ))}
               </ul>
-              <button
-                type="button"
-                onClick={() => setIsOverridden(true)}
-                className="text-xs font-semibold text-red-700 hover:underline flex items-center gap-1"
-              >
-                I trust this email, let me use it anyway
-              </button>
             </div>
           )}
 
