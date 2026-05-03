@@ -30,7 +30,10 @@ import { useQuery } from "@tanstack/react-query";
 import { axiosSecure } from "@/lib/api-client-react";
 import { LandingPlan } from "@/lib/api";
 
+import { useAuth } from "@/hooks/use-auth";
+
 export default function LandingPage() {
+  const { user, isLoading } = useAuth();
   const [activeTab, setActiveTab] = useState<"html" | "wordpress">("html");
 
   const htmlSnippet = `<!-- Paste just before </body> -->
@@ -224,13 +227,23 @@ export default function LandingPage() {
                 </p>
 
                 <div className="mt-10 flex flex-col sm:flex-row gap-4">
-                  <Link
-                    href="/signup"
-                    className="brand-button h-12 px-8 text-[15px] font-bold"
-                  >
-                    Start free trial
-                    <ArrowRight className="h-4 w-4" />
-                  </Link>
+                  {!isLoading && user ? (
+                    <Link
+                      href="/dashboard"
+                      className="brand-button h-12 px-8 text-[15px] font-bold"
+                    >
+                      Go to Dashboard
+                      <ArrowRight className="h-4 w-4" />
+                    </Link>
+                  ) : (
+                    <Link
+                      href="/signup"
+                      className="brand-button h-12 px-8 text-[15px] font-bold"
+                    >
+                      Start free trial
+                      <ArrowRight className="h-4 w-4" />
+                    </Link>
+                  )}
                   <a
                     href="#demo"
                     className="brand-button-secondary h-12 px-8 text-[15px] font-bold"
