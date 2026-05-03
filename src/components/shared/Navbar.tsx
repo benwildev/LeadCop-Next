@@ -25,11 +25,11 @@ export function Navbar() {
     >
       <div className="mx-auto flex max-w-6xl items-center justify-between px-6">
         <Link href="/" className="flex items-center transition-opacity hover:opacity-80">
-          <Logo size={34} />
+          <Logo size={40} />
         </Link>
 
         {/* Desktop Nav */}
-        <div className="hidden items-center gap-10 text-[13px] font-bold uppercase tracking-widest text-slate-500 lg:flex">
+        <div className="hidden items-center gap-10 text-[14px] font-semibold text-slate-600 lg:flex">
           <Link href="/#product" className="transition-colors hover:text-primary">Features</Link>
           <Link href="/#how" className="transition-colors hover:text-primary">How it works</Link>
           <Link href="/pricing" className="transition-colors hover:text-primary">Pricing</Link>
@@ -38,12 +38,12 @@ export function Navbar() {
         </div>
 
         <div className="hidden items-center gap-6 lg:flex">
-          <Link href="/login" className="text-[13px] font-bold uppercase tracking-widest text-slate-500 hover:text-slate-900 transition-colors">
+          <Link href="/login" className="text-[14px] font-semibold text-slate-600 hover:text-slate-900 transition-colors">
             Log in
           </Link>
         <Link
           href="/signup"
-          className="brand-button px-6 py-3 text-[13px] font-bold uppercase tracking-widest"
+          className="brand-button px-6 py-2.5 text-[14px] font-semibold"
         >
           Start free
         </Link>
@@ -51,7 +51,7 @@ export function Navbar() {
 
         {/* Mobile Toggle */}
         <button 
-          className="rounded-xl p-2 text-slate-600 transition-colors hover:bg-primary/10 hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+          className="rounded-xl p-2 text-slate-600 transition-colors hover:bg-primary/10 hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary lg:hidden"
           onClick={() => setIsOpen(!isOpen)}
           aria-label="Toggle navigation"
         >
