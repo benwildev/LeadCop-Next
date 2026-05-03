@@ -26,6 +26,9 @@ import { Footer } from "@/components/shared/Footer";
 import { LiveDemoWidget } from "@/components/landing/LiveDemoWidget";
 import { NewsletterForm } from "@/components/landing/NewsletterForm";
 import { FeatureCard, CodeSnippet } from "@/components/landing/LandingHelpers";
+import { useQuery } from "@tanstack/react-query";
+import { axiosSecure } from "@/lib/api-client-react";
+import { LandingPlan } from "@/lib/api";
 
 export default function LandingPage() {
   const [activeTab, setActiveTab] = useState<"html" | "wordpress">("html");
@@ -171,29 +174,20 @@ export default function LandingPage() {
     },
   ];
 
-  const landingPlans = [
-    {
-      plan: "FREE",
-      price: 0,
-      requestLimit: 1000,
-      description: "Start with basic disposable email protection.",
-      features: ["Basic verification API", "1,000 checks/mo", "Email support"],
-    },
-    {
-      plan: "BASIC",
-      price: 29,
-      requestLimit: 50000,
-      description: "Protect growth campaigns with faster checks and analytics.",
-      features: ["Real-time email scanning", "50,000 checks/mo", "Priority support"],
-    },
-    {
-      plan: "CUSTOM",
-      price: 0,
-      requestLimit: -1,
-      description: "Custom volume, dedicated support, and SLA-ready protection.",
-      features: ["Unlimited domains", "Dedicated account manager", "Onboarding support"],
-    },
-  ];
+  const { data: landingPlans = [] } = useQuery<LandingPlan[]>({
+    queryKey: ["/api/plans"],
+    queryFn: async () => {
+      const response = await axiosSecure.get("/api/plans");
+      const configs = response.data.plans || [];
+      return configs.map((c: any) => ({
+        plan: c.plan,
+        price: c.price,
+        requestLimit: c.requestLimit,
+        description: c.description || "",
+        features: c.features || [],
+      })).sort((a: any, b: any) => a.price - b.price);
+    }
+  });
 
   return (
     <div className="min-h-screen font-sans text-slate-900 bg-white overflow-x-hidden">
