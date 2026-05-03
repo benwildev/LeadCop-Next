@@ -21,6 +21,10 @@ export type LandingPlan = {
   requestLimit: number;
   description: string;
   features: string[];
+  hasBulkValidation?: boolean;
+  hasWebhooks?: boolean;
+  hasCustomBlocklist?: boolean;
+  hasAdvancedAnalytics?: boolean;
 };
 
 export type LandingMetadata = {

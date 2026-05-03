@@ -179,13 +179,21 @@ export default function LandingPage() {
     queryFn: async () => {
       const response = await axiosSecure.get("/api/plans");
       const configs = response.data.plans || [];
-      return configs.map((c: any) => ({
-        plan: c.plan,
-        price: c.price,
-        requestLimit: c.requestLimit,
-        description: c.description || "",
-        features: c.features || [],
-      })).sort((a: any, b: any) => a.price - b.price);
+      return configs.map((c: any) => {
+        const features = [...(c.features || [])];
+        if (c.hasBulkValidation) features.push("Bulk validation engine");
+        if (c.hasWebhooks) features.push("Real-time webhooks");
+        if (c.hasCustomBlocklist) features.push("Custom domain blocklist");
+        if (c.hasAdvancedAnalytics) features.push("Advanced reputation analytics");
+
+        return {
+          plan: c.plan,
+          price: c.price,
+          requestLimit: c.requestLimit,
+          description: c.description || "",
+          features,
+        };
+      }).sort((a: any, b: any) => a.price - b.price);
     }
   });
 

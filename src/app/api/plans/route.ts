@@ -12,6 +12,10 @@ export async function GET() {
         dataLimit: planConfigsTable.dataLimit,
         description: planConfigsTable.description,
         features: planConfigsTable.features,
+        hasBulkValidation: planConfigsTable.hasBulkValidation,
+        hasWebhooks: planConfigsTable.hasWebhooks,
+        hasCustomBlocklist: planConfigsTable.hasCustomBlocklist,
+        hasAdvancedAnalytics: planConfigsTable.hasAdvancedAnalytics,
       })
       .from(planConfigsTable)
       .orderBy(planConfigsTable.id);
