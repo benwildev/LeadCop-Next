@@ -11,6 +11,7 @@ interface SiteSettings {
   globalMetaDescription: string;
   faviconUrl: string | null;
   logoUrl: string | null;
+  iconUrl: string | null;
   footerText?: string | null;
 }
 
@@ -31,6 +32,7 @@ const DEFAULTS: SiteSettings = {
     "Block disposable emails, bot signups, relay inboxes, and low-quality leads before they reach your CRM or email platform.",
   faviconUrl: null,
   logoUrl: null,
+  iconUrl: null,
 };
 
 const ALLOWED_SLUGS = new Set(["/", "/pricing", "/docs", "/blog", "/login", "/signup"]);
