@@ -16,11 +16,11 @@ export function LandingFeatures({
   benefits: LandingBenefit[];
 }) {
   return (
-    <section id="features" className="bg-slate-50 py-24">
+    <section id="features" className="bg-slate-100/50 py-24">
       <div className="mx-auto max-w-6xl px-6">
         <div className="grid items-center gap-16 lg:grid-cols-2">
           <div>
-            <h2 className="font-display text-4xl font-extrabold tracking-tight text-slate-900 sm:text-5xl">
+            <h2 className="font-display text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
               Built for modern growth teams.
             </h2>
             <div className="mt-12 space-y-8">
@@ -38,7 +38,7 @@ export function LandingFeatures({
             </div>
           </div>
 
-          <div className="relative rounded-3xl bg-white p-4 shadow-2xl shadow-primary/5">
+          <div className="relative rounded-3xl bg-white p-4 border border-slate-100 shadow-sm">
             <Image
               src="/images/opengraph.jpg"
               alt="LeadCop Dashboard Interface"
@@ -65,7 +65,7 @@ export function LandingFeatures({
             const Icon = ICON_MAP[feature.icon];
             return (
               <div key={feature.title} className="group">
-                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-50 text-primary transition group-hover:bg-primary group-hover:text-white">
+                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-50 text-primary">
                   <Icon className="h-6 w-6" />
                 </div>
                 <h3 className="mt-6 text-[18px] font-bold text-slate-900">{feature.title}</h3>

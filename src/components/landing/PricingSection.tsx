@@ -7,7 +7,7 @@ const BRAND = "#FF751F";
 export function PricingSection({ plans }: { plans: LandingPlan[] }) {
   if (!plans.length) {
     return (
-      <section id="pricing" className="bg-slate-50 py-28 border-y border-slate-100">
+      <section id="pricing" className="border-y border-primary/10 bg-slate-100/50 py-28">
         <div className="max-w-6xl mx-auto px-6 text-center">
           <h2 className="text-3xl font-bold text-slate-900">Pricing information is currently unavailable.</h2>
         </div>
@@ -16,12 +16,12 @@ export function PricingSection({ plans }: { plans: LandingPlan[] }) {
   }
 
   return (
-    <section id="pricing" className="bg-slate-50 py-28 border-y border-slate-100">
+    <section id="pricing" className="border-y border-primary/10 bg-slate-100/50 py-28">
       <div className="text-center mb-16 max-w-xl mx-auto px-6">
         <p className="text-[12px] font-bold tracking-[0.2em] uppercase mb-3 text-primary">
           Simple Pricing
         </p>
-        <h2 className="text-4xl font-extrabold tracking-tight text-slate-900">
+        <h2 className="text-4xl font-bold tracking-tight text-slate-900">
           Scale as you grow.
         </h2>
         <p className="mt-5 text-lg text-slate-500">
@@ -40,12 +40,13 @@ export function PricingSection({ plans }: { plans: LandingPlan[] }) {
             return (
               <div
                 key={cfg.plan}
-                className="relative flex flex-col rounded-2xl border border-slate-200 bg-white p-7 transition-shadow"
+                className="brand-card relative flex flex-col rounded-2xl p-7"
                 style={
                   highlighted
                     ? {
                         borderColor: BRAND,
                         borderWidth: "2px",
+                        boxShadow: `0 24px 60px ${BRAND}24`,
                       }
                     : {}
                 }
@@ -89,7 +90,7 @@ export function PricingSection({ plans }: { plans: LandingPlan[] }) {
                   {isCustom ? (
                     <a href="mailto:support@leadcop.io" className="block">
                       <button
-                        className="w-full py-3 rounded-xl text-xs font-semibold tracking-[0.08em] uppercase transition border border-slate-200 text-slate-900 hover:border-slate-400"
+                        className="brand-button-secondary w-full py-3 text-xs font-semibold uppercase tracking-[0.08em]"
                         style={{
                           background: "transparent",
                         }}
@@ -100,7 +101,7 @@ export function PricingSection({ plans }: { plans: LandingPlan[] }) {
                   ) : (
                     <Link href="/signup" className="block">
                       <button
-                        className="w-full py-3 rounded-xl text-xs font-semibold tracking-[0.08em] uppercase transition hover:opacity-90"
+                        className="w-full rounded-xl py-3 text-xs font-semibold uppercase tracking-[0.08em] transition-all hover:-translate-y-0.5 hover:shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 active:translate-y-0"
                         style={
                           highlighted
                             ? {
@@ -108,7 +109,7 @@ export function PricingSection({ plans }: { plans: LandingPlan[] }) {
                                 color: "#fff",
                               }
                             : {
-                                background: "#0f172a",
+                                background: "#111827",
                                 color: "#fff",
                               }
                         }

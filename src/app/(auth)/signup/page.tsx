@@ -8,10 +8,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import AuthRightPanel from "@/components/auth/AuthRightPanel";
 import { useSiteSettings } from "@/hooks/use-site-settings";
 import { Logo } from "@/components/Logo";
-import { isValidEmail, extractDomain, KNOWN_DISPOSABLE_DOMAINS } from "@/utils/email-validation";
-import { useDebounce } from "@/hooks/use-debounce";
-import { useQuery } from "@tanstack/react-query";
-import { axiosSecure } from "@/lib/api-client-react";
+import { EmailIntelligenceInput } from "@/components/shared/EmailIntelligenceInput";
 
 export default function RegisterPage() {
   const { register } = useAuth();
@@ -25,26 +22,7 @@ export default function RegisterPage() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const debouncedEmail = useDebounce(email, 600);
-
-  const { data: emailCheck, isFetching: checkingEmail } = useQuery({
-    queryKey: ["check-email", debouncedEmail],
-    queryFn: async () => {
-      if (!isValidEmail(debouncedEmail)) return null;
-      const domain = extractDomain(debouncedEmail);
-      if (KNOWN_DISPOSABLE_DOMAINS.has(domain)) return { disposable: true };
-      
-      const res = await axiosSecure.post("/api/check-email/demo", { email: debouncedEmail });
-      return res.data;
-    },
-    enabled: !!debouncedEmail && isValidEmail(debouncedEmail),
-    staleTime: 1000 * 60 * 10, // 10 mins
-  });
-
-  const emailIsInvalid = emailCheck?.disposable || emailCheck?.isInvalidTld || !!emailCheck?.suggestedEmail;
-  const emailError = emailCheck?.disposable ? "Disposable email addresses are not allowed." : 
-                   emailCheck?.isInvalidTld ? "Enter a valid email address." :
-                   emailCheck?.suggestedEmail ? `Did you mean ${emailCheck.suggestedEmail}?` : "";
+  const [emailIsInvalid, setEmailIsInvalid] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -60,8 +38,6 @@ export default function RegisterPage() {
       setLoading(false);
     }
   };
-
-  const emailFormatInvalid = email && !isValidEmail(email);
 
   return (
     <div className="min-h-screen bg-white flex flex-col md:flex-row font-sans selection:bg-purple-100">
@@ -93,44 +69,12 @@ export default function RegisterPage() {
             placeholder="Full name"
           />
 
-          <div>
-            <div className="relative">
-              <input
-                type="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className={`w-full rounded-2xl px-5 py-3.5 pr-10 text-sm text-gray-800 placeholder:text-gray-400 focus:outline-none focus:ring-2 transition-all ${emailIsInvalid || emailFormatInvalid
-                    ? "bg-red-50 ring-2 ring-red-300 focus:ring-red-400/60"
-                    : "bg-slate-100 focus:ring-purple-400/60"
-                  }`}
-                placeholder="you@company.com"
-              />
-              <div className="absolute right-4 top-1/2 -translate-y-1/2">
-                {checkingEmail && (
-                  <Loader2 className="w-4 h-4 animate-spin text-gray-400" />
-                )}
-                {!checkingEmail && (emailIsInvalid || emailFormatInvalid) && (
-                  <ShieldAlert className="w-4 h-4 text-red-500" />
-                )}
-              </div>
-            </div>
-            <AnimatePresence>
-              {(emailIsInvalid || emailFormatInvalid) && (
-                <motion.p
-                  key="disposable-warn"
-                  initial={{ opacity: 0, y: -4 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -4 }}
-                  className="mt-1.5 text-xs text-red-500 font-medium px-1"
-                >
-                  {emailFormatInvalid
-                    ? "Enter a valid email address."
-                    : emailError}
-                </motion.p>
-              )}
-            </AnimatePresence>
-          </div>
+          <EmailIntelligenceInput 
+            value={email}
+            onChange={setEmail}
+            onValidationChange={(isValid: boolean) => setEmailIsInvalid(!isValid)}
+            placeholder="you@company.com"
+          />
 
           <div className="relative">
             <input
@@ -184,7 +128,7 @@ export default function RegisterPage() {
 
           <button
             type="submit"
-            disabled={loading || emailIsInvalid || checkingEmail || emailFormatInvalid}
+            disabled={loading || emailIsInvalid}
             className="w-full py-3.5 bg-purple-600 hover:bg-purple-700 active:bg-purple-800 text-white rounded-2xl font-semibold text-sm flex items-center justify-center gap-2 shadow-md shadow-purple-500/25 transition-all disabled:opacity-60 disabled:cursor-not-allowed mt-2"
           >
             {loading ? (

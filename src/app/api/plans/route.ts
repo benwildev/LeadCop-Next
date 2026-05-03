@@ -10,6 +10,12 @@ export async function GET() {
         requestLimit: planConfigsTable.requestLimit,
         websiteLimit: planConfigsTable.websiteLimit,
         dataLimit: planConfigsTable.dataLimit,
+        description: planConfigsTable.description,
+        features: planConfigsTable.features,
+        hasBulkValidation: planConfigsTable.hasBulkValidation,
+        hasWebhooks: planConfigsTable.hasWebhooks,
+        hasCustomBlocklist: planConfigsTable.hasCustomBlocklist,
+        hasAdvancedAnalytics: planConfigsTable.hasAdvancedAnalytics,
       })
       .from(planConfigsTable)
       .orderBy(planConfigsTable.id);

@@ -15,13 +15,21 @@ export function PricingContent() {
     queryFn: async () => {
       const response = await axiosSecure.get("/api/plans");
       const configs = response.data.plans || [];
-      return configs.map((c: any) => ({
-        plan: c.plan,
-        price: c.price,
-        requestLimit: c.requestLimit,
-        description: c.description || "",
-        features: c.features || [],
-      })).sort((a: any, b: any) => a.price - b.price);
+      return configs.map((c: any) => {
+        const features = [...(c.features || [])];
+        if (c.hasBulkValidation) features.push("Bulk validation engine");
+        if (c.hasWebhooks) features.push("Real-time webhooks");
+        if (c.hasCustomBlocklist) features.push("Custom domain blocklist");
+        if (c.hasAdvancedAnalytics) features.push("Advanced reputation analytics");
+
+        return {
+          plan: c.plan,
+          price: c.price,
+          requestLimit: c.requestLimit,
+          description: c.description || "",
+          features,
+        };
+      }).sort((a: any, b: any) => a.price - b.price);
     }
   });
 
@@ -39,7 +47,7 @@ export function PricingContent() {
                <Zap className="h-3.5 w-3.5" />
                Transparent Pricing
              </span>
-             <h1 className="text-4xl md:text-7xl font-extrabold tracking-tight text-slate-900 mb-8 leading-[1.1]">
+             <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-slate-900 mb-8 leading-[1.1]">
                Scale your <span className="text-primary">lead quality.</span>
              </h1>
              <p className="text-xl text-slate-500 max-w-2xl mx-auto leading-relaxed">
@@ -87,7 +95,7 @@ export function PricingContent() {
         <section className="py-32 bg-slate-50 border-y border-slate-100">
           <div className="max-w-4xl mx-auto px-6">
             <div className="text-center mb-16">
-              <h2 className="text-3xl md:text-5xl font-extrabold text-slate-900 mb-6 tracking-tight">Questions?</h2>
+              <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-6 tracking-tight">Questions?</h2>
               <p className="text-lg text-slate-500">Everything you need to know about LeadCop pricing.</p>
             </div>
             
@@ -120,7 +128,7 @@ export function PricingContent() {
                   <ShieldCheck className="w-64 h-64" />
                 </div>
                 <div className="relative z-10">
-                  <h2 className="text-3xl md:text-5xl font-extrabold mb-8 tracking-tight">Large-scale <span className="text-primary">Protection.</span></h2>
+                  <h2 className="text-3xl md:text-4xl font-bold mb-8 tracking-tight">Large-scale <span className="text-primary">Protection.</span></h2>
                   <p className="text-xl text-slate-400 mb-12 max-w-2xl mx-auto">
                     Handling millions of signups? Get a custom architecture and dedicated support for your enterprise needs.
                   </p>
