@@ -11,6 +11,7 @@ interface SiteSettings {
   globalMetaDescription: string;
   faviconUrl: string | null;
   logoUrl: string | null;
+  iconUrl: string | null;
   footerText?: string | null;
 }
 
@@ -31,6 +32,7 @@ const DEFAULTS: SiteSettings = {
     "Block disposable emails, bot signups, relay inboxes, and low-quality leads before they reach your CRM or email platform.",
   faviconUrl: null,
   logoUrl: null,
+  iconUrl: null,
 };
 
 const ALLOWED_SLUGS = new Set(["/", "/pricing", "/docs", "/blog", "/login", "/signup"]);
@@ -148,10 +150,6 @@ export function useApplyHeadMeta() {
       removeMeta("name", "twitter:image");
     }
 
-    if (settings.faviconUrl) {
-      setFavicon(settings.faviconUrl);
-    }
-
     setCanonical(canonicalUrl);
   }, [settings, pageSeo, location]);
 }
@@ -174,16 +172,6 @@ export function setMeta(attr: "name" | "property", value: string, content: strin
 export function removeMeta(attr: "name" | "property", value: string) {
   const el = document.querySelector<HTMLMetaElement>(`meta[${attr}="${value}"]`);
   if (el) el.remove();
-}
-
-function setFavicon(href: string) {
-  let el = document.querySelector<HTMLLinkElement>('link[rel="icon"]');
-  if (!el) {
-    el = document.createElement("link");
-    el.rel = "icon";
-    document.head.appendChild(el);
-  }
-  el.href = href;
 }
 
 export function setCanonical(href: string) {

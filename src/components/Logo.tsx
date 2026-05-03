@@ -23,8 +23,9 @@ function cloudinaryResize(url: string, width: number, height: number): string {
 }
 
 export function Logo({ size = 32, className = "", invert = false, showText = true }: LogoProps) {
-  const { logoUrl, siteTitle } = useSiteSettings();
+  const { logoUrl, iconUrl, siteTitle } = useSiteSettings();
   const [logoError, setLogoError] = React.useState(false);
+  const [iconError, setIconError] = React.useState(false);
 
   return (
     <div className={`flex items-center ${className} ${invert ? 'invert dark:invert-0' : ''}`}>
@@ -43,11 +44,20 @@ export function Logo({ size = 32, className = "", invert = false, showText = tru
           <div className="flex items-center gap-2.5 group">
             <div className="bg-gradient-to-br from-primary to-primary/80 rounded-lg flex items-center justify-center shadow-lg shadow-primary/20 group-hover:shadow-primary/30 transition-all duration-300"
                  style={{ width: size, height: size }}>
-              <Shield 
-                className="text-white drop-shadow-sm" 
-                size={size * 0.55} 
-                strokeWidth={2.5}
-              />
+              {iconUrl && !iconError ? (
+                <img 
+                  src={cloudinaryResize(iconUrl, size * 2, size * 2)}
+                  alt="Icon"
+                  className="h-full w-full object-contain p-1"
+                  onError={() => setIconError(true)}
+                />
+              ) : (
+                <Shield 
+                  className="text-white fill-white/20" 
+                  size={size * 0.6} 
+                  strokeWidth={2.5}
+                />
+              )}
             </div>
             {showText && size >= 24 && (
               <span className="font-bold tracking-tight text-gray-900 dark:text-white" style={{ fontSize: size * 0.65 }}>
@@ -62,13 +72,14 @@ export function Logo({ size = 32, className = "", invert = false, showText = tru
 }
 
 export function LogoIcon({ size = 32, className = "" }: { size?: number; className?: string }) {
-  const { logoUrl } = useSiteSettings();
+  const { logoUrl, iconUrl } = useSiteSettings();
   const [error, setError] = React.useState(false);
+  const displayUrl = iconUrl || logoUrl;
 
-  if (logoUrl && !error) {
+  if (displayUrl && !error) {
     return (
       <img
-        src={cloudinaryResize(logoUrl, size * 2, size * 2)}
+        src={cloudinaryResize(displayUrl, size * 2, size * 2)}
         alt="Logo"
         style={{ width: size, height: size }}
         className={`object-contain ${className}`}

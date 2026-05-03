@@ -10,6 +10,7 @@ interface SiteSettingsData {
   siteTitle: string;
   tagline: string;
   logoUrl: string | null;
+  iconUrl: string | null;
   faviconUrl: string | null;
   globalMetaTitle: string;
   globalMetaDescription: string;
@@ -30,6 +31,7 @@ export function BrandingSection() {
     siteTitle: "LeadCop",
     tagline: "Block Fake Emails. Protect Your Platform.",
     logoUrl: null,
+    iconUrl: null,
     faviconUrl: null,
     globalMetaTitle: "LeadCop — Disposable Email Detection API",
     globalMetaDescription:
@@ -132,6 +134,12 @@ export function BrandingSection() {
               value={form.logoUrl}
               onChange={(url: string | null) => setForm((f) => ({ ...f, logoUrl: url }))}
               hint="Replaces the default mark. Ideal size: 250×100 px (horizontal) or 160×160 px (square). High-res: 1024×768 px."
+            />
+            <CloudinaryUpload
+              label="Icon / Mark"
+              value={form.iconUrl}
+              onChange={(url: string | null) => setForm((f) => ({ ...f, iconUrl: url }))}
+              hint="Used as a smaller mark in sidebars and as a fallback. Ideal size: 64×64 or 128×128 px."
             />
             <CloudinaryUpload
               label="Favicon"

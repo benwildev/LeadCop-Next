@@ -5,7 +5,10 @@ import Link from "next/link";
 import { Logo } from "@/components/Logo";
 import { Menu, X, ArrowRight } from "lucide-react";
 
+import { useAuth } from "@/hooks/use-auth";
+
 export function Navbar() {
+  const { user, isLoading } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
 
@@ -38,15 +41,26 @@ export function Navbar() {
         </div>
 
         <div className="hidden items-center gap-6 lg:flex">
-          <Link href="/login" className="text-[14px] font-semibold text-slate-600 hover:text-slate-900 transition-colors">
-            Log in
-          </Link>
-        <Link
-          href="/signup"
-          className="brand-button px-6 py-2.5 text-[14px] font-semibold"
-        >
-          Start free
-        </Link>
+          {!isLoading && user ? (
+            <Link
+              href="/dashboard"
+              className="brand-button px-6 py-2.5 text-[14px] font-semibold"
+            >
+              Go to Dashboard
+            </Link>
+          ) : (
+            <>
+              <Link href="/login" className="text-[14px] font-semibold text-slate-600 hover:text-slate-900 transition-colors">
+                Log in
+              </Link>
+              <Link
+                href="/signup"
+                className="brand-button px-6 py-2.5 text-[14px] font-semibold"
+              >
+                Start free
+              </Link>
+            </>
+          )}
         </div>
 
         {/* Mobile Toggle */}
@@ -84,13 +98,32 @@ export function Navbar() {
             </Link>
           ))}
           <div className="pt-6 border-t border-slate-100 flex flex-col gap-4">
-            <Link href="/login" className="rounded-xl py-3 text-center font-bold text-slate-500 transition-colors hover:bg-slate-50 hover:text-primary">Log in</Link>
-            <Link
-              href="/signup"
-              className="brand-button w-full px-6 py-4 text-center font-bold"
-            >
-              Start for free
-            </Link>
+            {!isLoading && user ? (
+              <Link
+                href="/dashboard"
+                onClick={() => setIsOpen(false)}
+                className="brand-button w-full px-6 py-4 text-center font-bold"
+              >
+                Go to Dashboard
+              </Link>
+            ) : (
+              <>
+                <Link 
+                  href="/login" 
+                  onClick={() => setIsOpen(false)}
+                  className="rounded-xl py-3 text-center font-bold text-slate-500 transition-colors hover:bg-slate-50 hover:text-primary"
+                >
+                  Log in
+                </Link>
+                <Link
+                  href="/signup"
+                  onClick={() => setIsOpen(false)}
+                  className="brand-button w-full px-6 py-4 text-center font-bold"
+                >
+                  Start for free
+                </Link>
+              </>
+            )}
           </div>
         </div>
       </div>

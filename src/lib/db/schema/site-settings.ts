@@ -5,6 +5,7 @@ export const siteSettingsTable = pgTable("site_settings", {
   siteTitle: text("site_title").notNull().default("LeadCop"),
   tagline: text("tagline").notNull().default("Block Fake Emails. Protect Your Platform."),
   logoUrl: text("logo_url"),
+  iconUrl: text("icon_url"),
   faviconUrl: text("favicon_url"),
   globalMetaTitle: text("global_meta_title").notNull().default("LeadCop — Disposable Email Detection API"),
   globalMetaDescription: text("global_meta_description").notNull().default("Industry-leading disposable email detection API. Real-time verification with 99.9% accuracy."),
