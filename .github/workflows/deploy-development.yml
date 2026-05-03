@@ -48,11 +48,11 @@ jobs:
             echo "=== Installing dependencies ==="
             /root/.local/share/pnpm/pnpm install --frozen-lockfile
 
-            echo "=== Building project ==="
-            /root/.local/share/pnpm/pnpm run build
-
             echo "=== Syncing database schema ==="
             npx drizzle-kit push --config=src/lib/db/drizzle.config.ts
+
+            echo "=== Building project ==="
+            /root/.local/share/pnpm/pnpm run build
 
             echo "=== Restarting PM2 process ==="
             /usr/bin/pm2 restart temp-email-sdk || /usr/bin/pm2 start ecosystem.config.cjs
