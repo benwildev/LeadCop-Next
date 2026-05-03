@@ -32,19 +32,23 @@ export default function RegisterPage() {
     queryFn: async () => {
       if (!isValidEmail(debouncedEmail)) return null;
       const domain = extractDomain(debouncedEmail);
-      if (KNOWN_DISPOSABLE_DOMAINS.has(domain)) return { disposable: true };
+      if (KNOWN_DISPOSABLE_DOMAINS.has(domain)) return { isDisposable: true };
       
-      const res = await axiosSecure.post("/api/check-email/demo", { email: debouncedEmail });
+      const res = await axiosSecure.post("/api/check-email", { email: debouncedEmail });
       return res.data;
     },
     enabled: !!debouncedEmail && isValidEmail(debouncedEmail),
     staleTime: 1000 * 60 * 10, // 10 mins
   });
 
-  const emailIsInvalid = emailCheck?.disposable || emailCheck?.isInvalidTld || !!emailCheck?.suggestedEmail;
-  const emailError = emailCheck?.disposable ? "Disposable email addresses are not allowed." : 
-                   emailCheck?.isInvalidTld ? "Enter a valid email address." :
-                   emailCheck?.suggestedEmail ? `Did you mean ${emailCheck.suggestedEmail}?` : "";
+  const emailIsInvalid = emailCheck?.isDisposable || 
+                        emailCheck?.riskLevel === "critical" || 
+                        (emailCheck?.riskLevel === "high") || 
+                        !!emailCheck?.didYouMean;
+
+  const emailError = emailCheck?.isDisposable ? "Disposable email addresses are not allowed." : 
+                   (emailCheck?.riskLevel === "critical" || emailCheck?.riskLevel === "high") ? "This email address looks suspicious or invalid." :
+                   emailCheck?.didYouMean ? `Did you mean ${email.split("@")[0]}@${emailCheck.didYouMean}?` : "";
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
