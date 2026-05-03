@@ -73,11 +73,6 @@ export const EmailIntelligenceInput: React.FC<Props> = ({
                 <ShieldAlert className="w-4 h-4 mt-0.5" />
                 <span>Security Block: This email provider is not allowed.</span>
               </div>
-              <ul className="text-xs text-red-600/80 list-disc list-inside pl-1">
-                {data.reasons.map((r, i) => (
-                  <li key={i}>{r}</li>
-                ))}
-              </ul>
             </div>
           )}
 

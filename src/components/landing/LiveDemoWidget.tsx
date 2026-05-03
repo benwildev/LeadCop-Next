@@ -293,23 +293,6 @@ export function LiveDemoWidget() {
           <div className="flex-1">
             <p className="leading-relaxed font-medium">{tone.text}</p>
 
-            {result.reason && (
-              <p className="mt-1 text-[12px] opacity-70">
-                {result.reason}
-              </p>
-            )}
-
-            {result.reasons && result.reasons.length > 0 && (
-              <ul className="mt-2 space-y-1">
-                {result.reasons.map((r, i) => (
-                  <li key={i} className="flex items-center gap-1.5 text-[11px] opacity-80">
-                    <div className={`h-1 w-1 rounded-full ${result.status === "valid" ? "bg-emerald-500" : "bg-current"}`} />
-                    {r}
-                  </li>
-                ))}
-              </ul>
-            )}
-
             {result.status === "typo" && result.suggestion && (
               <button
                 onClick={() => handleChange(result.suggestion!)}
