@@ -16,6 +16,9 @@ import {
   Trash2,
   Users,
   Zap,
+  Code,
+  Layout,
+  ClipboardList,
 } from "lucide-react";
 import { PricingSection } from "@/components/landing/PricingSection";
 import { Navbar } from "@/components/shared/Navbar";
@@ -334,9 +337,17 @@ export default function LandingPage() {
               </p>
 
               <div className="mt-8 grid gap-3 sm:grid-cols-2">
-                {["HTML forms", "React and Next.js", "WordPress", "WPForms and CF7"].map((item) => (
-                  <div key={item} className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-medium text-slate-700 transition-colors hover:border-primary/30 hover:bg-primary/5 hover:text-primary">
-                    {item}
+                {[
+                  { name: "HTML forms", icon: <Code className="h-4 w-4" /> },
+                  { name: "React and Next.js", icon: <Zap className="h-4 w-4" /> },
+                  { name: "WordPress", icon: <Layout className="h-4 w-4" /> },
+                  { name: "WPForms and CF7", icon: <ClipboardList className="h-4 w-4" /> },
+                ].map((item) => (
+                  <div key={item.name} className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-medium text-slate-700 transition-all hover:border-primary/30 hover:bg-primary/5 hover:text-primary group">
+                    <span className="text-slate-400 group-hover:text-primary transition-colors">
+                      {item.icon}
+                    </span>
+                    {item.name}
                   </div>
                 ))}
               </div>
