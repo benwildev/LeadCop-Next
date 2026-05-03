@@ -205,13 +205,24 @@ export async function POST(req: NextRequest) {
 
     // Performance: parallel checks
     const [localPart] = email.split("@");
+    const domainParts = domain.split(".");
+    const tld = domainParts.pop() ?? "";
+    const domainName = domainParts.join(".");
+
+    const { analyzeGibberish, analyzeDomainQuality } = await import("@/utils/gibberish");
+    const gibberishAnalysis = analyzeGibberish(localPart);
+    const domainAnalysis = analyzeDomainQuality(domainName);
+
     const isFree = isFreeEmail(domain);
     const isValidSyntax = z.string().email().safeParse(email).success;
-    const tld = domain.split(".").pop() ?? "";
     const isInvalidTld = !isValidTld(tld);
     const roleAccount = isRoleAccount(localPart);
     
     const [blocked] = await db.select({ id: customBlocklistTable.id }).from(customBlocklistTable).where(and(eq(customBlocklistTable.userId, userId), eq(customBlocklistTable.domain, domain))).limit(1);
+    // Ensure domain cache is loaded (safety fallback)
+    const { ensureCacheLoaded } = await import("@/lib/backend/domain-cache");
+    await ensureCacheLoaded();
+
     const disposable = !!blocked || isDisposableDomain(domain);
 
     const [mxValidResult, dnsblHit] = await Promise.all([
@@ -230,6 +241,8 @@ export async function POST(req: NextRequest) {
       dnsblHit: dnsblHit === true ? true : undefined,
       isInvalidTld,
       isForwarding,
+      gibberishScore: gibberishAnalysis.score,
+      domainQualityScore: domainAnalysis.score,
     });
 
     const tags = buildTags({
@@ -242,6 +255,13 @@ export async function POST(req: NextRequest) {
     });
 
     const isDisposableResult = disposable || (blockFreeEmails && isFree);
+
+    const reasons = [
+      ...gibberishAnalysis.reasons,
+      ...domainAnalysis.reasons,
+    ];
+    if (!mxValidResult) reasons.push("Domain has no valid MX records");
+    if (disposable) reasons.push("Disposable email provider detected");
 
     await db.insert(apiUsageTable).values({
       userId,
@@ -260,6 +280,7 @@ export async function POST(req: NextRequest) {
       reputationScore,
       riskLevel: computeRiskLevel(reputationScore),
       tags,
+      reasons,
       requestsRemaining: Math.max(0, (planConfig.requestLimit ?? 0) - (requestCount + 1)),
       isValidSyntax,
       isRoleAccount: roleAccount,

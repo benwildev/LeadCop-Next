@@ -22,6 +22,7 @@ type ValResult = {
   message?: string;
   suggestion?: string;
   reason?: string;
+  reasons?: string[];
 };
 
 async function checkEmailApi(email: string): Promise<ValResult> {
@@ -83,6 +84,7 @@ async function checkEmailApi(email: string): Promise<ValResult> {
         status: "blocked",
         message: "Temporary email addresses are blocked. Use real email",
         reason: "Disposable provider detected",
+        reasons: data.reasons,
       };
     }
 
@@ -94,11 +96,22 @@ async function checkEmailApi(email: string): Promise<ValResult> {
       };
     }
 
-    if (data.isGibberish) {
+    // High risk detection (Gibberish, suspicious patterns)
+    if (data.riskLevel === "high" || data.riskLevel === "critical") {
       return {
-        status: "tld-error",
-        message: "This email pattern looks suspicious.",
-        reason: "Pattern check failed",
+        status: "blocked",
+        message: "This email looks suspicious or low-quality.",
+        reason: "Security risk detected",
+        reasons: data.reasons,
+      };
+    }
+
+    if (data.riskLevel === "medium") {
+      return {
+        status: "typo",
+        message: "Linguistic irregularity detected.",
+        reason: "Suspicious pattern",
+        reasons: data.reasons,
       };
     }
 
@@ -129,6 +142,7 @@ export function LiveDemoWidget() {
 
   const examples = [
     { label: "Disposable", value: "user@mailinator.com" },
+    { label: "Gibberish", value: "asfjsdjf@sdkfsdk.com" },
     { label: "Role", value: "admin@corporate.com" },
     { label: "Typo", value: "john@gmial.com" },
     { label: "Relay", value: "user@privaterelay.appleid.com" },
@@ -277,12 +291,23 @@ export function LiveDemoWidget() {
         <div className="flex items-start gap-3">
           <div className="mt-[2px]">{tone.icon}</div>
           <div className="flex-1">
-            <p className="leading-relaxed">{tone.text}</p>
+            <p className="leading-relaxed font-medium">{tone.text}</p>
 
             {result.reason && (
               <p className="mt-1 text-[12px] opacity-70">
-                Reason: {result.reason}
+                {result.reason}
               </p>
+            )}
+
+            {result.reasons && result.reasons.length > 0 && (
+              <ul className="mt-2 space-y-1">
+                {result.reasons.map((r, i) => (
+                  <li key={i} className="flex items-center gap-1.5 text-[11px] opacity-80">
+                    <div className={`h-1 w-1 rounded-full ${result.status === "valid" ? "bg-emerald-500" : "bg-current"}`} />
+                    {r}
+                  </li>
+                ))}
+              </ul>
             )}
 
             {result.status === "typo" && result.suggestion && (

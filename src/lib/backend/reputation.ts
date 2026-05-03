@@ -107,66 +107,30 @@ export function getDomainSuggestion(domain: string): string | null {
   return null;
 }
 
+import { analyzeGibberish, analyzeDomainQuality } from "@/utils/gibberish";
+
 export interface ReputationChecks {
   isDisposable: boolean;
   isInvalidTld?: boolean;
   isForwarding?: boolean;
   hasMx: boolean | undefined;
-  hasInbox: boolean | undefined;
+  hasInbox?: boolean | undefined;
   isAdmin?: boolean;
   isFree?: boolean;
   isDeliverable?: boolean;
-  isCatchAll?: boolean;
+  isCatchAll?: boolean | null;
   canConnect?: boolean;
   domain: string;
   dnsblHit?: boolean;
   smtpValid?: boolean | null;
   roleAccount?: boolean;
+  gibberishScore?: number;
+  domainQualityScore?: number;
 }
 
 export function isRoleAccount(localPart: string): boolean {
   const lower = localPart.toLowerCase().replace(/[^a-z0-9-]/g, "");
   return ROLE_ACCOUNTS.has(lower);
-}
-
-export function calculateEntropy(str: string): number {
-  const frequencies: Record<string, number> = {};
-  for (const char of str) { frequencies[char] = (frequencies[char] || 0) + 1; }
-  let entropy = 0;
-  const len = str.length;
-  for (const char in frequencies) {
-    const p = frequencies[char] / len;
-    entropy -= p * Math.log2(p);
-  }
-  return entropy;
-}
-
-export function isGibberish(str: string): boolean {
-  if (!str || str.length < 4) return false;
-  const cleaned = str.toLowerCase().replace(/[^a-z]/g, "");
-  if (cleaned.length < 3) return false;
-  let score = 0;
-  const vowelCount = (cleaned.match(/[aeiou]/g) || []).length;
-  const vowelRatio = vowelCount / cleaned.length;
-  if (cleaned.length >= 6 && (vowelRatio < 0.2 || vowelRatio > 0.8)) score += 2;
-  if (/[bcdfghjklmnpqrstvwxyz]{4,}/.test(cleaned)) score += 2;
-  if (/(.)\1{3,}/.test(cleaned)) score += 2;
-  const patterns = ["qwerty", "asdfgh", "zxcvbn", "qazwsx", "1q2w3e"];
-  if (patterns.some(p => str.toLowerCase().includes(p))) score += 2;
-  const entropy = calculateEntropy(cleaned);
-  if (cleaned.length > 8 && (entropy > 3.5 || entropy < 1.5)) score += 2;
-  const commonBigrams = ["th", "he", "in", "er", "an", "re", "on", "at", "en", "nd", "ti", "es", "or", "te", "of", "ed", "is", "it", "al", "ar"];
-  let badBigramCount = 0;
-  for (let i = 0; i < cleaned.length - 1; i++) {
-    const pair = cleaned.slice(i, i + 2);
-    if (!commonBigrams.includes(pair)) badBigramCount++;
-  }
-  const badRatio = badBigramCount / (cleaned.length - 1);
-  if (badRatio > 0.8) score += 2;
-  if (/[qxz]{3,}/.test(cleaned)) score += 1;
-  if (!/[aeiou]/.test(cleaned)) score += 3;
-  if (!/[aeiou]{1,2}[bcdfghjklmnpqrstvwxyz]{1,2}/.test(cleaned)) score += 1;
-  return score >= 4;
 }
 
 export function performBasicSecurityChecks(email: string) {
@@ -177,12 +141,18 @@ export function performBasicSecurityChecks(email: string) {
   const domainParts = cleanDomain.split(".");
   const tld = domainParts.pop() ?? "";
   const domainName = domainParts.join(".");
+
   if (!isValidTld(tld)) return { allowed: false, reason: "Invalid domain extension (TLD)" };
-  if (localPart.includes("#") || localPart.includes("$") || localPart.includes("%")) return { allowed: false, reason: "Suspicious characters in email" };
+  
+  const gibberishAnalysis = analyzeGibberish(localPart);
+  const domainAnalysis = analyzeDomainQuality(domainName);
+
   if (isForwardingEmail(cleanDomain)) return { allowed: false, reason: "Email relay services are not allowed" };
   if (isDisposableDomain(cleanDomain)) return { allowed: false, reason: "Disposable email addresses are not allowed" };
-  if (isGibberish(localPart)) return { allowed: false, reason: "Suspicious email pattern detected" };
-  if (domainName.length >= 5 && isGibberish(domainName)) return { allowed: false, reason: "Suspicious domain name detected" };
+  
+  if (gibberishAnalysis.isGibberish) return { allowed: false, reason: "Suspicious email pattern detected" };
+  if (domainName.length >= 5 && domainAnalysis.isGibberish) return { allowed: false, reason: "Suspicious domain name detected" };
+  
   return { allowed: true };
 }
 
@@ -196,20 +166,43 @@ export function isForwardingMx(mxRecords: string[]): boolean {
   });
 }
 
+/**
+ * Weighted Scoring System (0-100)
+ * Weights:
+ * - Disposable: -60
+ * - No MX: -40
+ * - High Gibberish: -30
+ * - Low Domain Quality: -30
+ * - Role Account: -15
+ * - Forwarding: -25
+ */
 export function computeReputationScore(checks: ReputationChecks): number {
   let score = 100;
+  
+  // 1. Hard Signals (Disposable, Invalid TLD)
   if (checks.isDisposable) score -= 60;
   if (checks.isInvalidTld) score -= 100;
-  if (checks.isForwarding) score -= 30;
-  if (checks.hasMx === false) score -= 25;
-  if (checks.hasInbox === false) score -= 15;
-  if (checks.isDeliverable === false) score -= 40;
-  if (checks.isCatchAll === true) score -= 20;
-  if (checks.canConnect === false) score -= 20;
-  if (checks.isAdmin || checks.roleAccount) score -= 10;
-  if (checks.isFree || FREE_EMAIL_PROVIDERS.has(checks.domain.toLowerCase())) score -= 5;
+  
+  // 2. Network Signals (MX, DNSBL)
+  if (checks.hasMx === false) score -= 40;
   if (checks.dnsblHit === true) score -= 20;
-  if (checks.smtpValid === false) score -= 10;
+  
+  // 3. Quality Signals (Gibberish, Domain Quality)
+  if (checks.gibberishScore && checks.gibberishScore > 0.6) score -= 30;
+  else if (checks.gibberishScore && checks.gibberishScore > 0.4) score -= 15;
+  
+  if (checks.domainQualityScore && checks.domainQualityScore > 0.6) score -= 30;
+  else if (checks.domainQualityScore && checks.domainQualityScore > 0.4) score -= 15;
+
+  // 4. Identity Signals (Role, Forwarding, Free)
+  if (checks.roleAccount) score -= 15;
+  if (checks.isForwarding) score -= 25;
+  if (checks.isFree || FREE_EMAIL_PROVIDERS.has(checks.domain.toLowerCase())) score -= 5;
+  
+  // 5. Verification Signals (SMTP)
+  if (checks.smtpValid === false) score -= 20;
+  if (checks.isCatchAll === true) score -= 15;
+  
   return Math.min(100, Math.max(0, score));
 }
 

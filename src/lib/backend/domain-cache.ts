@@ -4,13 +4,35 @@ let domainSet = new Set<string>();
 let whitelistSet = new Set<string>();
 let lastLoaded: Date | null = null;
 
+let loadingPromise: Promise<void> | null = null;
+
 export async function loadDomainCache(): Promise<void> {
-  const domains = await db.select({ domain: domainsTable.domain }).from(domainsTable);
-  const whitelisted = await db.select({ domain: whitelistTable.domain }).from(whitelistTable);
-  
-  domainSet = new Set(domains.map((d: { domain: string }) => d.domain.toLowerCase()));
-  whitelistSet = new Set(whitelisted.map((d: { domain: string }) => d.domain.toLowerCase()));
-  lastLoaded = new Date();
+  try {
+    const domains = await db.select({ domain: domainsTable.domain }).from(domainsTable);
+    const whitelisted = await db.select({ domain: whitelistTable.domain }).from(whitelistTable);
+    
+    domainSet = new Set(domains.map((d: { domain: string }) => d.domain.toLowerCase()));
+    whitelistSet = new Set(whitelisted.map((d: { domain: string }) => d.domain.toLowerCase()));
+    lastLoaded = new Date();
+    const { logger } = await import("./logger");
+    const dbUrl = process.env.DATABASE_URL || "";
+    const dbName = dbUrl.split("/").pop()?.split("?")[0];
+    logger.info({ domains: domainSet.size, whitelist: whitelistSet.size, db: dbName }, "Domain cache loaded successfully");
+  } catch (err) {
+    const { logger } = await import("./logger");
+    logger.error({ err }, "Failed to load domain cache from DB");
+    throw err;
+  }
+}
+
+export async function ensureCacheLoaded(): Promise<void> {
+  if (domainSet.size > 0) return;
+  if (!loadingPromise) {
+    loadingPromise = loadDomainCache().finally(() => {
+      loadingPromise = null;
+    });
+  }
+  return loadingPromise;
 }
 
 export function isDisposableDomain(domain: string): boolean {
